@@ -6,7 +6,7 @@ from func import get_file_paths
 
 def main(path_to_organise):
     # get metadata from each file in the directory
-    md_dict = get_metadata_from_files_and_dirs(get_item_paths(path_to_organise))
+    md_dict = get_metadata_from_files(get_item_paths(path_to_organise))
     # create the required directories and move the files
     organise_by_date(md_dict, path_to_organise)
 
@@ -56,14 +56,13 @@ def get_item_paths(path: str):
     
     return files_list
 
-def get_metadata_from_files_and_dirs(filepath_list: list):
+def get_metadata_from_files(filepath_list: list):
     """
     function to get the metadata from a file 
 
     @params
     filepath: str: absolute path to a file
     """
-
     md_dict = {}
 
     # get the time data from each file
