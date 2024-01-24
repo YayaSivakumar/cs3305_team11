@@ -1,5 +1,5 @@
 # script name: func.py
-import os, datetime, shutil
+import os, datetime, shutil, json
 
 def get_all_file_paths(path: str) -> list[str]:
     """
@@ -77,6 +77,33 @@ def move_file(source: str, dest: str):
     except IOError as e:
         print(f"Error: {e}")
 
+def save_to_json(file_list: list, json_file_path: str):
+    """
+    function to save the original structure to a JSON file
+
+    @params
+    md_list: list: list of file with metadata attributes
+    json_file_path: str: path to JSON file
+    """
+    with open(json_file_path, 'w') as json_file:
+        json.dump(file_list, json_file, indent=4)
+
+def revert_changes(json_file_path: str):
+    """
+    function to revert changes made by organise_by_date_func
+
+    @params
+    json_file_path: str: path to JSON file containing original structure
+    """
+    with open(json_file_path, 'r') as json_file:
+        files = json.load(json_file)
+
+    for file in files:
+        original_path = file.original_path
+        current_path = file.new_path
+        if os.path.exists(current_path) and not os.path.exists(original_path):
+            move_file(current_path, original_path)
+
 
 class File:
     def __init__(self, path, filetype):
@@ -125,7 +152,3 @@ class File:
     @creation_time.setter
     def creation_time(self, ct: str) -> str:
         self._creation_time = ct
-
-
-def file_arr_to_json(input_file_arr: list, dest: str, json_filename: str = 'file_arr.json'):
-    pass
