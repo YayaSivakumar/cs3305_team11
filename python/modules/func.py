@@ -1,4 +1,6 @@
 # script name: func.py
+import os
+
 def get_file_paths(path):
     files_list = []
     # walk through all of the files in the specified path
