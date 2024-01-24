@@ -76,3 +76,32 @@ def move_file(source: str, dest: str):
         shutil.move(source, dest)
     except IOError as e:
         print(f"Error: {e}")
+
+
+class File:
+    def __init__(self, path, filetype):
+        self._original_path = path
+        self._filetype = filetype
+
+    def to_dict(self):
+        return {'path': self.path, 'filetype': self.filetype}
+    
+    @staticmethod
+    def from_dict(my_dict: dict[str:str]):
+        return File(my_dict['path'], my_dict['filetype'])
+    
+    @property
+    def filetype(self) -> str:
+        return self._filetype
+    @filetype.setter
+    def filetype(self, f):
+        self._filetype = f
+    @property
+    def path(self) -> str:
+        return self._original_path
+    @path.setter
+    def path(self, p):
+        self._original_path = p
+
+def obj_to_json(my_obj ):
+    pass

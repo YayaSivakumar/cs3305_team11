@@ -1,7 +1,7 @@
 # script name: sort.py
 import os
 import shutil
-from func import get_all_file_paths, move_file
+from func import get_all_file_paths, move_file, File
 FILEPATH_TEST = '/Users/jackmoloney/Developer/cs3305_team11/Tester'
 
 def organise_by_type_func(path_to_organise: str, \
@@ -83,25 +83,6 @@ def get_pwd():
 
 def list_dir(filepath: str) -> str:
     return os.listdir(filepath)
-
-
-class File:
-    def __init__(self, path, filetype):
-        self._path = path
-        self._filetype = filetype
-    
-    @property
-    def filetype(self) -> str:
-        return self._filetype
-    @filetype.setter
-    def filetype(self, f):
-        self._filetype = f
-    @property
-    def path(self) -> str:
-        return self._path
-    @path.setter
-    def path(self, p):
-        self._path = p
     
     
 if __name__ == "__main__":
