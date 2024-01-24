@@ -101,9 +101,9 @@ def revert_changes(json_file_path: str):
     with open(json_file_path, 'r') as json_file:
         files = json.load(json_file)
 
-    for file in files:
-        original_path = file['original_path']
-        current_path = file['new_path']
+    for file, data in files.items():
+        original_path = data['original_path']
+        current_path = data['new_path']
         if os.path.exists(current_path) and not os.path.exists(original_path):
             move_file(current_path, original_path)
 

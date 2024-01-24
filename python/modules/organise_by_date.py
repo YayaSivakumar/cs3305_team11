@@ -99,5 +99,5 @@ def organise_by_date(md_list: list, directory_path: str):
         file.new_path = directory_path+'/'+year+'/'+month+'/'+(file.original_path.split('/'))[-1]
 
 if __name__ == "__main__":
-    organise_by_date_func(os.getcwd()+'/test_by_date')
-    # revert_changes(os.getcwd()+'/original_structure.json')
+    organise_by_date_func(FILE_PATH_ARG+'test_by_date')
+    # print(revert_changes(os.getcwd()+'/original_structure.json'))
