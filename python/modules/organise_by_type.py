@@ -1,13 +1,21 @@
 # script name: sort.py
 import os
 import shutil
-from func import get_file_paths
+from func import get_all_file_paths, move_file
 FILEPATH_TEST = '/Users/jackmoloney/Developer/cs3305_team11/Tester'
 
 def organise_by_type_func(path_to_organise: str, \
                           folder_names: dict[str:str] = {'documents': 'Documents', 'photos': 'Photos', 'videos':'Videos', 'music':'Music', 'misc':'Misc'}\
-                            ):
-    file_paths = get_file_paths(path_to_organise) # array of file paths
+                            ) -> None:
+    """
+    main function for organise by filetype feature. 
+
+    @params
+    path_to_organise: str: absolute path of folder to be organised
+    folder_names: dict[str:str]: dictionary containing k,v pairs of file classification and the name of folder it will be placed in.
+    ret: None
+    """
+    file_paths = get_all_file_paths(path_to_organise) # array of file paths
     file_obj_array: list[File] = []
 
     # Determine different file types present, create list of needed directories
@@ -33,14 +41,6 @@ def organise_by_type_func(path_to_organise: str, \
         move_file(source, destination)
         num_files_moved += 1
     print(f'Moved {num_files_moved} files')
-
-
-
-def move_file(source: str, dest: str):
-    try:
-        shutil.move(source, dest)
-    except IOError as e:
-        print(f"Error: {e}")
 
 def determine_filetype(filename: str) -> str:
     """

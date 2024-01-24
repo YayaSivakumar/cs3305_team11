@@ -1,7 +1,14 @@
 # script name: func.py
-import os, datetime
+import os, datetime, shutil
 
-def get_file_paths(path):
+def get_all_file_paths(path: str) -> list[str]:
+    """
+    Function to get the paths of all files in path, disregarding parent directory.
+
+    @params
+    path: str: absolute path of directory to be traversed
+    ret: list[str]: list of absolute paths
+    """
     files_list = []
     # walk through all of the files in the specified path
     for root, dirs, files in os.walk(path):
@@ -10,15 +17,16 @@ def get_file_paths(path):
             files_list.append(os.path.join(root, file))
     return files_list
 
-def get_item_paths(path: str):
+def get_file_and_subdir_paths(path: str):
     """
-    Function to get the paths of all files and immediate subdirectories in a directory.
+    Function to get the paths of files and immediate subdirectories in a directory.
+
+    Treats subdirectories as a unit, does not enter the subdir.
 
     @params
     path: str: path to root directory
 
-    returns
-    contents_list: list: list of paths to all files and immediate subdirectories
+    ret: list[str]: list of paths to all files and immediate subdirectories
     """
     files_list = []
     # List all entries in the given directory
@@ -55,3 +63,16 @@ def time_convert(timestamp: int) -> str:
         return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     except TypeError as e:
         raise TypeError(f"Error: {e}")
+    
+def move_file(source: str, dest: str):
+    """
+    function to move file using shutil move
+
+    @params
+    source: str: absolute path to source file
+    dest: str: absolute path to destination
+    """
+    try:
+        shutil.move(source, dest)
+    except IOError as e:
+        print(f"Error: {e}")

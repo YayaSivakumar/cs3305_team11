@@ -1,15 +1,22 @@
 from __future__ import annotations
 import os
 import shutil
-from func import time_convert, size_convert, get_file_paths, get_item_paths
+from func import time_convert, size_convert, get_all_file_paths, get_file_and_subdir_paths, move_file
 
 FILE_PATH_ARG = '/Users/jackmoloney/Developer/cs3305_team11/'
 
-def organise_by_date_func(path_to_organise: str, organise_type: function = get_item_paths):
+def organise_by_date_func(path_to_organise: str, dir_traversal_type: function = get_all_file_paths):
+    """
+    main function for organise by date function.
+
+    @params
+    path_to_organise: str: absolute path to directory to be organised
+    dir_traversal_type: function: name of function to be used to traverse the directory
+    """
     # get metadata from each file in the directory
-    md_dict = get_metadata_from_files(get_item_paths(path_to_organise))
+    md_dict = get_metadata_from_files(dir_traversal_type(path_to_organise))
     # create the required directories and move the files
-    organise_by_date(md_dict, path_to_organise)
+    organise_by_date(md_dict, path_to_organise) 
 
 def get_item_paths(path: str):
     """
@@ -57,12 +64,6 @@ def get_metadata_from_files(filepath_list: list):
         md_dict[filepath] = attrs 
 
     return md_dict
-
-def move_file(source: str, dest: str):
-    try:
-        shutil.move(source, dest)
-    except IOError as e:
-        print(f"Error: {e}")
 
 def organise_by_date(md_dict: dict, directory_path: str):
     """
