@@ -4,9 +4,13 @@ import shutil
 from func import get_file_paths
 FILEPATH_TEST = '/Users/jackmoloney/Developer/cs3305_team11/Tester'
 
-def main_func(path_to_organise: str):
+def organise_by_type_func(path_to_organise: str, \
+                          folder_names: dict[str:str] = {'documents': 'Documents', 'photos': 'Photos', 'videos':'Videos', 'music':'Music', 'misc':'Misc'}\
+                            ):
     file_paths = get_file_paths(path_to_organise) # array of file paths
     file_obj_array: list[File] = []
+
+    # Determine different file types present, create list of needed directories
     directories_to_create: set[str] = set()
     for file in file_paths:
         # get filetype
@@ -17,9 +21,10 @@ def main_func(path_to_organise: str):
         temp = File(file, filetype)
         file_obj_array.append(temp)
 
+    directories_to_create = list(directories_to_create) # cast set to list
+    
     # Folder names are defined here, pending later feature addition
-    folder_names = {'documents': 'Documents', 'photos': 'Photos', 'videos':'Videos', 'music':'Music', 'misc':'Misc'}
-    create_target_directories(path_to_organise, list(directories_to_create), folder_names) # create necessary directories
+    create_target_directories(path_to_organise, directories_to_create, folder_names) # create necessary directories
     num_files_moved = 0
     # move files to appropriate target
     for file_obj in file_obj_array:
