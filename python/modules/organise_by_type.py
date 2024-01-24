@@ -22,7 +22,7 @@ def organise_by_type_func(path_to_organise: str, \
         file_obj_array.append(temp)
 
     directories_to_create = list(directories_to_create) # cast set to list
-    
+
     # Folder names are defined here, pending later feature addition
     create_target_directories(path_to_organise, directories_to_create, folder_names) # create necessary directories
     num_files_moved = 0
@@ -105,4 +105,4 @@ class File:
     
     
 if __name__ == "__main__":
-    main_func(FILEPATH_TEST)
+    organise_by_type_func(FILEPATH_TEST)

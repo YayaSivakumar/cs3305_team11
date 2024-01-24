@@ -11,32 +11,6 @@ def organise_by_date_func(path_to_organise: str, organise_type: function = get_i
     # create the required directories and move the files
     organise_by_date(md_dict, path_to_organise)
 
-def size_convert(size: int) -> str:
-    """
-    function to convert bytes to kilobytes
-
-    @params
-    size: int: size in bytes
-    ret: str: size in kilobytes
-    """
-    try:
-        return str(round(size/1000, 2)) + ' KB'
-    except TypeError as e:
-        raise TypeError(f"Error: {e}")
-
-def time_convert(timestamp: int) -> str:
-    """
-    function to convert time to a readable format
-
-    @params
-    time: int: time in seconds
-    ret: str: time in readable format
-    """
-    try:    
-        return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-    except TypeError as e:
-        raise TypeError(f"Error: {e}")
-
 def get_item_paths(path: str):
     """
     Function to get the paths of all files and immediate subdirectories in a directory.
