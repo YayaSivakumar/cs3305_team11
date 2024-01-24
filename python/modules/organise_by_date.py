@@ -4,7 +4,7 @@ import datetime
 
 def main(path_to_organise):
     # get metadata from each file in the directory
-    md_dict = get_metadata_from_files(get_item_paths(path_to_organise))
+    md_dict = get_metadata_from_files_and_dirs(get_item_paths(path_to_organise))
     # create the required directories and move the files
     organise_by_date(md_dict, path_to_organise)
 
@@ -59,17 +59,32 @@ def get_item_paths(path: str):
     returns
     contents_list: list: list of paths to all files and immediate subdirectories
     """
-    contents_list = []
+    files_list = []
     # List all entries in the given directory
     for entry in os.listdir(path):
         full_path = os.path.join(path, entry)
         # Check if the entry is a file or a directory (but don't recurse into subdirectories)
         if os.path.isfile(full_path) or os.path.isdir(full_path):
-            contents_list.append(full_path)
+            files_list.append(full_path)
+    
+    return files_list
 
-    return contents_list
+def get_file_paths(path):
+    """
+    function to get the paths of all files in a directory
+    
+    @params
+    path: str: path to root directory
+    """
+    files_list = []
+    # walk through all of the files in the specified path
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            # ignore directories and append file path to the list
+            files_list.append(os.path.join(root, file))
+    return files_list
 
-def get_metadata_from_files(filepath_list: list):
+def get_metadata_from_files_and_dirs(filepath_list: list):
     """
     function to get the metadata from a file 
 
@@ -77,7 +92,6 @@ def get_metadata_from_files(filepath_list: list):
     filepath: str: absolute path to a file
     """
 
-    accepted_filetypes = ['pdf', 'docx', 'doc', 'txt', 'text', 'jpeg', 'jpg', 'svg', 'png', 'PNG', 'mp4', 'mov', 'avi', 'wav', 'mp3', 'aac', 'webp']
     md_dict = {}
 
     # get the time data from each file
@@ -133,4 +147,4 @@ def organise_by_date(md_dict: dict, directory_path: str):
         move_file(key, directory_path+'/'+year+'/'+month)
 
 if __name__ == "__main__":
-    main("/Users/yachitrasivakumar/Desktop/test")
+    main(os.getcwd()+'/test_by_date')
