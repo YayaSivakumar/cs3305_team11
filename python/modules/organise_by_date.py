@@ -2,7 +2,7 @@ from __future__ import annotations
 import os
 from func import time_convert, size_convert, get_all_file_paths, get_file_and_subdir_paths, move_file, save_to_json, File
 
-FILE_PATH_ARG = '/Users/jackmoloney/Developer/cs3305_team11/'
+FILE_PATH_ARG = '/Users/yachitrasivakumar/Desktop/YEAR3/Semester2Year3/cs3305_team11/'
 
 def organise_by_date_func(path_to_organise: str, dir_traversal_type: function = get_all_file_paths):
     """
@@ -15,7 +15,7 @@ def organise_by_date_func(path_to_organise: str, dir_traversal_type: function = 
 
     # get metadata from each file in the directory
     md_list = get_metadata_from_files(dir_traversal_type(path_to_organise))
-
+    print(md_list)
     # create the required directories and move the files
     organise_by_date(md_list, path_to_organise) 
 
@@ -56,7 +56,11 @@ def get_metadata_from_files(filepath_list: list):
 
         stats = os.stat(filepath)
         
-        file = File(filepath, '', filepath.split('.')[-1], size_convert(stats.st_size), time_convert(stats.st_ctime), time_convert(stats.st_mtime), time_convert(stats.st_atime))
+        file = File(filepath, filepath.split('.')[-1])
+        file.size = size_convert(stats.st_size)
+        file.creation_time = time_convert(stats.st_ctime)
+        file._modification_time = time_convert(stats.st_mtime)
+        file._last_access_time = time_convert(stats.st_atime)
         
         md_list.append(file)
 
@@ -78,8 +82,10 @@ def organise_by_date(md_list: list, directory_path: str):
         # get list of directories already created in path
         list_of_directories = os.listdir(directory_path)
         # get year and month of modification
-        year = file.creation_time[0] # the reason for using 'Modified Time' in this function is because the 'Creation Time' values changed when I moved them into test_by_date folder
-        month = month_names[file.creation_time[1]] # for test purposes I am using the 'Modified Time' values
+        year = file.creation_time.split('-')[0] # the reason for using 'Modified Time' in this function is because the 'Creation Time' values changed when I moved them into test_by_date folder
+        mo = file.creation_time.split('-')[1]
+     
+        month = month_names[mo] # for test purposes I am using the 'Modified Time' values
 
         # create directories if they don't already exist
         if year not in list_of_directories:

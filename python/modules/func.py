@@ -86,7 +86,10 @@ def save_to_json(file_list: list, json_file_path: str):
     json_file_path: str: path to JSON file
     """
     with open(json_file_path, 'w') as json_file:
-        json.dump(file_list, json_file, indent=4)
+        file_info = {}
+        for file in file_list:
+            file_info[file.path] = file.to_dict()
+        json.dump(file_info, json_file)
 
 def revert_changes(json_file_path: str):
     """
@@ -116,7 +119,7 @@ class File:
         self._last_access_time = ''
 
     def to_dict(self):
-        return {'path': self.path, 'filetype': self.filetype}
+        return {'path': self.path, 'filetype': self.filetype, 'size': self.size, 'creation_time': self.creation_time, 'modification_time': self.modification_time, 'last_access_time': self.last_access_time}
     
     @staticmethod
     def from_dict(my_dict: dict[str:str]):
