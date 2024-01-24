@@ -1,6 +1,6 @@
 # script name: sort.py
 import os, sys
-from func import get_all_file_paths, move_file, File
+from modules.func import get_all_file_paths, move_file, File
 
 
 def organise_by_type_func(path_to_organise: str, \
