@@ -7,18 +7,63 @@ FILE_PATH_ARG = '/Users/jackmoloney/Developer/cs3305_team11/'
 
 def organise_by_date_func(path_to_organise: str, organise_type: function = get_item_paths):
     # get metadata from each file in the directory
-    md_dict = get_metadata_from_files_and_dirs(organise_type(path_to_organise))
+    md_dict = get_metadata_from_files(get_item_paths(path_to_organise))
     # create the required directories and move the files
     organise_by_date(md_dict, path_to_organise)
 
-def get_metadata_from_files_and_dirs(filepath_list: list):
+def size_convert(size: int) -> str:
+    """
+    function to convert bytes to kilobytes
+
+    @params
+    size: int: size in bytes
+    ret: str: size in kilobytes
+    """
+    try:
+        return str(round(size/1000, 2)) + ' KB'
+    except TypeError as e:
+        raise TypeError(f"Error: {e}")
+
+def time_convert(timestamp: int) -> str:
+    """
+    function to convert time to a readable format
+
+    @params
+    time: int: time in seconds
+    ret: str: time in readable format
+    """
+    try:    
+        return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    except TypeError as e:
+        raise TypeError(f"Error: {e}")
+
+def get_item_paths(path: str):
+    """
+    Function to get the paths of all files and immediate subdirectories in a directory.
+
+    @params
+    path: str: path to root directory
+
+    returns
+    contents_list: list: list of paths to all files and immediate subdirectories
+    """
+    files_list = []
+    # List all entries in the given directory
+    for entry in os.listdir(path):
+        full_path = os.path.join(path, entry)
+        # Check if the entry is a file or a directory (but don't recurse into subdirectories)
+        if os.path.isfile(full_path) or os.path.isdir(full_path):
+            files_list.append(full_path)
+    
+    return files_list
+
+def get_metadata_from_files(filepath_list: list):
     """
     function to get the metadata from a file 
 
     @params
     filepath: str: absolute path to a file
     """
-
     md_dict = {}
 
     # get the time data from each file
