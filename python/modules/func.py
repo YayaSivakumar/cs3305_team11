@@ -82,6 +82,11 @@ class File:
     def __init__(self, path, filetype):
         self._original_path = path
         self._filetype = filetype
+        self._new_path = ''
+        self._size = ''
+        self._creation_time = ''
+        self._modification_time = ''
+        self._last_access_time = ''
 
     def to_dict(self):
         return {'path': self.path, 'filetype': self.filetype}
@@ -89,19 +94,38 @@ class File:
     @staticmethod
     def from_dict(my_dict: dict[str:str]):
         return File(my_dict['path'], my_dict['filetype'])
-    
+
     @property
     def filetype(self) -> str:
         return self._filetype
     @filetype.setter
-    def filetype(self, f):
+    def filetype(self, f:str) -> None:
         self._filetype = f
     @property
-    def path(self) -> str:
+    def original_path(self) -> str:
         return self._original_path
-    @path.setter
-    def path(self, p):
+    @original_path.setter
+    def path(self, p) -> None:
         self._original_path = p
+    @property
+    def new_path(self) -> str:
+        return self._new_path
+    @new_path.setter
+    def new_path(self, np: str) -> None:
+        self._new_path = np
+    @property
+    def size(self) -> str:
+        return self._size
+    @size.setter
+    def size(self, s: str) -> None:
+        self._size = s
+    @property
+    def creation_time(self) -> str:
+        return self._creation_time
+    @creation_time.setter
+    def creation_time(self, ct: str) -> str:
+        self._creation_time = ct
 
-def obj_to_json(my_obj ):
+
+def file_arr_to_json(input_file_arr: list, dest: str, json_filename: str = 'file_arr.json'):
     pass

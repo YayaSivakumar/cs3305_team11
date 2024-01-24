@@ -1,8 +1,7 @@
 # script name: sort.py
-import os
-import shutil
+import os, sys
 from func import get_all_file_paths, move_file, File
-FILEPATH_TEST = '/Users/jackmoloney/Developer/cs3305_team11/Tester'
+
 
 def organise_by_type_func(path_to_organise: str, \
                           folder_names: dict[str:str] = {'documents': 'Documents', 'photos': 'Photos', 'videos':'Videos', 'music':'Music', 'misc':'Misc'}\
@@ -86,4 +85,4 @@ def list_dir(filepath: str) -> str:
     
     
 if __name__ == "__main__":
-    organise_by_type_func(FILEPATH_TEST)
+    organise_by_type_func(input())
