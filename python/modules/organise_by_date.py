@@ -1,6 +1,6 @@
 from __future__ import annotations
 import os
-from func import time_convert, size_convert, get_all_file_paths, get_file_and_subdir_paths, move_file, save_to_json, File
+from func import time_convert, size_convert, get_all_file_paths, get_file_and_subdir_paths, move_file, save_to_json, File, revert_changes
 
 FILE_PATH_ARG = '/Users/yachitrasivakumar/Desktop/YEAR3/Semester2Year3/cs3305_team11/'
 
@@ -15,7 +15,6 @@ def organise_by_date_func(path_to_organise: str, dir_traversal_type: function = 
 
     # get metadata from each file in the directory
     md_list = get_metadata_from_files(dir_traversal_type(path_to_organise))
-    print(md_list)
     # create the required directories and move the files
     organise_by_date(md_list, path_to_organise) 
 
@@ -101,4 +100,4 @@ def organise_by_date(md_list: list, directory_path: str):
 
 if __name__ == "__main__":
     organise_by_date_func(os.getcwd()+'/test_by_date')
-    # revert_changes(os.getcwd()+'/original_structure.json')
+    # revert_changes(os.getcwd()+'/original_structure.json')

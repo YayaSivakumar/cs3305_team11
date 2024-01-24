@@ -102,8 +102,8 @@ def revert_changes(json_file_path: str):
         files = json.load(json_file)
 
     for file in files:
-        original_path = file.original_path
-        current_path = file.new_path
+        original_path = file['original_path']
+        current_path = file['new_path']
         if os.path.exists(current_path) and not os.path.exists(original_path):
             move_file(current_path, original_path)
 
@@ -119,7 +119,7 @@ class File:
         self._last_access_time = ''
 
     def to_dict(self):
-        return {'path': self.path, 'filetype': self.filetype, 'size': self.size, 'creation_time': self.creation_time, 'modification_time': self.modification_time, 'last_access_time': self.last_access_time}
+        return {'original_path': self.original_path, 'new_path': self.new_path, 'filetype': self.filetype, 'size': self.size, 'creation_time': self.creation_time, 'modification_time': self._modification_time, 'last_access_time': self._last_access_time}
     
     @staticmethod
     def from_dict(my_dict: dict[str:str]):
