@@ -1,6 +1,8 @@
 import os
 import shutil
 import datetime
+from func import get_file_paths
+
 
 def main(path_to_organise):
     # get metadata from each file in the directory
@@ -33,21 +35,6 @@ def time_convert(timestamp: int) -> str:
         return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     except TypeError as e:
         raise TypeError(f"Error: {e}")
-    
-def get_file_paths(path: str):
-    """
-    function to get the paths of all files in a directory
-    
-    @params
-    path: str: path to root directory
-    """
-    files_list = []
-    # walk through all of the files in the specified path
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            # ignore directories and append file path to the list
-            files_list.append(os.path.join(root, file))
-    return files_list
 
 def get_item_paths(path: str):
     """
@@ -67,21 +54,6 @@ def get_item_paths(path: str):
         if os.path.isfile(full_path) or os.path.isdir(full_path):
             files_list.append(full_path)
     
-    return files_list
-
-def get_file_paths(path):
-    """
-    function to get the paths of all files in a directory
-    
-    @params
-    path: str: path to root directory
-    """
-    files_list = []
-    # walk through all of the files in the specified path
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            # ignore directories and append file path to the list
-            files_list.append(os.path.join(root, file))
     return files_list
 
 def get_metadata_from_files_and_dirs(filepath_list: list):

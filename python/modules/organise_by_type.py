@@ -1,6 +1,7 @@
 # script name: sort.py
 import os
 import shutil
+from func import get_file_paths
 FILEPATH_TEST = '/Users/jackmoloney/Developer/cs3305_team11/Tester'
 
 def main_func(path_to_organise: str):
@@ -35,15 +36,6 @@ def move_file(source: str, dest: str):
         shutil.move(source, dest)
     except IOError as e:
         print(f"Error: {e}")
-
-def get_file_paths(path):
-    files_list = []
-    # walk through all of the files in the specified path
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            # ignore directories and append file path to the list
-            files_list.append(os.path.join(root, file))
-    return files_list
 
 def determine_filetype(filename: str) -> str:
     """
