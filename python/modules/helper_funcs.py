@@ -5,10 +5,6 @@ import os
 import shutil
 
 
-def __init__():
-    pass
-
-
 def get_all_file_paths(path: str) -> list[str]:
     """
     Function to get the paths of all files in path, disregarding parent directory.
