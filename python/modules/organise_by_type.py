@@ -1,11 +1,13 @@
 # script name: sort.py
-import os, sys
-from modules.func import get_all_file_paths, move_file, File
+import os
+from .helper_funcs import *
 
 
-def organise_by_type_func(path_to_organise: str, \
-                          folder_names: dict[str:str] = {'documents': 'Documents', 'photos': 'Photos', 'videos':'Videos', 'music':'Music', 'misc':'Misc'}\
-                            ) -> None:
+def organise_by_type_func(path_to_organise: str,
+                          folder_names: dict[str:str] = {
+                              'documents': 'Documents', 'photos': 'Photos', 'videos':'Videos', 'music':'Music',
+                              'misc': 'Misc'}
+                          ) -> None:
     """
     main function for organise by filetype feature. 
 
@@ -28,10 +30,8 @@ def organise_by_type_func(path_to_organise: str, \
         temp = File(file, filetype)
         file_obj_array.append(temp)
 
-    directories_to_create = list(directories_to_create) # cast set to list
-
     # Folder names are defined here, pending later feature addition
-    create_target_directories(path_to_organise, directories_to_create, folder_names) # create necessary directories
+    create_target_directories(path_to_organise, list(directories_to_create), folder_names)  # create directories
     num_files_moved = 0
     # move files to appropriate target
     for file_obj in file_obj_array:
@@ -40,6 +40,7 @@ def organise_by_type_func(path_to_organise: str, \
         move_file(source, destination)
         num_files_moved += 1
     print(f'Moved {num_files_moved} files')
+
 
 def determine_filetype(filename: str) -> str:
     """
@@ -59,9 +60,9 @@ def determine_filetype(filename: str) -> str:
     for category in types:
         if extension in types[category]:
             return category
-        
 
     return 'misc'
+
 
 def create_target_directories(filepath: str, required: list[str], folder_names: dict[str:str]):
     """
@@ -80,7 +81,8 @@ def create_target_directories(filepath: str, required: list[str], folder_names: 
 def get_pwd():
     return os.getcwd()
 
-def list_dir(filepath: str) -> str:
+
+def list_dir(filepath: str) -> list[str]:
     return os.listdir(filepath)
     
     

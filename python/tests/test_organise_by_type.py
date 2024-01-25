@@ -1,10 +1,11 @@
 import sys
 import os
 import unittest
+from modules.organise_by_type import *
 
 # Add the parent directory to sys.path in order to import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-from modules.organise_by_type import *
+
 
 class TestOrganiseByType(unittest.TestCase):
     """
@@ -47,7 +48,7 @@ class TestOrganiseByType(unittest.TestCase):
 
     def test_get_file_paths_valid_directory(self):
         # test that the function returns a list 
-        result = get_file_paths(os.getcwd()+'/Tester')
+        result = get_all_file_paths(os.getcwd()+'/Tester')
         self.assertIsInstance(result, list)
 
         # test that the list contains only strings and that each path exists
@@ -60,7 +61,7 @@ class TestOrganiseByType(unittest.TestCase):
 
     def test_get_file_paths_invalid_directory(self):
         # test that given a non existant folder, an empty list is returned
-        result = get_file_paths('/doesnotexist')
+        result = get_all_file_paths('/doesnotexist')
         self.assertIsInstance(result, list)
 
         # test that the resulting list contains no files

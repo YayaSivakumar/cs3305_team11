@@ -1,5 +1,13 @@
-# script name: func.py
-import os, datetime, shutil, json
+# script name: helper_funcs.py
+import datetime
+import json
+import os
+import shutil
+
+
+def __init__():
+    pass
+
 
 def get_all_file_paths(path: str) -> list[str]:
     """
@@ -16,6 +24,7 @@ def get_all_file_paths(path: str) -> list[str]:
             # ignore directories and append file path to the list
             files_list.append(os.path.join(root, file))
     return files_list
+
 
 def get_file_and_subdir_paths(path: str):
     """
@@ -35,8 +44,9 @@ def get_file_and_subdir_paths(path: str):
         # Check if the entry is a file or a directory (but don't recurse into subdirectories)
         if os.path.isfile(full_path) or os.path.isdir(full_path):
             files_list.append(full_path)
-    
+
     return files_list
+
 
 def size_convert(size: int) -> str:
     """
@@ -47,9 +57,10 @@ def size_convert(size: int) -> str:
     ret: str: size in kilobytes
     """
     try:
-        return str(round(size/1000, 2)) + ' KB'
+        return str(round(size / 1000, 2)) + ' KB'
     except TypeError as e:
         raise TypeError(f"Error: {e}")
+
 
 def time_convert(timestamp: int) -> str:
     """
@@ -59,11 +70,12 @@ def time_convert(timestamp: int) -> str:
     time: int: time in seconds
     ret: str: time in readable format
     """
-    try:    
+    try:
         return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     except TypeError as e:
         raise TypeError(f"Error: {e}")
-    
+
+
 def move_file(source: str, dest: str):
     """
     function to move file using shutil move
@@ -76,6 +88,7 @@ def move_file(source: str, dest: str):
         shutil.move(source, dest)
     except IOError as e:
         print(f"Error: {e}")
+
 
 def save_to_json(file_list: list, json_file_path: str):
     """
@@ -90,6 +103,7 @@ def save_to_json(file_list: list, json_file_path: str):
         for file in file_list:
             file_info[file.path] = file.to_dict()
         json.dump(file_info, json_file)
+
 
 def revert_changes(json_file_path: str):
     """
@@ -109,7 +123,7 @@ def revert_changes(json_file_path: str):
 
 
 class File:
-    def __init__(self, path, filetype):
+    def __init__(self, path: str, filetype: str):
         self._original_path = path
         self._filetype = filetype
         self._new_path = ''
@@ -119,39 +133,76 @@ class File:
         self._last_access_time = ''
 
     def to_dict(self):
-        return {'original_path': self.original_path, 'new_path': self.new_path, 'filetype': self.filetype, 'size': self.size, 'creation_time': self.creation_time, 'modification_time': self._modification_time, 'last_access_time': self._last_access_time}
-    
+        return {'original_path': self.original_path, 'new_path': self.new_path, 'filetype': self.filetype,
+                'size': self.size, 'creation_time': self.creation_time, 'modification_time': self._modification_time,
+                'last_access_time': self._last_access_time}
+
     @staticmethod
     def from_dict(my_dict: dict[str:str]):
-        return File(my_dict['path'], my_dict['filetype'])
+        file_from_dict = File(my_dict['original_path'], my_dict['file_type'])
+        file_from_dict.new_path = my_dict['new_path']
+        file_from_dict.size = my_dict['size']
+        file_from_dict.creation_time = my_dict['creation_time']
+        file_from_dict.modification_time = my_dict['modification_time']
+        file_from_dict.last_access_time = my_dict['last_access_time']
+        return file_from_dict
 
     @property
     def filetype(self) -> str:
         return self._filetype
+
     @filetype.setter
-    def filetype(self, f:str) -> None:
+    def filetype(self, f: str) -> None:
         self._filetype = f
+
     @property
     def original_path(self) -> str:
         return self._original_path
+
     @original_path.setter
-    def path(self, p) -> None:
+    def original_path(self, p) -> None:
         self._original_path = p
+
     @property
     def new_path(self) -> str:
         return self._new_path
+
     @new_path.setter
     def new_path(self, np: str) -> None:
         self._new_path = np
+
     @property
     def size(self) -> str:
         return self._size
+
     @size.setter
     def size(self, s: str) -> None:
         self._size = s
+
     @property
     def creation_time(self) -> str:
         return self._creation_time
+
     @creation_time.setter
-    def creation_time(self, ct: str) -> str:
+    def creation_time(self, ct: str) -> None:
         self._creation_time = ct
+
+    @property
+    def modification_time(self) -> str:
+        return self._modification_time
+
+    @modification_time.setter
+    def modification_time(self, mt: str) -> None:
+        self._modification_time = mt
+
+    @property
+    def last_access_time(self) -> str:
+        return self._last_access_time
+
+    @last_access_time.setter
+    def last_access_time(self, lat: str) -> None:
+        self._last_access_time = lat
+
+
+if __name__ == "__main__":
+    pass
