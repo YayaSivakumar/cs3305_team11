@@ -14,7 +14,7 @@ def get_all_file_paths(path: str) -> list[str]:
     ret: list[str]: list of absolute paths
     """
     files_list = []
-    # walk through all of the files in the specified path
+    # walk through all the files in the specified path
     for root, dirs, files in os.walk(path):
         for file in files:
             # ignore directories and append file path to the list
@@ -121,6 +121,7 @@ def revert_changes(json_file_path: str):
 class File:
     def __init__(self, path: str, filetype: str):
         self._original_path = path
+        self._file_name = self._original_path.split('/')[-1]
         self._filetype = filetype
         self._new_path = ''
         self._size = ''

@@ -4,6 +4,7 @@ from helper_funcs import time_convert, size_convert, get_all_file_paths, get_fil
 
 FILE_PATH_ARG = '/Users/yachitrasivakumar/Desktop/YEAR3/Semester2Year3/cs3305_team11/'
 
+
 def organise_by_date_func(path_to_organise: str, dir_traversal_type: function = get_all_file_paths):
     """
     main function for organise by date function.
@@ -20,6 +21,7 @@ def organise_by_date_func(path_to_organise: str, dir_traversal_type: function = 
 
     # Save the original structure to a JSON file
     save_to_json(md_list, os.path.join(path_to_organise, FILE_PATH_ARG+'original_structure.json'))
+
 
 def get_item_paths(path: str):
     """
@@ -40,6 +42,7 @@ def get_item_paths(path: str):
             files_list.append(full_path)
     
     return files_list
+
 
 def get_metadata_from_files(filepath_list: list):
     """
@@ -65,6 +68,7 @@ def get_metadata_from_files(filepath_list: list):
 
     return md_list
 
+
 def organise_by_date(md_list: list, directory_path: str):
     """
     function to create the required directories
@@ -81,10 +85,10 @@ def organise_by_date(md_list: list, directory_path: str):
         # get list of directories already created in path
         list_of_directories = os.listdir(directory_path)
         # get year and month of modification
-        year = file.creation_time.split('-')[0] # the reason for using 'Modified Time' in this function is because the 'Creation Time' values changed when I moved them into test_by_date folder
+        year = file.creation_time.split('-')[0]  # the reason for using 'Modified Time' in this function is because the 'Creation Time' values changed when I moved them into test_by_date folder
         mo = file.creation_time.split('-')[1]
      
-        month = month_names[mo] # for test purposes I am using the 'Modified Time' values
+        month = month_names[mo]  # for test purposes I am using the 'Modified Time' values
 
         # create directories if they don't already exist
         if year not in list_of_directories:
@@ -97,6 +101,7 @@ def organise_by_date(md_list: list, directory_path: str):
 
         # update new path in metadata dictionary
         file.new_path = directory_path+'/'+year+'/'+month+'/'+(file.original_path.split('/'))[-1]
+
 
 if __name__ == "__main__":
     organise_by_date_func(FILE_PATH_ARG+'test_by_date')

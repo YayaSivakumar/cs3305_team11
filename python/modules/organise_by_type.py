@@ -1,11 +1,11 @@
-# script name: sort.py
+# script name: organise_by_type.py
 import os
 from .helper_funcs import *
 
 
 def organise_by_type_func(path_to_organise: str,
                           folder_names: dict[str:str] = {
-                              'documents': 'Documents', 'photos': 'Photos', 'videos':'Videos', 'music':'Music',
+                              'documents': 'Documents', 'photos': 'Photos', 'videos':'Videos', 'music': 'Music',
                               'misc': 'Misc'}
                           ) -> None:
     """
@@ -35,9 +35,10 @@ def organise_by_type_func(path_to_organise: str,
     num_files_moved = 0
     # move files to appropriate target
     for file_obj in file_obj_array:
-        source = file_obj.path
-        destination = path_to_organise+ '/' + folder_names[file_obj.filetype]
+        source = file_obj.original_path
+        destination = path_to_organise + '/' + folder_names[file_obj.filetype]
         move_file(source, destination)
+        file_obj.new_path = destination  # set file objects new path to destination
         num_files_moved += 1
     print(f'Moved {num_files_moved} files')
 

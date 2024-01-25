@@ -1,6 +1,6 @@
 import os
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTreeView, QFileSystemModel, QVBoxLayout, QHBoxLayout, QWidget,\
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTreeView, QFileSystemModel, QVBoxLayout, QHBoxLayout, QWidget, \
     QLabel, QPushButton, QMessageBox
 from PyQt5.QtCore import Qt, QRect, QDir
 from PyQt5.QtGui import QPainter, QPainterPath
@@ -43,11 +43,12 @@ class CircularDragDropLabel(QLabel):
         painter.setClipPath(path)
         super().paintEvent(event)
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.dark_mode = False
-        self.dragDropLabel = CircularDragDropLabel() # Initialize dragDropLabel here
+        self.dragDropLabel = CircularDragDropLabel()  # Initialize dragDropLabel here
         self.model = QFileSystemModel()  # Make model an instance variable
         self.tree = QTreeView()  # Make tree an instance variable
         self.initUI()
@@ -159,7 +160,7 @@ class MainWindow(QMainWindow):
             if reply == QMessageBox.Yes:
                 for path in paths_to_organize:
                     print(f"Organizing: {path}")
-                    # Call Bash script with each path
+                    # call python function to organise by type
                     organise_by_type_func(path)
 
                 # Optionally clear the drag-and-drop list after processing
