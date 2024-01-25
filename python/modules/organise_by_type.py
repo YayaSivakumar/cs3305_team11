@@ -1,11 +1,23 @@
 # script name: sort.py
-import os
-import shutil
-FILEPATH_TEST = '/Users/jackmoloney/Developer/cs3305_team11/Tester'
+import os, sys
+from modules.func import get_all_file_paths, move_file, File
 
-def main_func(path_to_organise: str):
-    file_paths = get_file_paths(path_to_organise) # array of file paths
+
+def organise_by_type_func(path_to_organise: str, \
+                          folder_names: dict[str:str] = {'documents': 'Documents', 'photos': 'Photos', 'videos':'Videos', 'music':'Music', 'misc':'Misc'}\
+                            ) -> None:
+    """
+    main function for organise by filetype feature. 
+
+    @params
+    path_to_organise: str: absolute path of folder to be organised
+    folder_names: dict[str:str]: dictionary containing k,v pairs of file classification and the name of folder it will be placed in.
+    ret: None
+    """
+    file_paths = get_all_file_paths(path_to_organise) # array of file paths
     file_obj_array: list[File] = []
+
+    # Determine different file types present, create list of needed directories
     directories_to_create: set[str] = set()
     for file in file_paths:
         # get filetype
@@ -16,9 +28,10 @@ def main_func(path_to_organise: str):
         temp = File(file, filetype)
         file_obj_array.append(temp)
 
+    directories_to_create = list(directories_to_create) # cast set to list
+
     # Folder names are defined here, pending later feature addition
-    folder_names = {'documents': 'Documents', 'photos': 'Photos', 'videos':'Videos', 'music':'Music', 'misc':'Misc'}
-    create_target_directories(path_to_organise, list(directories_to_create), folder_names) # create necessary directories
+    create_target_directories(path_to_organise, directories_to_create, folder_names) # create necessary directories
     num_files_moved = 0
     # move files to appropriate target
     for file_obj in file_obj_array:
@@ -27,23 +40,6 @@ def main_func(path_to_organise: str):
         move_file(source, destination)
         num_files_moved += 1
     print(f'Moved {num_files_moved} files')
-
-
-
-def move_file(source: str, dest: str):
-    try:
-        shutil.move(source, dest)
-    except IOError as e:
-        print(f"Error: {e}")
-
-def get_file_paths(path):
-    files_list = []
-    # walk through all of the files in the specified path
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            # ignore directories and append file path to the list
-            files_list.append(os.path.join(root, file))
-    return files_list
 
 def determine_filetype(filename: str) -> str:
     """
@@ -86,26 +82,7 @@ def get_pwd():
 
 def list_dir(filepath: str) -> str:
     return os.listdir(filepath)
-
-
-class File:
-    def __init__(self, path, filetype):
-        self._path = path
-        self._filetype = filetype
-    
-    @property
-    def filetype(self) -> str:
-        return self._filetype
-    @filetype.setter
-    def filetype(self, f):
-        self._filetype = f
-    @property
-    def path(self) -> str:
-        return self._path
-    @path.setter
-    def path(self, p):
-        self._path = p
     
     
 if __name__ == "__main__":
-    main_func(FILEPATH_TEST)
+    organise_by_type_func(input())
