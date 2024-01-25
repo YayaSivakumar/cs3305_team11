@@ -201,5 +201,84 @@ class File:
         self._last_access_time = lat
 
 
+class MusicFile(File):
+    
+    def __init__(self, path: str, filetype:str , artist:str , track_name:str , album:str, year:int , runtime:float):
+        super.__init__(path, filetype)
+        self._artist = artist 
+        self._track_name = track_name
+        self._album = album 
+        self._year = year 
+        self._runtime = runtime
+        
+  
+    def to_dict(self):
+        ret = super().to_dict()
+        ret['artist'] = self.artist
+        ret['track_name']= self.track_name
+        ret['album']= self.album
+        ret['year']= self.year
+        ret['runtime']=self.runtime
+        return ret
+    
+
+    @staticmethod
+    def from_dict(my_dict: dict[str:str]):
+        file_from_dict = MusicFile(my_dict['original_path'], my_dict['file_type'])
+        file_from_dict.new_path = my_dict['new_path']
+        file_from_dict.size = my_dict['size']
+        file_from_dict.creation_time = my_dict['creation_time']
+        file_from_dict.modification_time = my_dict['modification_time']
+        file_from_dict.last_access_time = my_dict['last_access_time']
+        file_from_dict.artist = my_dict['artist']
+        file_from_dict.track_name = my_dict['track_name']
+        file_from_dict.album = my_dict['album']
+        file_from_dict.year = my_dict['year']
+        file_from_dict.runtime = my_dict['runtime']
+        return file_from_dict
+    
+    @property
+    def artist(self) -> str:
+        return self._artist
+    
+    @artist.setter
+    def artist(self, a:str) ->str:
+        self._artist = a
+
+    @property
+    def track_name(self) -> str:
+        return self._track_name
+    
+    @track_name.setter
+    def track_name(self, t:str) ->str:
+        self._track_name = t
+
+
+    @property
+    def album(self) -> str:
+        return self._album
+    
+    @album.setter
+    def artist(self, al:str) ->str:
+        self._album = al
+
+    @property
+    def year(self) -> str:
+        return self._year
+    
+    @year.setter
+    def year(self, y:str) ->str:
+        self._year = y
+
+        
+    @property
+    def runtime(self) -> str:
+        return self._runtime
+    
+    @runtime.setter
+    def runtime(self, r:str) ->str:
+        self._runtime = r
+
+
 if __name__ == "__main__":
     pass
