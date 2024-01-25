@@ -1,7 +1,7 @@
 import os
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTreeView, QFileSystemModel, QVBoxLayout, QHBoxLayout, QWidget, \
-    QLabel, QPushButton, QMessageBox, QMenuBar, QMenu, QAction
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileSystemModel, QVBoxLayout, QHBoxLayout, QWidget, \
+    QLabel, QPushButton, QMessageBox, QMenuBar, QMenu, QAction, QColumnView
 from PyQt5.QtCore import Qt, QRect, QDir
 from PyQt5.QtGui import QPainter, QPainterPath
 from modules.organise_by_type import organise_by_type_func
@@ -44,13 +44,27 @@ class CircularDragDropLabel(QLabel):
         super().paintEvent(event)
 
 
+class CustomFileSystemModel(QFileSystemModel):
+    """Custom model to show only directories and files in the current directory"""
+
+    def hasChildren(self, index):
+        # Always show directories
+        if self.isDir(index):
+            return True
+
+        # For files, only show them if they're not in the top-level directory
+        parent_dir = self.filePath(index.parent())
+        return os.path.dirname(parent_dir) != self.rootPath()
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.dark_mode = False
         self.dragDropLabel = CircularDragDropLabel()  # Initialize dragDropLabel here
-        self.model = QFileSystemModel()  # Make model an instance variable
-        self.tree = QTreeView()  # Make tree an instance variable
+        self.model = CustomFileSystemModel()  # Make model an instance variable
+        self.model.setRootPath('')
+        self.model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)  # Make model an instance variable
+        self.column_view = QColumnView()
         self.create_actions()  # Create actions for the menu bar
         self.createMenuBar()  # Create a menu bar for the main window
         self.initUI()
@@ -60,13 +74,10 @@ class MainWindow(QMainWindow):
         # Setup the File System Model
         self.model.setRootPath('')
         self.model.setFilter(QDir.Dirs | QDir.NoDotAndDotDot)
-        self.tree.setModel(self.model)
-        self.tree.setRootIndex(self.model.index(os.path.expanduser('~')))
-        self.tree.setColumnWidth(0, 250)
-        self.tree.setSortingEnabled(True)
-        # Hide all columns except the first one ("Name")
-        for i in range(1, self.model.columnCount()):
-            self.tree.hideColumn(i)
+        self.column_view.setModel(self.model)
+        self.column_view.setRootIndex(self.model.index(os.path.expanduser('~')))
+
+
 
         # Create Organize button
         organize_button = QPushButton("Organize")
@@ -79,7 +90,7 @@ class MainWindow(QMainWindow):
 
         # Set horizontal layout
         h_layout = QHBoxLayout()
-        h_layout.addWidget(self.tree)
+        h_layout.addWidget(self.column_view)
         h_layout.addLayout(drag_drop_layout)
 
         # Central Widget
@@ -142,13 +153,13 @@ class MainWindow(QMainWindow):
         if self.dragDropLabel.droppedFiles:
             paths_to_organize.extend(self.dragDropLabel.droppedFiles)
 
-        # Check if there is a selection in the tree view
-        elif self.tree.currentIndex().isValid():
-            tree_view_path = self.model.filePath(self.tree.currentIndex())
-            if tree_view_path:
-                paths_to_organize.append(tree_view_path)
+        # Check if there is a selection in the column_view
+        elif self.column_view.currentIndex().isValid():
+            column_view_path = self.model.filePath(self.column_view.currentIndex())
+            if column_view_path:
+                paths_to_organize.append(column_view_path)
 
-        # If there are paths to organize, either from drag-and-drop or tree view
+        # If there are paths to organize, either from drag-and-drop or column_view
         if paths_to_organize:
             message = f"Do you want to organize the following items?\n\n" + "\n".join(paths_to_organize)
             reply = QMessageBox.question(self, 'Organize Confirmation', message, QMessageBox.Yes | QMessageBox.No,
@@ -164,7 +175,7 @@ class MainWindow(QMainWindow):
                 self.dragDropLabel.droppedFiles.clear()
 
         else:
-            QMessageBox.information(self, 'No Selection', 'Please select a file or folder from the tree view \
+            QMessageBox.information(self, 'No Selection', 'Please select a file or folder from the column_view \
             or drag and drop files.', QMessageBox.Ok)
 
     def createMenuBar(self):
