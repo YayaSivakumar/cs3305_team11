@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
         self.dragDropLabel = CircularDragDropLabel()  # Initialize dragDropLabel here
         self.model = QFileSystemModel()  # Make model an instance variable
         self.tree = QTreeView()  # Make tree an instance variable
-        self.createActions()  # Create actions for the menu bar
+        self.create_actions()  # Create actions for the menu bar
         self.createMenuBar()  # Create a menu bar for the main window
         self.initUI()
 
@@ -70,23 +70,23 @@ class MainWindow(QMainWindow):
             self.tree.hideColumn(i)
 
         # Create Organize button
-        organizeButton = QPushButton("Organize")
-        organizeButton.clicked.connect(self.onOrganizeClicked)
+        organize_button = QPushButton("Organize")
+        organize_button.clicked.connect(self.onOrganizeClicked)
 
         # Set vertical layout for drag-drop area and buttons
-        dragDropLayout = QVBoxLayout()
-        dragDropLayout.addWidget(self.dragDropLabel)  # Add the previously initialized dragDropLabel
-        dragDropLayout.addWidget(organizeButton)
+        drag_drop_layout = QVBoxLayout()
+        drag_drop_layout.addWidget(self.dragDropLabel)  # Add the previously initialized dragDropLabel
+        drag_drop_layout.addWidget(organize_button)
 
         # Set horizontal layout
-        hLayout = QHBoxLayout()
-        hLayout.addWidget(self.tree)
-        hLayout.addLayout(dragDropLayout)
+        h_layout = QHBoxLayout()
+        h_layout.addWidget(self.tree)
+        h_layout.addLayout(drag_drop_layout)
 
         # Central Widget
-        centralWidget = QWidget()
-        centralWidget.setLayout(hLayout)
-        self.setCentralWidget(centralWidget)
+        central_widget = QWidget()
+        central_widget.setLayout(h_layout)
+        self.setCentralWidget(central_widget)
         self.setGeometry(300, 300, 1000, 600)
 
     def toggleDarkMode(self):
@@ -187,7 +187,7 @@ class MainWindow(QMainWindow):
         appearanceMenu = viewMenu.addMenu("Appearance")
         appearanceMenu.addAction(self.toggleDarkModeAction)
 
-    def createActions(self):
+    def create_actions(self):
         # Creating action using the first constructor
         self.newAction = QAction(self)
         self.newAction.setText("New")
