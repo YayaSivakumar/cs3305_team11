@@ -1,7 +1,7 @@
 import os
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTreeView, QFileSystemModel, QVBoxLayout, QHBoxLayout, QWidget, \
-    QLabel, QPushButton, QMessageBox
+    QLabel, QPushButton, QMessageBox, QMenuBar, QMenu, QAction
 from PyQt5.QtCore import Qt, QRect, QDir
 from PyQt5.QtGui import QPainter, QPainterPath
 from modules.organise_by_type import organise_by_type_func
@@ -51,6 +51,8 @@ class MainWindow(QMainWindow):
         self.dragDropLabel = CircularDragDropLabel()  # Initialize dragDropLabel here
         self.model = QFileSystemModel()  # Make model an instance variable
         self.tree = QTreeView()  # Make tree an instance variable
+        self.createActions()  # Create actions for the menu bar
+        self.createMenuBar()  # Create a menu bar for the main window
         self.initUI()
 
     def initUI(self):
@@ -160,7 +162,7 @@ class MainWindow(QMainWindow):
             if reply == QMessageBox.Yes:
                 for path in paths_to_organize:
                     print(f"Organizing: {path}")
-                    # call python function to organise by type
+                    # Call Bash script with each path
                     organise_by_type_func(path)
 
                 # Optionally clear the drag-and-drop list after processing
@@ -170,9 +172,47 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, 'No Selection', 'Please select a file or folder from the tree view \
             or drag and drop files.', QMessageBox.Ok)
 
+    def createMenuBar(self):
+        menuBar = self.menuBar()
+
+        # File menu
+        fileMenu = menuBar.addMenu("File")
+        fileMenu.addAction(self.newAction)
+        fileMenu.addAction(self.openAction)
+        fileMenu.addAction(self.saveAction)
+        fileMenu.addAction(self.exitAction)
+        # Edit menu
+        editMenu = menuBar.addMenu("Edit")
+        editMenu.addAction(self.copyAction)
+        editMenu.addAction(self.pasteAction)
+        editMenu.addAction(self.cutAction)
+
+        viewMenu = menuBar.addMenu("View")
+        viewMenu.addAction(self.showFilesAction)
+        appearanceMenu = viewMenu.addMenu("Appearance")
+        appearanceMenu.addAction(self.toggleDarkModeAction)
+
+    def createActions(self):
+        # Creating action using the first constructor
+        self.newAction = QAction(self)
+        self.newAction.setText("New")
+        # Creating actions using the second constructor
+        self.openAction = QAction("Open...", self)
+        self.saveAction = QAction("Save", self)
+        self.exitAction = QAction("Exit", self)
+        self.copyAction = QAction("Copy", self)
+        self.pasteAction = QAction("Paste", self)
+        self.cutAction = QAction("Cut", self)
+        self.helpContentAction = QAction("Help Content", self)
+        self.aboutAction = QAction("About", self)
+        self.appearanceAction = QAction("Appearance", self)
+        self.showFilesAction = QAction("Show Files", self)
+        self.toggleDarkModeAction = QAction("Toggle Dark Mode", self)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainWindow = MainWindow()
     mainWindow.show()
     sys.exit(app.exec_())
+
