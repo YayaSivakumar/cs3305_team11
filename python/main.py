@@ -57,7 +57,6 @@ class MainWindow(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle('File Explorer and Drag-Drop')
-
         # Setup the File System Model
         self.model.setRootPath('')
         self.model.setFilter(QDir.Dirs | QDir.NoDotAndDotDot)
@@ -135,6 +134,7 @@ class MainWindow(QMainWindow):
                 }
             ''')
 
+        self.toggleDarkModeAction.setText("Toggle Light Mode" if self.dark_mode else "Toggle Dark Mode")
     def onOrganizeClicked(self):
         paths_to_organize = []
 
@@ -178,9 +178,8 @@ class MainWindow(QMainWindow):
         fileMenu.addAction(self.exitAction)
         # Edit menu
         editMenu = menuBar.addMenu("Edit")
-        editMenu.addAction(self.copyAction)
-        editMenu.addAction(self.pasteAction)
-        editMenu.addAction(self.cutAction)
+        editMenu.addAction(self.undoAction)
+        editMenu.addAction(self.redoAction)
 
         viewMenu = menuBar.addMenu("View")
         viewMenu.addAction(self.showFilesAction)
@@ -195,9 +194,14 @@ class MainWindow(QMainWindow):
         self.openAction = QAction("Open...", self)
         self.saveAction = QAction("Save", self)
         self.exitAction = QAction("Exit", self)
-        self.copyAction = QAction("Copy", self)
-        self.pasteAction = QAction("Paste", self)
-        self.cutAction = QAction("Cut", self)
+
+        self.undoAction = QAction("Undo", self)
+        self.undoAction.triggered.connect(self.undo_action)
+
+
+        self.redoAction = QAction("Redo", self)
+        self.redoAction.triggered.connect(self.redo_action)
+
         self.helpContentAction = QAction("Help Content", self)
         self.aboutAction = QAction("About", self)
 
@@ -206,6 +210,13 @@ class MainWindow(QMainWindow):
         self.toggleDarkModeAction = QAction("Toggle Dark Mode", self)
         self.toggleDarkModeAction.triggered.connect(self.toggleDarkMode)
 
+    def undo_action(self):
+        self.undoAction.setEnabled(False)
+#       Call to backend function
+
+    def redo_action(self):
+        self.redoAction.setEnabled(False)
+#       Call to backend function
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
