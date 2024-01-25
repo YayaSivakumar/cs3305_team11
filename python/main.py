@@ -1,6 +1,7 @@
 import os
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTreeView, QFileSystemModel, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTreeView, QFileSystemModel, QVBoxLayout, QHBoxLayout, QWidget,\
+    QLabel, QPushButton, QMessageBox
 from PyQt5.QtCore import Qt, QRect, QDir
 from PyQt5.QtGui import QPainter, QPainterPath
 from modules.organise_by_type import organise_by_type_func
@@ -152,7 +153,8 @@ class MainWindow(QMainWindow):
         # If there are paths to organize, either from drag-and-drop or tree view
         if paths_to_organize:
             message = f"Do you want to organize the following items?\n\n" + "\n".join(paths_to_organize)
-            reply = QMessageBox.question(self, 'Organize Confirmation', message, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            reply = QMessageBox.question(self, 'Organize Confirmation', message, QMessageBox.Yes | QMessageBox.No,
+                                         QMessageBox.No)
 
             if reply == QMessageBox.Yes:
                 for path in paths_to_organize:
@@ -164,7 +166,8 @@ class MainWindow(QMainWindow):
                 self.dragDropLabel.droppedFiles.clear()
 
         else:
-            QMessageBox.information(self, 'No Selection', 'Please select a file or folder from the tree view or drag and drop files.', QMessageBox.Ok)
+            QMessageBox.information(self, 'No Selection', 'Please select a file or folder from the tree view \
+            or drag and drop files.', QMessageBox.Ok)
 
 
 if __name__ == '__main__':
