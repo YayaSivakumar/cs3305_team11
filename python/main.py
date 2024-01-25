@@ -73,15 +73,10 @@ class MainWindow(QMainWindow):
         organizeButton = QPushButton("Organize")
         organizeButton.clicked.connect(self.onOrganizeClicked)
 
-        # Create Dark Mode Toggle Button
-        self.toggleButton = QPushButton("Toggle Dark Mode")
-        self.toggleButton.clicked.connect(self.toggleDarkMode)
-
         # Set vertical layout for drag-drop area and buttons
         dragDropLayout = QVBoxLayout()
         dragDropLayout.addWidget(self.dragDropLabel)  # Add the previously initialized dragDropLabel
         dragDropLayout.addWidget(organizeButton)
-        dragDropLayout.addWidget(self.toggleButton)
 
         # Set horizontal layout
         hLayout = QHBoxLayout()
@@ -205,9 +200,11 @@ class MainWindow(QMainWindow):
         self.cutAction = QAction("Cut", self)
         self.helpContentAction = QAction("Help Content", self)
         self.aboutAction = QAction("About", self)
+
         self.appearanceAction = QAction("Appearance", self)
         self.showFilesAction = QAction("Show Files", self)
         self.toggleDarkModeAction = QAction("Toggle Dark Mode", self)
+        self.toggleDarkModeAction.triggered.connect(self.toggleDarkMode)
 
 
 if __name__ == '__main__':
