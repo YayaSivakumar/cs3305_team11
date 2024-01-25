@@ -2,8 +2,8 @@ import sys
 import os
 import unittest
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-from modules.organise_by_date import *
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from python.modules.organise_by_date import *
 
 class TestOrganiseByDate(unittest.TestCase):
 
