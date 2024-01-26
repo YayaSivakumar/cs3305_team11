@@ -136,13 +136,43 @@ def revert_changes(json_file_path: str):
 
 
 def load_json(json_file_path: str | bytes) -> dict:
+    """
+    function to load a json to a Python dictionary object.
+
+    @params
+    json_file_path: str|bytes: either json file or path to json file to be loaded
+    ret: dict: dictionary representation of json file
+    """
     with open(json_file_path, 'r') as json_file:
         ret = json.load(json_file)
     return ret
 
-
 class File:
+    """
+    Represents an abstract file with metadata including paths, type, and timestamps.
+
+    This class encapsulates details such as the file's original and new paths, type, size,
+    and timestamps related to its creation, last modification, and last access.
+
+    Attributes:
+        _original_path (str): The original filesystem path of the file.
+        _file_name (str): The name of the file extracted from the original path.
+        _filetype (str): The type or extension of the file.
+        _new_path (str): The new or updated filesystem path of the file, if any.
+        _size (str): The size of the file.
+        _creation_time (str): The timestamp of when the file was created.
+        _modification_time (str): The timestamp of the last modification to the file.
+        _last_access_time (str): The timestamp of the last access to the file.
+    """
+
     def __init__(self, path: str, filetype: str):
+        """
+        Initializes a new instance of the File class with the specified path and filetype.
+
+        Args:
+            path (str): The full path to the file.
+            filetype (str): The type or extension of the file.
+        """
         self._original_path = path
         self._file_name = self._original_path.split('/')[-1]
         self._filetype = filetype
@@ -152,13 +182,34 @@ class File:
         self._modification_time = ''
         self._last_access_time = ''
 
-    def to_dict(self):
-        return {'original_path': self.original_path, 'new_path': self.new_path, 'filetype': self.filetype,
-                'size': self.size, 'creation_time': self.creation_time, 'modification_time': self._modification_time,
-                'last_access_time': self._last_access_time}
+    def to_dict(self) -> dict:
+        """
+        Converts the File object to a dictionary with its metadata.
+
+        Returns:
+            dict: A dictionary representation of the File object including all metadata.
+        """
+        return {
+            'original_path': self._original_path,
+            'new_path': self._new_path,
+            'filetype': self._filetype,
+            'size': self._size,
+            'creation_time': self._creation_time,
+            'modification_time': self._modification_time,
+            'last_access_time': self._last_access_time
+        }
 
     @staticmethod
-    def from_dict(my_dict: dict[str:str]):
+    def from_dict(my_dict: dict) -> 'File':
+        """
+        Creates a File object from a dictionary containing file metadata.
+
+        Args:
+            my_dict (dict): A dictionary with keys corresponding to the File object's attributes.
+
+        Returns:
+            File: A new File object initialized with the metadata from the dictionary.
+        """
         file_from_dict = File(my_dict['original_path'], my_dict['file_type'])
         file_from_dict.new_path = my_dict['new_path']
         file_from_dict.size = my_dict['size']
@@ -169,6 +220,7 @@ class File:
 
     @property
     def filetype(self) -> str:
+        """The filetype or extension of the file."""
         return self._filetype
 
     @filetype.setter
@@ -177,14 +229,16 @@ class File:
 
     @property
     def original_path(self) -> str:
+        """The original filesystem path of the file."""
         return self._original_path
 
     @original_path.setter
-    def original_path(self, p) -> None:
+    def original_path(self, p: str) -> None:
         self._original_path = p
 
     @property
     def new_path(self) -> str:
+        """The new or updated filesystem path of the file, if any."""
         return self._new_path
 
     @new_path.setter
@@ -193,6 +247,7 @@ class File:
 
     @property
     def size(self) -> str:
+        """The size of the file."""
         return self._size
 
     @size.setter
@@ -201,6 +256,7 @@ class File:
 
     @property
     def creation_time(self) -> str:
+        """The timestamp of when the file was created."""
         return self._creation_time
 
     @creation_time.setter
@@ -209,6 +265,7 @@ class File:
 
     @property
     def modification_time(self) -> str:
+        """The timestamp of the last modification to the file."""
         return self._modification_time
 
     @modification_time.setter
@@ -217,6 +274,7 @@ class File:
 
     @property
     def last_access_time(self) -> str:
+        """The timestamp of the last access to the file."""
         return self._last_access_time
 
     @last_access_time.setter
