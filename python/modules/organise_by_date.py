@@ -61,8 +61,8 @@ def get_metadata_from_files(filepath_list: list):
         file = File(filepath, filepath.split('.')[-1])
         file.size = size_convert(stats.st_size)
         file.creation_time = time_convert(stats.st_ctime)
-        file._modification_time = time_convert(stats.st_mtime)
-        file._last_access_time = time_convert(stats.st_atime)
+        file.modification_time = time_convert(stats.st_mtime)
+        file.last_access_time = time_convert(stats.st_atime)
         
         md_list.append(file)
 
@@ -85,7 +85,7 @@ def organise_by_date(md_list: list, directory_path: str):
         # get list of directories already created in path
         list_of_directories = os.listdir(directory_path)
         # get year and month of modification
-        year = file.creation_time.split('-')[0]  # the reason for using 'Modified Time' in this function is because the 'Creation Time' values changed when I moved them into test_by_date folder
+        year = file.creation_time.split('-')[0]
         mo = file.creation_time.split('-')[1]
      
         month = month_names[mo]  # for test purposes I am using the 'Modified Time' values

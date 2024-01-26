@@ -87,6 +87,19 @@ def move_file(source: str, dest: str):
         print(f"Error: {e}")
 
 
+def create_list_of_file_obj(file_dict: dict):
+    file_list = []
+    for key, values in file_dict.items():
+        file = File(key, values['file_type'])
+        file.new_path = values['new_path']
+        file.size = values['size']
+        file.creation_time = values['creation_time']
+        file.modification_time = values['modification_time']
+        file.last_access_time = values['last_access_time']
+        file_list.append(file)
+    return file_list
+
+
 def save_to_json(file_list: list[File], json_file_path: str):
     """
     function to save the original structure to a JSON file
@@ -110,11 +123,14 @@ def revert_changes(json_file_path: str):
     json_file_path: str: path to JSON file containing original structure
     """
     with open(json_file_path, 'r') as json_file:
-        files = json.load(json_file)
+        file_dict = load_json(json_file)
 
-    for file, data in files.items():
-        original_path = data['original_path']
-        current_path = data['new_path']
+    # create list of file objects from dictionary
+    file_list = create_list_of_file_obj(file_dict)
+
+    for file in file_list:
+        original_path = file.original_path
+        current_path = file.new_path
         if os.path.exists(current_path) and not os.path.exists(original_path):
             move_file(current_path, original_path)
 
