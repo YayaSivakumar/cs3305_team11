@@ -5,22 +5,18 @@ from helper_funcs import time_convert, size_convert, get_all_file_paths, get_fil
 import eyed3
 
 def get_music_data(file):
-    
+    audio = eyed3.load(file)
     if audio.tag is not None:
-
-        audio = eyed3.load(file)
         track_name = audio.tag.title
         artist = audio.tag.artist
         album = audio.tag.album
-        year = audio.tag.year
-        runtime = audio.tag.runtime
+        year = audio.tag.recording_date
 
 
         print(f"Title: {track_name}")
         print(f"Artist: {artist}")
         print(f"Album: {album}")
         print(f"Year: {year}")
-        print(f"Runtime: {runtime}")
 
     else:
         print("No metadata found in the file")    

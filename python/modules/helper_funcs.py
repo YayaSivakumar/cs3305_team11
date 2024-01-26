@@ -234,7 +234,7 @@ class MusicFile(File):
         file_from_dict.track_name = my_dict['track_name']
         file_from_dict.album = my_dict['album']
         file_from_dict.year = my_dict['year']
-        file_from_dict.runtime = my_dict['runtime']
+        # file_from_dict.runtime = my_dict['runtime']
         return file_from_dict
     
     @property
