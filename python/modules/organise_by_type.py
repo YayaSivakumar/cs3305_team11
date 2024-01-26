@@ -5,7 +5,7 @@ from .helper_funcs import *
 
 def organise_by_type_func(path_to_organise: str,
                           folder_names: dict[str:str] = {
-                              'documents': 'Documents', 'photos': 'Photos', 'videos':'Videos', 'music': 'Music',
+                              'documents': 'Documents', 'photos': 'Photos', 'videos': 'Videos', 'music': 'Music',
                               'misc': 'Misc'}
                           ) -> None:
     """
@@ -16,7 +16,7 @@ def organise_by_type_func(path_to_organise: str,
     folder_names: dict[str:str]: dictionary containing k,v pairs of file classification and the name of folder it will be placed in.
     ret: None
     """
-    file_paths = get_all_file_paths(path_to_organise) # array of file paths
+    file_paths = get_all_file_paths(path_to_organise)  # array of file paths
     file_obj_array: list[File] = []
 
     # Determine different file types present, create list of needed directories
@@ -53,11 +53,11 @@ def determine_filetype(filename: str) -> str:
     """
     extension = filename.split('.')[-1]
     # print(f"ext: {extension}")
-    types = {'documents':['pdf', 'docx', 'doc', 'txt', 'text'], \
-             'photos':['jpeg', 'jpg', 'svg', 'png', 'PNG'],\
-             'videos': ['mp4', 'mov', 'avi'],\
+    types = {'documents': ['pdf', 'docx', 'doc', 'txt', 'text'],
+             'photos': ['jpeg', 'jpg', 'svg', 'png', 'PNG'],
+             'videos': ['mp4', 'mov', 'avi'],
              'music': ['wav', 'mp3', 'aac']}
-    
+
     for category in types:
         if extension in types[category]:
             return category
@@ -72,12 +72,12 @@ def create_target_directories(filepath: str, required: list[str], folder_names: 
     filepath: str: path to create directories at
     required: list[str]: list of the required folders
     """
-    contents = list_dir(filepath) # return [str] of files/directories
+    contents = list_dir(filepath)  # return [str] of files/directories
     for i in required:
-        directory = folder_names[i] 
+        directory = folder_names[i]
         if directory not in contents:
-            os.makedirs(filepath+'/'+directory)
-    
+            os.makedirs(filepath + '/' + directory)
+
 
 def get_pwd():
     return os.getcwd()
@@ -85,7 +85,7 @@ def get_pwd():
 
 def list_dir(filepath: str) -> list[str]:
     return os.listdir(filepath)
-    
-    
+
+
 if __name__ == "__main__":
     organise_by_type_func(input())
