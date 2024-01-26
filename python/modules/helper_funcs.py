@@ -100,7 +100,7 @@ def create_list_of_file_obj(file_dict: dict):
     return file_list
 
 
-def save_to_json(file_list: list[File], json_file_path: str):
+def save_to_json(file_list: list[File], json_file_path: str = '../../cache/file_data.json'):
     """
     function to save the original structure to a JSON file
 
@@ -115,26 +115,6 @@ def save_to_json(file_list: list[File], json_file_path: str):
         json.dump(file_info, json_file)
 
 
-def revert_changes(json_file_path: str):
-    """
-    function to revert changes made by organise_by_date_func
-
-    @params
-    json_file_path: str: path to JSON file containing original structure
-    """
-    with open(json_file_path, 'r') as json_file:
-        file_dict = load_json(json_file)
-
-    # create list of file objects from dictionary
-    file_list = create_list_of_file_obj(file_dict)
-
-    for file in file_list:
-        original_path = file.original_path
-        current_path = file.new_path
-        if os.path.exists(current_path) and not os.path.exists(original_path):
-            move_file(current_path, original_path)
-
-
 def load_json(json_file_path: str | bytes) -> dict:
     """
     function to load a json to a Python dictionary object.
@@ -147,6 +127,7 @@ def load_json(json_file_path: str | bytes) -> dict:
         ret = json.load(json_file)
     return ret
 
+
 class File:
     """
     Represents an abstract file with metadata including paths, type, and timestamps.
@@ -158,7 +139,7 @@ class File:
         _original_path (str): The original filesystem path of the file.
         _file_name (str): The name of the file extracted from the original path.
         _filetype (str): The type or extension of the file.
-        _new_path (str): The new or updated filesystem path of the file, if any.
+        _current_path (str): The new or updated filesystem path of the file, if any.
         _size (str): The size of the file.
         _creation_time (str): The timestamp of when the file was created.
         _modification_time (str): The timestamp of the last modification to the file.
@@ -169,14 +150,14 @@ class File:
         """
         Initializes a new instance of the File class with the specified path and filetype.
 
-        Args:
-            path (str): The full path to the file.
-            filetype (str): The type or extension of the file.
+        @params:
+        path: str: The full path to the file.
+        filetype: str: The type or extension of the file.
         """
         self._original_path = path
         self._file_name = self._original_path.split('/')[-1]
         self._filetype = filetype
-        self._new_path = ''
+        self._current_path = ''
         self._size = ''
         self._creation_time = ''
         self._modification_time = ''
@@ -191,7 +172,7 @@ class File:
         """
         return {
             'original_path': self._original_path,
-            'new_path': self._new_path,
+            'current_path': self._current_path,
             'filetype': self._filetype,
             'size': self._size,
             'creation_time': self._creation_time,
@@ -211,7 +192,7 @@ class File:
             File: A new File object initialized with the metadata from the dictionary.
         """
         file_from_dict = File(my_dict['original_path'], my_dict['file_type'])
-        file_from_dict.new_path = my_dict['new_path']
+        file_from_dict.new_path = my_dict['current_path']
         file_from_dict.size = my_dict['size']
         file_from_dict.creation_time = my_dict['creation_time']
         file_from_dict.modification_time = my_dict['modification_time']
@@ -237,13 +218,13 @@ class File:
         self._original_path = p
 
     @property
-    def new_path(self) -> str:
+    def current_path(self) -> str:
         """The new or updated filesystem path of the file, if any."""
-        return self._new_path
+        return self._current_path
 
-    @new_path.setter
-    def new_path(self, np: str) -> None:
-        self._new_path = np
+    @current_path.setter
+    def current_path(self, np: str) -> None:
+        self._current_path = np
 
     @property
     def size(self) -> str:

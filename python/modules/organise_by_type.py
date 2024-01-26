@@ -41,6 +41,7 @@ def organise_by_type_func(path_to_organise: str,
         file_obj.new_path = destination  # set file objects new path to destination
         num_files_moved += 1
     print(f'Moved {num_files_moved} files')
+    save_to_json(file_obj_array)
 
 
 def determine_filetype(filename: str) -> str:
