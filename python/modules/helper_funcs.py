@@ -1,4 +1,5 @@
 # script name: helper_funcs.py
+from __future__ import annotations
 import datetime
 import json
 import os
@@ -86,7 +87,7 @@ def move_file(source: str, dest: str):
         print(f"Error: {e}")
 
 
-def save_to_json(file_list: list, json_file_path: str):
+def save_to_json(file_list: list[File], json_file_path: str):
     """
     function to save the original structure to a JSON file
 
@@ -97,7 +98,7 @@ def save_to_json(file_list: list, json_file_path: str):
     with open(json_file_path, 'w') as json_file:
         file_info = {}
         for file in file_list:
-            file_info[file.path] = file.to_dict()
+            file_info[file.original_path] = file.to_dict()
         json.dump(file_info, json_file)
 
 
@@ -116,6 +117,12 @@ def revert_changes(json_file_path: str):
         current_path = data['new_path']
         if os.path.exists(current_path) and not os.path.exists(original_path):
             move_file(current_path, original_path)
+
+
+def load_json(json_file_path: str | bytes) -> dict:
+    with open(json_file_path, 'r') as json_file:
+        ret = json.load(json_file)
+    return ret
 
 
 class File:
