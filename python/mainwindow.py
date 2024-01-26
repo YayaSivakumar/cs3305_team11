@@ -5,7 +5,7 @@ in the QStackedWidget based on the user's choice.'''
 import os
 from PyQt5.QtCore import QDir
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QWidget, QPushButton, QMessageBox, QAction, QColumnView, \
-    QMainWindow
+    QMainWindow, QListWidget, QListWidgetItem
 from modules.organise_by_type import organise_by_type_func
 from python.ui.custom_file_system_model import CustomFileSystemModel
 from python.ui.drag_drop import CircularDragDropLabel
@@ -21,43 +21,34 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.dark_mode = False
-        self.dragDropLabel = CircularDragDropLabel()  # Initialize dragDropLabel here
-        self.model = CustomFileSystemModel()  # Make model an instance variable
-        self.model.setRootPath('')
-        self.model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)  # Make model an instance variable
-        self.column_view = QColumnView()
+
         self.initUI()
 
     def initUI(self):
         self.setWindowTitle('File Explorer and Drag-Drop')
         # Setup the File System Model
-        self.model.setRootPath('')
-        self.model.setFilter(QDir.Dirs | QDir.NoDotAndDotDot)
-        self.column_view.setModel(self.model)
-        self.column_view.setRootIndex(self.model.index(os.path.expanduser('~')))
 
-        self.create_actions()  # Create actions for the menu bar
-        self.createMenuBar()  # Create a menu bar for the main window
-
-        # Create Organize button
-        organize_button = QPushButton("Organize")
-        organize_button.clicked.connect(self.onOrganizeClicked)
-
-        # Set vertical layout for drag-drop area and buttons
-        drag_drop_layout = QVBoxLayout()
-        drag_drop_layout.addWidget(self.dragDropLabel)  # Add the previously initialized dragDropLabel
-        drag_drop_layout.addWidget(organize_button)
+        # Set the geometry of the main window
+        self.setGeometry(300, 300, 1000, 600)
 
         # Set horizontal layout
         h_layout = QHBoxLayout()
-        h_layout.addWidget(self.column_view)
-        h_layout.addLayout(drag_drop_layout)
+
 
         # Central Widget
-        central_widget = QWidget()
-        central_widget.setLayout(h_layout)
-        self.setCentralWidget(central_widget)
-        self.setGeometry(300, 300, 1000, 600)
+        self.central_widget = QWidget()
+        self.central_widget.setLayout(h_layout)
+        self.setCentralWidget(self.central_widget)
+
+        # Menu Bar & Actions
+        self.create_actions()  # Create actions for the menu bar
+        self.createMenuBar()  # Create a menu bar for the main window
+
+        # sidebar
+        sidebar = QListWidget()
+        sidebar_organisation = QListWidgetItem("Organize")
+        sidebar.addItem(sidebar_organisation)
+        # sidebar.setGeometry(300, 300, 1000, 600)
 
     def toggleDarkMode(self):
         self.dark_mode = not self.dark_mode
