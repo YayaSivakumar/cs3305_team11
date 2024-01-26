@@ -20,35 +20,42 @@ from python.ui.drag_drop import CircularDragDropLabel
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.h_layout = QHBoxLayout()
         self.dark_mode = False
 
-        self.initUI()
-
-    def initUI(self):
         self.setWindowTitle('File Explorer and Drag-Drop')
         # Setup the File System Model
 
         # Set the geometry of the main window
         self.setGeometry(300, 300, 1000, 600)
 
-        # Set horizontal layout
-        h_layout = QHBoxLayout()
+        # sidebar
+        self.sidebar = QListWidget()
+        sidebar_organisation = QListWidgetItem("Organise")
+        self.sidebar.addItem(sidebar_organisation)
+        sidebar_music = QListWidgetItem("Music")
+        self.sidebar.addItem(sidebar_music)
+        # learn how to make sidebar have min x and min y, and remain static in size
+        self.sidebar.setGeometry(300, 300, 200, 600)
+        self.h_layout.addWidget(self.sidebar)
 
+        # Primary window
+        self.primary_window = QWidget()
+        self.primary_window_layout = QVBoxLayout() # decide on primary windows layout?
+        #  think the primary window should not need a layout or have layout but only will ever have one item which is
+        #  the window that we call in
+        self.h_layout.addWidget(self.primary_window)
 
-        # Central Widget
+        # Central Widget (Main Window Frame)
         self.central_widget = QWidget()
-        self.central_widget.setLayout(h_layout)
+        self.central_widget.setLayout(self.h_layout)
         self.setCentralWidget(self.central_widget)
 
         # Menu Bar & Actions
         self.create_actions()  # Create actions for the menu bar
         self.createMenuBar()  # Create a menu bar for the main window
 
-        # sidebar
-        sidebar = QListWidget()
-        sidebar_organisation = QListWidgetItem("Organize")
-        sidebar.addItem(sidebar_organisation)
-        # sidebar.setGeometry(300, 300, 1000, 600)
+
 
     def toggleDarkMode(self):
         self.dark_mode = not self.dark_mode
