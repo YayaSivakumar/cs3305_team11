@@ -1,19 +1,14 @@
 import os
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileSystemModel, QVBoxLayout, QHBoxLayout, QWidget, \
-    QLabel, QPushButton, QMessageBox, QMenuBar, QMenu, QAction, QColumnView
-from PyQt5.QtCore import Qt, QRect, QDir
-from PyQt5.QtGui import QPainter, QPainterPath
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QPushButton, QMessageBox, QAction, QColumnView
+from PyQt5.QtCore import QDir
 from modules.organise_by_type import organise_by_type_func
 from python.ui.custom_file_system_model import CustomFileSystemModel
 from python.ui.drag_drop import CircularDragDropLabel
 
-
 # Main Application (main.py):
 # This script initializes and displays the main window.
 # It's responsible for setting up the QApplication and starting the event loop.
-
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
