@@ -64,7 +64,7 @@ def time_convert(timestamp: int) -> str:
     function to convert time to a readable format
 
     @params
-    time: int: time in seconds
+    timestamp: int: time in seconds
     ret: str: time in readable format
     """
     try:
@@ -90,8 +90,8 @@ def move_file(source: str, dest: str):
 def create_list_of_file_obj(file_dict: dict):
     file_list = []
     for key, values in file_dict.items():
-        file = File(key, values['file_type'])
-        file.new_path = values['new_path']
+        file = File(key, values['filetype'])
+        file.current_path = values['current_path']
         file.size = values['size']
         file.creation_time = values['creation_time']
         file.modification_time = values['modification_time']
@@ -191,8 +191,8 @@ class File:
         Returns:
             File: A new File object initialized with the metadata from the dictionary.
         """
-        file_from_dict = File(my_dict['original_path'], my_dict['file_type'])
-        file_from_dict.new_path = my_dict['current_path']
+        file_from_dict = File(my_dict['original_path'], my_dict['filetype'])
+        file_from_dict.current_path = my_dict['current_path']
         file_from_dict.size = my_dict['size']
         file_from_dict.creation_time = my_dict['creation_time']
         file_from_dict.modification_time = my_dict['modification_time']

@@ -1,8 +1,6 @@
 from __future__ import annotations
 import os
-from python.modules.helper_funcs import time_convert, size_convert, get_all_file_paths, get_file_and_subdir_paths, move_file, save_to_json, File, revert_changes
-
-FILE_PATH_ARG = '/Users/yachitrasivakumar/Desktop/YEAR3/Semester2Year3/cs3305_team11/'
+from python.modules.helper_funcs import time_convert, size_convert, get_all_file_paths, get_file_and_subdir_paths, move_file, save_to_json, File
 
 
 def organise_by_date_func(path_to_organise: str, dir_traversal_type: function = get_all_file_paths):
@@ -20,7 +18,7 @@ def organise_by_date_func(path_to_organise: str, dir_traversal_type: function = 
     organise_by_date(md_list, path_to_organise) 
 
     # Save the original structure to a JSON file
-    save_to_json(md_list, os.path.join(path_to_organise, FILE_PATH_ARG+'original_structure.json'))
+    save_to_json(md_list)
 
 
 def get_item_paths(path: str):
@@ -86,9 +84,9 @@ def organise_by_date(md_list: list, directory_path: str):
         list_of_directories = os.listdir(directory_path)
         # get year and month of modification
         year = file.creation_time.split('-')[0]
-        mo = file.creation_time.split('-')[1]
+        m = file.creation_time.split('-')[1]
      
-        month = month_names[mo]  # for test purposes I am using the 'Modified Time' values
+        month = month_names[m]  # for test purposes I am using the 'Modified Time' values
 
         # create directories if they don't already exist
         if year not in list_of_directories:
@@ -104,5 +102,4 @@ def organise_by_date(md_list: list, directory_path: str):
 
 
 if __name__ == "__main__":
-    organise_by_date_func(FILE_PATH_ARG+'test_by_date')
-    # print(revert_changes(os.getcwd()+'/original_structure.json'))
+    pass
