@@ -38,7 +38,8 @@ def organise_by_type_func(path_to_organise: str,
         source = file_obj.original_path
         destination = path_to_organise + '/' + folder_names[file_obj.filetype]
         move_file(source, destination)
-        file_obj.new_path = destination  # set file objects new path to destination
+        # set file objects new path to destination
+        file_obj.current_path = destination + '/' + (file_obj.original_path.split('/'))[-1]
         num_files_moved += 1
     print(f'Moved {num_files_moved} files')
     save_to_json(file_obj_array)

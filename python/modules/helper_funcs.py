@@ -90,12 +90,7 @@ def move_file(source: str, dest: str):
 def create_list_of_file_obj(file_dict: dict):
     file_list = []
     for key, values in file_dict.items():
-        file = File(key, values['filetype'])
-        file.current_path = values['current_path']
-        file.size = values['size']
-        file.creation_time = values['creation_time']
-        file.modification_time = values['modification_time']
-        file.last_access_time = values['last_access_time']
+        file = File.from_dict(values)
         file_list.append(file)
     return file_list
 
@@ -111,6 +106,7 @@ def save_to_json(file_list: list[File], json_file_path: str = 'cache/file_data.j
     if not os.path.exists(json_file_path):
         # code to create file here
         os.makedirs('cache', exist_ok=True)
+
     with open(json_file_path, 'w') as json_file:
         file_info = {}
         for file in file_list:
@@ -267,4 +263,12 @@ class File:
 
 
 if __name__ == "__main__":
-    pass
+    create_list_of_file_obj({'/path/to/file.txt': {
+    'original_path': '/path/to/file.txt',
+    'filetype': 'txt',
+    'current_path': '/new/path/to/file.txt',
+    'size': '15KB',
+    'creation_time': '2024-01-01 10:00:00',
+    'modification_time': '2024-01-02 11:00:00',
+    'last_access_time': '2024-01-03 12:00:00'
+    }})

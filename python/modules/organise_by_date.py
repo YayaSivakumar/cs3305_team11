@@ -98,7 +98,7 @@ def organise_by_date(md_list: list, directory_path: str):
         move_file(file.original_path, directory_path+'/'+year+'/'+month)
 
         # update new path in metadata dictionary
-        file.new_path = directory_path+'/'+year+'/'+month+'/'+(file.original_path.split('/'))[-1]
+        file.current_path = directory_path+'/'+year+'/'+month+'/'+(file.original_path.split('/'))[-1]
 
 
 if __name__ == "__main__":
