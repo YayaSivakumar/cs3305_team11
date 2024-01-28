@@ -45,7 +45,7 @@ def get_file_and_subdir_paths(path: str):
     return files_list
 
 
-def size_convert(size: int) -> str:
+def size_convert(size: int | float) -> str:
     """
     function to convert bytes to kilobytes
 
@@ -59,7 +59,7 @@ def size_convert(size: int) -> str:
         raise TypeError(f"Error: {e}")
 
 
-def time_convert(timestamp: int) -> str:
+def time_convert(timestamp: int | float) -> str:
     """
     function to convert time to a readable format
 
@@ -100,7 +100,7 @@ def create_list_of_file_obj(file_dict: dict):
     return file_list
 
 
-def save_to_json(file_list: list[File], json_file_path: str = '../../cache/file_data.json'):
+def save_to_json(file_list: list[File], json_file_path: str = 'cache/file_data.json'):
     """
     function to save the original structure to a JSON file
 
@@ -108,6 +108,9 @@ def save_to_json(file_list: list[File], json_file_path: str = '../../cache/file_
     md_list: list: list of file with metadata attributes
     json_file_path: str: path to JSON file
     """
+    if not os.path.exists(json_file_path):
+        # code to create file here
+        os.makedirs('cache', exist_ok=True)
     with open(json_file_path, 'w') as json_file:
         file_info = {}
         for file in file_list:

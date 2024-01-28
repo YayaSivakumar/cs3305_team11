@@ -15,4 +15,6 @@ python3 ./python/modules/organise_by_type.py
 echo "Complete."
 tree Tester
 
+echo "Testing "
+
 
