@@ -1,27 +1,34 @@
 # script name: get_pdf_metadata.py
+import pdfreader
+from helper_funcs import PDF
 
 def get_metadata_pdf(file_path: str) -> object:
+    # open file
+    file = open(file_path, 'rb')
+
+    # get all metadata from file into dict
+    md_dict = pdfreader.PDFDocument(file).metadata
+
+    '''
+    code to enter in missing metadata from APIs
+    (Author, Title, CreationDate)
+    '''
+
+    # create PDF object from metadata
+    pdf_obj = PDF(md_dict['Title'], md_dict['Author'], md_dict['CreationDate'])
+    print(pdf_obj)
+
+def create_harvard_citing(pdf_obj: PDF) -> str:
     pass
 
+def create_apa_citing(pdf_obj: PDF) -> str:
+    pass
 
-class PDF:
+def create_mla_citing(pdf_obj: PDF) -> str:
+    pass
 
-    def __init__(self, title, author, date):
-        self._title = title
-        self._author = author
-        self._creation_date = date
+def create_chicago_citing(pdf_obj: PDF) -> str:
+    pass
 
-    def __str__(self):
-        return f'Subject: {self.subject}\nAuthor: {self.author}\nDate: {self.date}\n'
-
-    @property
-    def title(self):
-        return self._title
-
-    @property
-    def author(self):
-        return self._author
-
-    @property
-    def creation_date(self):
-        return self._creation_date
+if __name__ == '__main__':
+    get_metadata_pdf('/Users/yachitrasivakumar/Documents/pdf_test.pdf')

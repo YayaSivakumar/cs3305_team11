@@ -261,6 +261,27 @@ class File:
     def last_access_time(self, lat: str) -> None:
         self._last_access_time = lat
 
+class PDF:
+
+    def __init__(self, title, author, date):
+        self._title = title
+        self._author = author
+        self._creation_date = date
+
+    def __str__(self):
+        return f'Title: {self.title}\nAuthor: {self.author}\nDate: {self.creation_date}\n'
+
+    @property
+    def title(self):
+        return self._title
+
+    @property
+    def author(self):
+        return self._author
+
+    @property
+    def creation_date(self):
+        return self._creation_date
 
 if __name__ == "__main__":
     create_list_of_file_obj({'/path/to/file.txt': {
