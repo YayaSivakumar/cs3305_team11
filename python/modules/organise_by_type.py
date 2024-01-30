@@ -1,5 +1,4 @@
 # script name: organise_by_type.py
-import os
 from helper_funcs import *
 
 

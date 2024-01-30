@@ -1,3 +1,4 @@
+# script name: organise_by_date.py
 from __future__ import annotations
 import os
 from python.modules.helper_funcs import time_convert, size_convert, get_all_file_paths, get_file_and_subdir_paths, move_file, save_to_json, File

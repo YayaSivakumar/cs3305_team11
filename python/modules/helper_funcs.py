@@ -264,11 +264,12 @@ class File:
 
 if __name__ == "__main__":
     create_list_of_file_obj({'/path/to/file.txt': {
-    'original_path': '/path/to/file.txt',
-    'filetype': 'txt',
-    'current_path': '/new/path/to/file.txt',
-    'size': '15KB',
-    'creation_time': '2024-01-01 10:00:00',
-    'modification_time': '2024-01-02 11:00:00',
-    'last_access_time': '2024-01-03 12:00:00'
-    }})
+        'original_path': '/path/to/file.txt',
+        'filetype': 'txt',
+        'current_path': '/new/path/to/file.txt',
+        'size': '15KB',
+        'creation_time': '2024-01-01 10:00:00',
+        'modification_time': '2024-01-02 11:00:00',
+        'last_access_time': '2024-01-03 12:00:00'
+        }}
+    )
