@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
 
-class Window2(QWidget):
+class Window3(QWidget):
     def __init__(self):
         super().__init__()
 
@@ -9,7 +9,7 @@ class Window2(QWidget):
         layout = QVBoxLayout()
 
         # Create a label and add it to the layout
-        label = QLabel("This is Window 2\n This is Music formatting Window")
+        label = QLabel("This is Window 3\n This is PDF Extraction and formatting Window")
         label.setAlignment(Qt.AlignCenter)
         layout.addWidget(label)
 
@@ -21,4 +21,4 @@ class Window2(QWidget):
         # Set the layout for the widget
         self.setLayout(layout)
 
-        # Additional
+        # Additional initialization, if necessary
