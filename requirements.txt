@@ -1,3 +1,5 @@
 pyqt5
 pdf2doi
 requests
+matplotlib
+numpy
