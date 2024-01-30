@@ -36,7 +36,6 @@ def get_pdf_metadata(file_path: str) -> object:
 
     # create PDF object
     pdf_obj = PDF(title, author_list, date)
-    print(pdf_obj)
     return pdf_obj
 
 def get_values_using_doi(doi):
@@ -77,5 +76,7 @@ def create_chicago_citing(pdf_obj: PDF) -> str:
     pass
 
 if __name__ == '__main__':
+    # testing
     # create_pdf_citation('/Users/yachitrasivakumar/Documents/pdf_test.pdf', create_harvard_citing)
-    get_pdf_metadata('/Users/yachitrasivakumar/Documents/pdf_test.pdf')
+    # get_pdf_metadata('/Users/yachitrasivakumar/Documents/pdf_test.pdf')
+    pass
