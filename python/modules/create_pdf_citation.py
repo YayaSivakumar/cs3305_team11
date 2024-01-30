@@ -5,6 +5,13 @@ import requests
 
 
 def create_pdf_citation(file_path: str, citing_style) -> str:
+    """
+    function to create citation for pdf file
+
+    @params
+    file_path: str: absolute path to pdf file
+    citing_style: function: citing style function
+    """
     # create PDF object
     pdf_obj = get_pdf_metadata(file_path)
 
@@ -33,16 +40,28 @@ def get_pdf_metadata(file_path: str) -> object:
     return pdf_obj
 
 def get_values_using_doi(doi):
+    """
+    function to get necessary values using DOI
+
+    @params
+    doi: str: DOI value
+    """
     url = f"https://api.crossref.org/works/{doi}"
     response = requests.get(url)
     author_list = []
+
+    # if response is successful, get values
     if response.status_code == 200:
         data = response.json()
+
+        # isolate values
         title = data['message']['title'][0]
         date = data['message']['created']['date-parts'][0]
         authors = data['message']['author']
+
         for author in authors:
             author_list.append((author.get('given'), author.get('family')))
+
     return title, author_list, date
 
 def create_harvard_citing(pdf_obj: PDF) -> str:
