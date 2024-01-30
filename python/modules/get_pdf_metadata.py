@@ -2,7 +2,8 @@
 import pdfreader
 from helper_funcs import PDF
 
-def get_metadata_pdf(file_path: str) -> object:
+
+def get_metadata_pdf(file_path: str, citing_style) -> object:
     # open file
     file = open(file_path, 'rb')
 
@@ -30,5 +31,6 @@ def create_mla_citing(pdf_obj: PDF) -> str:
 def create_chicago_citing(pdf_obj: PDF) -> str:
     pass
 
+
 if __name__ == '__main__':
-    get_metadata_pdf('/Users/yachitrasivakumar/Documents/pdf_test.pdf')
+    get_metadata_pdf('/Users/yachitrasivakumar/Documents/pdf_test.pdf', create_chicago_citing)

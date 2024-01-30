@@ -263,7 +263,7 @@ class File:
 
 class PDF:
 
-    def __init__(self, title, author, date):
+    def __init__(self, title: str, author: str, date: str):
         self._title = title
         self._author = author
         self._creation_date = date
