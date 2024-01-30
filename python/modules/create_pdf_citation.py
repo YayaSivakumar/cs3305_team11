@@ -4,7 +4,7 @@ from helper_funcs import PDF
 import requests
 
 
-def create_pdf_citation(file_path: str, citing_style) -> object:
+def create_pdf_citation(file_path: str, citing_style) -> str:
     # create PDF object
     pdf_obj = get_pdf_metadata(file_path)
 
@@ -12,7 +12,7 @@ def create_pdf_citation(file_path: str, citing_style) -> object:
     citation = citing_style(pdf_obj)
     return citation
 
-def get_pdf_metadata(file_path: str) -> dict:
+def get_pdf_metadata(file_path: str) -> object:
     """
     function to get metadata from pdf file
 
