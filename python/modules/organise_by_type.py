@@ -1,5 +1,5 @@
 # script name: organise_by_type.py
-from helper_funcs import *
+from python.modules.helper_funcs import *
 
 
 def organise_by_type_func(path_to_organise: str,
