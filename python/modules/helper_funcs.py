@@ -263,34 +263,25 @@ class File:
 
 class PDF:
 
-    def __init__(self, title: str, author: str, date: str):
+    def __init__(self, title: str, authors: list, date: str):
         self._title = title
-        self._author = author
+        self._authors = authors
         self._creation_date = date
 
     def __str__(self):
-        return f'Title: {self.title}\nAuthor: {self.author}\nDate: {self.creation_date}\n'
+        return f'Title: {self.title}\nAuthor: {self.authors}\nDate: {self.creation_date}\n'
 
     @property
     def title(self):
         return self._title
 
     @property
-    def author(self):
-        return self._author
+    def authors(self):
+        return self._authors
 
     @property
     def creation_date(self):
         return self._creation_date
 
 if __name__ == "__main__":
-    create_list_of_file_obj({'/path/to/file.txt': {
-        'original_path': '/path/to/file.txt',
-        'filetype': 'txt',
-        'current_path': '/new/path/to/file.txt',
-        'size': '15KB',
-        'creation_time': '2024-01-01 10:00:00',
-        'modification_time': '2024-01-02 11:00:00',
-        'last_access_time': '2024-01-03 12:00:00'
-        }}
-    )
+    pass
