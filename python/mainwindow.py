@@ -19,6 +19,10 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Main Window with Sidebar")
         self.setGeometry(100, 100, 1000, 600)
 
+        # Create actions
+        self.create_actions()
+        self.createMenuBar()
+
         # Create the central widget and layout
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
