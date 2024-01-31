@@ -6,7 +6,7 @@ from python.ui.custom_file_system_model import *
 
 
 class Window1(QWidget):
-    def __init__(self, window_index):
+    def __init__(self, window_index: int):
         super().__init__()
         self.window_index = window_index
         # Create main layout
