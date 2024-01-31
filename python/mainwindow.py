@@ -86,7 +86,7 @@ class MainWindow(QMainWindow):
         self.sidebar_layout.addWidget(button_5_video_explorer)
 
         # Add buttons to the sidebar
-        button_6_file_shredder = QPushButton(f"Shedder")
+        button_6_file_shredder = QPushButton(f"Shredder")
         button_6_file_shredder.clicked.connect(self.show_window6)
         self.sidebar_layout.addWidget(button_6_file_shredder)
 
