@@ -4,8 +4,9 @@ from PyQt5.QtCore import Qt
 
 
 class WelcomeWindow(QWidget):
-    def __init__(self):
+    def __init__(self, window_index):
         super().__init__()
+        self.window_index = window_index
         self.initUI()
 
     def initUI(self):
@@ -40,3 +41,11 @@ class WelcomeWindow(QWidget):
     def on_start_scan(self):
         # Placeholder for start scan function
         print("Scan started!")
+
+    @property
+    def window_index(self):
+        return self._window_index
+
+    @window_index.setter
+    def window_index(self, value):
+        self._window_index = value

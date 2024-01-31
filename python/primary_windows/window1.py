@@ -4,10 +4,11 @@ from python.modules.organise_by_type import organise_by_type_func
 from python.ui.drag_drop import *
 from python.ui.custom_file_system_model import *
 
-class Window1(QWidget):
-    def __init__(self):
-        super().__init__()
 
+class Window1(QWidget):
+    def __init__(self, window_index):
+        super().__init__()
+        self.window_index = window_index
         # Create main layout
         layout = QHBoxLayout(self)
 
@@ -79,3 +80,11 @@ class Window1(QWidget):
 
         else:
             QMessageBox.information(self, 'No Selection', 'Please select a file or folder from the tree view or drag and drop files.', QMessageBox.Ok)
+
+    @property
+    def window_index(self):
+        return self._window_index
+
+    @window_index.setter
+    def window_index(self, value):
+        self._window_index = value

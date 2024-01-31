@@ -8,9 +8,11 @@ from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QFi
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+
 class Window7(QWidget):
-    def __init__(self):
+    def __init__(self, window_index):
         super().__init__()
+        self.window_index = window_index
         self.initUI()
     
     def initUI(self):
@@ -76,6 +78,14 @@ class Window7(QWidget):
         """)
         # Set the layout for the widget
         # self.setLayout(layout)
+
+    @property
+    def window_index(self):
+        return self._window_index
+
+    @window_index.setter
+    def window_index(self, value):
+        self._window_index = value
 
     # Define the on_folder_select method
     def on_folder_select(self):

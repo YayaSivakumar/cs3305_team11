@@ -29,17 +29,19 @@ class MainWindow(QMainWindow):
         self.sidebar_layout = QVBoxLayout(self.sidebar)
 
         # Create the different screens
-        self.welcome_window = WelcomeWindow()
-        self.window1 = Window1()
-        self.window2 = Window2()
-        self.window3 = Window3()
-        self.window4 = Window4()
-        self.window5 = Window5()
-        self.window6 = Window6()
-        self.window7 = Window7()
+        self.welcome_window = WelcomeWindow(0)
+        self.window1 = Window1(1)
+        self.window2 = Window2(2)
+        self.window3 = Window3(3)
+        self.window4 = Window4(4)
+        self.window5 = Window5(5)
+        self.window6 = Window6(6)
+        self.window7 = Window7(7)
+
+
 
         # Add the sidebar to the main layout
-        self.main_layout.addWidget(self.sidebar, 2)  # 1/5th of the space for the sidebar
+        self.main_layout.addWidget(self.sidebar, 2)  # 2/10 of the space for the sidebar
 
         # Create a stacked widget to hold the different screens
         self.stacked_widget = QStackedWidget()
@@ -62,65 +64,44 @@ class MainWindow(QMainWindow):
 
         # Add buttons to the sidebar
         button_1_file_explorer = QPushButton(f"File Explorer")
-        button_1_file_explorer.clicked.connect(self.show_window1)
+        button_1_file_explorer.clicked.connect(self.show_window(self.window1.window_index))
         self.sidebar_layout.addWidget(button_1_file_explorer)
 
         # Add buttons to the sidebar
         button_2_music = QPushButton(f"Music Explorer")
-        button_2_music.clicked.connect(self.show_window2)
+        button_2_music.clicked.connect(self.show_window(self.window1.window_index))
         self.sidebar_layout.addWidget(button_2_music)
 
         # Add buttons to the sidebar
         button_3_pdf_explorer = QPushButton(f"PDFDocument Explorer")
-        button_3_pdf_explorer.clicked.connect(self.show_window3)
+        button_3_pdf_explorer.clicked.connect(self.show_window(self.window1.window_index))
         self.sidebar_layout.addWidget(button_3_pdf_explorer)
 
         # Add buttons to the sidebar
         button_4_image_explorer = QPushButton(f"Image Explorer")
-        button_4_image_explorer.clicked.connect(self.show_window4)
+        button_4_image_explorer.clicked.connect(self.show_window(self.window1.window_index))
         self.sidebar_layout.addWidget(button_4_image_explorer)
 
         # Add buttons to the sidebar
         button_5_video_explorer = QPushButton(f"Video Explorer")
-        button_5_video_explorer.clicked.connect(self.show_window5)
+        button_5_video_explorer.clicked.connect(self.show_window(self.window1.window_index))
         self.sidebar_layout.addWidget(button_5_video_explorer)
 
         # Add buttons to the sidebar
         button_6_file_shredder = QPushButton(f"Shredder")
-        button_6_file_shredder.clicked.connect(self.show_window6)
+        button_6_file_shredder.clicked.connect(self.show_window(self.window1.window_index))
         self.sidebar_layout.addWidget(button_6_file_shredder)
 
         # Add buttons to the sidebar
         button_7_visualise = QPushButton(f"Visualise")
-        button_7_visualise.clicked.connect(self.show_window7)
+        button_7_visualise.clicked.connect(self.show_window(self.window1.window_index))
         self.sidebar_layout.addWidget(button_7_visualise)
 
         # Set the default screen to the welcome window
         self.stacked_widget.setCurrentIndex(0)
 
-
-
-
-    def show_window1(self):
-        self.stacked_widget.setCurrentIndex(1)
-
-    def show_window2(self):
-        self.stacked_widget.setCurrentIndex(2)
-
-    def show_window3(self):
-        self.stacked_widget.setCurrentIndex(3)
-
-    def show_window4(self):
-        self.stacked_widget.setCurrentIndex(4)
-
-    def show_window5(self):
-        self.stacked_widget.setCurrentIndex(5)
-
-    def show_window6(self):
-        self.stacked_widget.setCurrentIndex(6)
-
-    def show_window7(self):
-        self.stacked_widget.setCurrentIndex(7)
+    def show_window(self, window_index):
+        self.stacked_widget.setCurrentIndex(window_index)
 
     def apply_stylesheet(self):
             style = """
