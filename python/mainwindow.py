@@ -25,7 +25,8 @@ class MainWindow(QMainWindow):
         self.create_actions()
         self.createMenuBar()
 
-        self.apply_stylesheet()
+        self.dark_mode = False
+        self.apply_system_theme(self.dark_mode)
 
         # Create the central widget and layout
         self.central_widget = QWidget()
@@ -111,8 +112,11 @@ class MainWindow(QMainWindow):
     def show_window(self, window_index: int):
         self.stacked_widget.setCurrentIndex(window_index)
 
-    def apply_stylesheet(self):
+    def apply_system_theme(self, dark_mode):
+        if dark_mode:
             self.setStyleSheet(styles.dark.dark_style())
+        else:  # if light mode
+            self.setStyleSheet(styles.light.light_style())
 
     def createMenuBar(self):
         menuBar = self.menuBar()
