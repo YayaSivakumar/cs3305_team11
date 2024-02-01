@@ -104,6 +104,22 @@ class MainWindow(QMainWindow):
         # Set the default screen to the welcome window
         self.stacked_widget.setCurrentIndex(0)
 
+        sidebar_style = """
+                                        QWidget {
+                                            background-color: #ECECEC;  /* Same as the background for the central widget */
+                                            border: 1px solid #d0d0d0;  /* Grey border */
+                                            border-radius: 5px;  /* Rounded corners */
+                                            padding: 10px;  /* Padding inside the sidebar */
+                                            color: black; /* White text */
+                                        }
+                                        QPushButton {
+                                            margin: 5px;  /* Space between buttons */
+
+                                        }
+                                    """
+
+        self.sidebar.setStyleSheet(sidebar_style)
+
     def show_window(self, window_index: int):
         self.stacked_widget.setCurrentIndex(window_index)
 
