@@ -9,8 +9,7 @@ from python.primary_windows.window5 import Window5
 from python.primary_windows.window6 import Window6
 from python.primary_windows.window7 import Window7
 from python.primary_windows.welcome_window import WelcomeWindow
-import styles.light
-import styles.dark
+import styles.system_theme
 
 
 class MainWindow(QMainWindow):
@@ -114,9 +113,9 @@ class MainWindow(QMainWindow):
 
     def apply_system_theme(self, dark_mode):
         if dark_mode:
-            self.setStyleSheet(styles.dark.dark_style())
+            self.setStyleSheet(styles.system_theme.dark_style())
         else:  # if light mode
-            self.setStyleSheet(styles.light.light_style())
+            self.setStyleSheet(styles.system_theme.light_style())
 
     def createMenuBar(self):
         menuBar = self.menuBar()
