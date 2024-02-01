@@ -9,6 +9,7 @@ from python.primary_windows.window5 import Window5
 from python.primary_windows.window6 import Window6
 from python.primary_windows.window7 import Window7
 from python.primary_windows.welcome_window import WelcomeWindow
+import styles.system_theme
 
 
 class MainWindow(QMainWindow):
@@ -22,6 +23,9 @@ class MainWindow(QMainWindow):
         # Create actions
         self.create_actions()
         self.createMenuBar()
+
+        self.dark_mode = False
+        self.apply_system_theme(self.dark_mode)
 
         # Create the central widget and layout
         self.central_widget = QWidget()
@@ -123,24 +127,11 @@ class MainWindow(QMainWindow):
     def show_window(self, window_index: int):
         self.stacked_widget.setCurrentIndex(window_index)
 
-    def apply_stylesheet(self):
-            style = """
-            QMainWindow {
-                background-color: #F5F5F5;
-            }
-            QPushButton {
-                border: 2px solid #8F8F8F;
-                border-radius: 10px;
-                background-color: #E0E0E0;
-                padding: 10px;
-                min-width: 80px;
-            }
-            QPushButton:hover {
-                border-color: #3daee9;
-                background-color: #AEE0E0;
-            }
-            """
-            self.setStyleSheet(style)
+    def apply_system_theme(self, dark_mode):
+        if dark_mode:
+            self.setStyleSheet(styles.system_theme.dark_style())
+        else:  # if light mode
+            self.setStyleSheet(styles.system_theme.light_style())
 
     def createMenuBar(self):
         menuBar = self.menuBar()
