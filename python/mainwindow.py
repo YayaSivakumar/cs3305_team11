@@ -173,5 +173,5 @@ class MainWindow(QMainWindow):
 #       Call to backend function
 
     def toggleDarkMode(self):
-        self.toggleDarkModeAction.setEnabled(False)
-
+        self.apply_system_theme(self.dark_mode)
+        self.dark_mode = not self.dark_mode
