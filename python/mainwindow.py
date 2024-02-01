@@ -48,14 +48,11 @@ class MainWindow(QMainWindow):
         self.window6 = Window6(6)
         self.window7 = Window7(7)
 
-
-
         # Add the sidebar to the main layout
         self.main_layout.addWidget(self.sidebar, 2)  # 2/10 of the space for the sidebar
 
         # Create a stacked widget to hold the different screens
         self.stacked_widget = QStackedWidget()
-
 
         # Add windows to the stacked widget
         self.stacked_widget.addWidget(self.welcome_window)
@@ -66,8 +63,6 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.window5)
         self.stacked_widget.addWidget(self.window6)
         self.stacked_widget.addWidget(self.window7)
-
-
 
         # Add the stacked widget to the main layout
         self.main_layout.addWidget(self.stacked_widget, 8)  # Adjusting space for main content
