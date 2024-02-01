@@ -24,6 +24,7 @@ class MainWindow(QMainWindow):
         self.create_actions()
         self.createMenuBar()
 
+        # System Theme & Dark Mode Boolean
         self.dark_mode = False
         self.apply_system_theme(self.dark_mode)
 
