@@ -10,13 +10,14 @@ from python.primary_windows.window6 import Window6
 from python.primary_windows.window7 import Window7
 from python.primary_windows.welcome_window import WelcomeWindow
 import styles.system_theme
+import styles.sidebar
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-         # Set the main window's title and initial size
+        # Set the main window's title and initial size
         self.setWindowTitle("Main Window with Sidebar")
         self.setGeometry(100, 100, 1000, 600)
 
@@ -109,21 +110,7 @@ class MainWindow(QMainWindow):
         # Set the default screen to the welcome window
         self.stacked_widget.setCurrentIndex(0)
 
-        sidebar_style = """
-                                        QWidget {
-                                            background-color: #ECECEC;  /* Same as the background for the central widget */
-                                            border: 1px solid #d0d0d0;  /* Grey border */
-                                            border-radius: 5px;  /* Rounded corners */
-                                            padding: 10px;  /* Padding inside the sidebar */
-                                            color: black; /* White text */
-                                        }
-                                        QPushButton {
-                                            margin: 5px;  /* Space between buttons */
-
-                                        }
-                                    """
-
-        self.sidebar.setStyleSheet(sidebar_style)
+        self.sidebar.setStyleSheet(styles.sidebar.main_style())
 
     def show_window(self, window_index: int):
         self.stacked_widget.setCurrentIndex(window_index)
