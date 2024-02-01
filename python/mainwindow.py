@@ -9,6 +9,8 @@ from python.primary_windows.window5 import Window5
 from python.primary_windows.window6 import Window6
 from python.primary_windows.window7 import Window7
 from python.primary_windows.welcome_window import WelcomeWindow
+import styles.light
+import styles.dark
 
 
 class MainWindow(QMainWindow):
@@ -22,6 +24,8 @@ class MainWindow(QMainWindow):
         # Create actions
         self.create_actions()
         self.createMenuBar()
+
+        self.apply_stylesheet()
 
         # Create the central widget and layout
         self.central_widget = QWidget()
@@ -108,23 +112,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentIndex(window_index)
 
     def apply_stylesheet(self):
-            style = """
-            QMainWindow {
-                background-color: #F5F5F5;
-            }
-            QPushButton {
-                border: 2px solid #8F8F8F;
-                border-radius: 10px;
-                background-color: #E0E0E0;
-                padding: 10px;
-                min-width: 80px;
-            }
-            QPushButton:hover {
-                border-color: #3daee9;
-                background-color: #AEE0E0;
-            }
-            """
-            self.setStyleSheet(style)
+            self.setStyleSheet(styles.dark.dark_style())
 
     def createMenuBar(self):
         menuBar = self.menuBar()
