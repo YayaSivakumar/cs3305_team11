@@ -166,16 +166,16 @@ class MainWindow(QMainWindow):
 
     def undo_action(self):
         self.undoAction.setEnabled(False)
-#       Call to backend function
+        # Call to backend function
+
+    def redo_action(self):
+        self.redoAction.setEnabled(False)
+        #       Call to backend function
 
     def show_toast(self, message, status):
         self.toast_message.label.setText(message)
         self.toast_message.setStyleSheet(self.toast_message.get_style(status))
         self.toast_message.show_toast()
-
-    def redo_action(self):
-        self.redoAction.setEnabled(False)
-#       Call to backend function
 
     def toggleDarkMode(self):
         self.apply_system_theme(self.dark_mode)
