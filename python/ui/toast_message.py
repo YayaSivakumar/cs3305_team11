@@ -2,6 +2,7 @@ from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget
 import python.styles.toast as t
 
+
 class ToastMessage(QWidget):
     def __init__(self, message, status, parent=None):
         super(ToastMessage, self).__init__(parent)
