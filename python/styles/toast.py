@@ -1,3 +1,11 @@
+def main():
+    return '''
+        border: 2px solid #2e2e2e;
+        border-radius: 10px;
+        padding: 10px;
+    '''
+
+
 def success():
     return '''
         background-color: #4CAF50; color: #ffffff;

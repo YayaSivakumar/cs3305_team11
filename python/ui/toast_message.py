@@ -10,7 +10,10 @@ class ToastMessage(QWidget):
         self.label = QLabel(message)
         self.label.setAlignment(Qt.AlignCenter)
 
-        self.setStyleSheet(self.get_style(status))
+        self.style = t.main() + self.get_style(status)
+        self.setStyleSheet(self.style)
+
+
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.label)

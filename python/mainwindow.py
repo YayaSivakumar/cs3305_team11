@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
         self.sidebar_layout = QVBoxLayout(self.sidebar)
 
         # Toast message initialisation
-        self.toast_message = ToastMessage("Default message", "success", parent=self)
+        self.toast_message = ToastMessage("Default message", "error", parent=self)
 
         # Create the different screens
         self.welcome_window = WelcomeWindow(0)
