@@ -1,5 +1,4 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget, QAction
+from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget, QAction
 
 from python.primary_windows.window1 import Window1
 from python.primary_windows.window2 import Window2
@@ -9,8 +8,9 @@ from python.primary_windows.window5 import Window5
 from python.primary_windows.window6 import Window6
 from python.primary_windows.window7 import Window7
 from python.primary_windows.welcome_window import WelcomeWindow
-import styles.system_theme
-import styles.sidebar
+import python.styles.system_theme
+import python.styles.sidebar
+from python.ui.toast_message import ToastMessage
 
 
 class MainWindow(QMainWindow):
@@ -37,6 +37,9 @@ class MainWindow(QMainWindow):
         # Create the sidebar
         self.sidebar = QWidget()
         self.sidebar_layout = QVBoxLayout(self.sidebar)
+
+        # Toast message initialisation
+        self.toast_message = ToastMessage("Default message", "success", parent=self)
 
         # Create the different screens
         self.welcome_window = WelcomeWindow(0)
@@ -105,16 +108,18 @@ class MainWindow(QMainWindow):
         # Set the default screen to the welcome window
         self.stacked_widget.setCurrentIndex(0)
 
-        self.sidebar.setStyleSheet(styles.sidebar.main_style())
+        self.sidebar.setStyleSheet(python.styles.sidebar.main_style())
+
+        self.show_toast("Operation successful", "success")
 
     def show_window(self, window_index: int):
         self.stacked_widget.setCurrentIndex(window_index)
 
     def apply_system_theme(self, dark_mode):
         if dark_mode:
-            self.setStyleSheet(styles.system_theme.dark_style())
+            self.setStyleSheet(python.styles.system_theme.dark_style())
         else:  # if light mode
-            self.setStyleSheet(styles.system_theme.light_style())
+            self.setStyleSheet(python.styles.system_theme.light_style())
 
     def createMenuBar(self):
         menuBar = self.menuBar()
@@ -162,6 +167,11 @@ class MainWindow(QMainWindow):
     def undo_action(self):
         self.undoAction.setEnabled(False)
 #       Call to backend function
+
+    def show_toast(self, message, status):
+        self.toast_message.label.setText(message)
+        self.toast_message.setStyleSheet(self.toast_message.get_style(status))
+        self.toast_message.show_toast()
 
     def redo_action(self):
         self.redoAction.setEnabled(False)
