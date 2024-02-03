@@ -13,8 +13,6 @@ class ToastMessage(QWidget):
         self.style = t.main() + self.get_style(status)
         self.setStyleSheet(self.style)
 
-
-
         layout = QVBoxLayout(self)
         layout.addWidget(self.label)
 
