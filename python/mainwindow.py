@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
         self.sidebar_layout = QVBoxLayout(self.sidebar)
 
         # Toast message initialisation
-        self.toast_message = ToastMessage("Default message", "error", parent=self)
+        self.toast_message = ToastMessage(message="Default message", status='alert',opacity=0.5, font_size=16, parent=self)
 
         # Create the different screens
         self.welcome_window = WelcomeWindow(0)
@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
 
         self.sidebar.setStyleSheet(python.styles.sidebar.main_style())
 
-        self.show_toast("Operation successful", "success")
+        self.toast_message.show_toast()
 
     def show_window(self, window_index: int):
         self.stacked_widget.setCurrentIndex(window_index)
@@ -171,11 +171,6 @@ class MainWindow(QMainWindow):
     def redo_action(self):
         self.redoAction.setEnabled(False)
         #       Call to backend function
-
-    def show_toast(self, message, status):
-        self.toast_message.label.setText(message)
-        self.toast_message.setStyleSheet(self.toast_message.get_style(status))
-        self.toast_message.show_toast()
 
     def toggleDarkMode(self):
         self.apply_system_theme(self.dark_mode)

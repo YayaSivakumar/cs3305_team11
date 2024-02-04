@@ -1,30 +1,47 @@
-def main():
-    return '''
-        border: 2px solid #2e2e2e;
-        border-radius: 10px;
-        padding: 10px;
-    '''
+# toast_styles.py
+
+class ToastStyle:
+    def __init__(self, opacity=1.0, font_size=12):
+        self.opacity = opacity
+        self.font_size = font_size
+
+    def get_main_style(self):
+        return f'''
+            border: 2px solid #2e2e2e;
+            border-radius: 10px;
+            padding: 10px;
+            opacity: {self.opacity};
+            font-size: {self.font_size}px;
+        '''
 
 
-def success():
-    return '''
-        background-color: #4CAF50; color: #ffffff;
-    '''
+class SuccessStyle(ToastStyle):
+    def get_style(self):
+        return f'''
+            background-color: rgba(76, 175, 80, {self.opacity});
+            color: #000000;
+        '''
 
 
-def alert():
-    return '''
-        background-color: #FFC107; color: #ffffff;
-    '''
+class AlertStyle(ToastStyle):
+    def get_style(self):
+        return f'''
+            background-color: rgba(255, 193, 7, {self.opacity});
+            color: #000000;
+        '''
 
 
-def error():
-    return '''
-        background-color: #F44336; color: #ffffff;
-    '''
+class ErrorStyle(ToastStyle):
+    def get_style(self):
+        return f'''
+            background-color: rgba(244, 67, 54, {self.opacity});
+            color: #000000;
+        '''
 
 
-def info():
-    return '''
-        background-color: #333333; color: #ffffff;
-    '''
+class InfoStyle(ToastStyle):
+    def get_style(self):
+        return f'''
+            background-color: rgba(51, 51, 51, {self.opacity});
+            color: #000000;
+        '''
