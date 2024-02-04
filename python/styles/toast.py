@@ -1,5 +1,3 @@
-# toast_styles.py
-
 class ToastStyle:
     def __init__(self, opacity=1.0, font_size=12):
         self.opacity = opacity
@@ -13,6 +11,19 @@ class ToastStyle:
             opacity: {self.opacity};
             font-size: {self.font_size}px;
         '''
+
+    def get_label_style(self):
+        return f'''
+            color: #000000;
+            font-size: {self.font_size}px;
+        '''
+
+    def get_close_style(self):
+        return f'''
+            color: #000000
+            font-size: {self.font_size}px;
+        '''
+#        alignment styling to put to top right
 
 
 class SuccessStyle(ToastStyle):
