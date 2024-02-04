@@ -180,3 +180,4 @@ class MainWindow(QMainWindow):
     def toggleDarkMode(self):
         self.apply_system_theme(self.dark_mode)
         self.dark_mode = not self.dark_mode
+        self.toggleDarkModeAction.setText("Toggle Dark Mode" if self.dark_mode else "Toggle Light Mode")
