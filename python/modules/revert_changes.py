@@ -34,5 +34,15 @@ def _revert_changes(json_file_path: str):
     # print(f"Moved: {files_moved} files, checked: {files_checked} files")
 
 
+def delete_empty_directories(parent_path: str):
+    """
+    Function to delete any subdirectories under specified path.
+
+    @params
+    parent_path: str: directory of parent folder
+    ret: None
+    """
+    
+
 if __name__ == "__main__":
     revert_changes()

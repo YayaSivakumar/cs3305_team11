@@ -6,6 +6,25 @@ import os
 import shutil
 
 
+def delete_empty_directories(path: str) -> None:
+    """
+    Function to delete the empty directories at path.
+
+    @params
+    path: str: absolute path of directory to be checked
+    """
+    for root, dirname, filename in os.walk(path, topdown=False):
+        # walk through directories in reverse order
+        subdir_path = os.path.join(root, dirname)
+
+        # check if subdir path is empty
+        if not os.listdir(subdir_path):
+            # delete if empty
+            os.rmdir(subdir_path)
+            print(f"Deleted empty subdirectory: {subdir_path}")
+
+
+
 def get_all_file_paths(path: str) -> list[str]:
     """
     Function to get the paths of all files in path, disregarding parent directory.
@@ -261,8 +280,11 @@ class File:
     def last_access_time(self, lat: str) -> None:
         self._last_access_time = lat
 
-class PDF:
 
+class PDF:
+    """
+    Object to represent a PDF file
+    """
     def __init__(self, title: str, authors: list, date: str):
         self._title = title
         self._authors = authors
@@ -282,6 +304,7 @@ class PDF:
     @property
     def creation_date(self):
         return self._creation_date
+
 
 if __name__ == "__main__":
     pass

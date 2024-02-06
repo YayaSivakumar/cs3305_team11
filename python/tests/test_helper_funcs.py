@@ -71,6 +71,29 @@ class TestHelperFuncs(unittest.TestCase):
     def test_load_json(self):
         pass
 
+    def test_remove_empty_directories(self):
+        def test_remove_empty_directories(self):
+            # Create a temporary directory for testing
+            test_dir = '/path/to/test_dir'
+            os.makedirs(os.path.join(test_dir, 'non_empty_dir'))
+            os.makedirs(os.path.join(test_dir, 'empty_dir'))
+
+            # Create a dummy file in 'non_empty_dir'
+            with open(os.path.join(test_dir, 'non_empty_dir', 'dummy_file.txt'), 'w') as f:
+                f.write("This is a dummy file.")
+
+            try:
+                # Call the function
+                delete_empty_directories(test_dir)
+
+                # Assert function is behaving correctly
+                self.assertTrue(os.path.exists(os.path.join(test_dir, 'non_empty_dir')))
+                self.assertTrue(os.path.exists(os.path.join(test_dir, 'non_empty_dir', 'dummy_file.txt')))
+                self.assertFalse(os.path.exists(os.path.join(test_dir, 'empty_dir')))
+            finally:
+                # Delete the temporary test directory and its contents
+                shutil.rmtree(test_dir)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -8,7 +8,8 @@ def organise_by_type_func(path_to_organise: str,
                               'misc': 'Misc'}
                           ) -> None:
     """
-    main function for organise by filetype feature. 
+    Main function for organise by filetype feature. Takes a file path and breaks every file in that directory
+    and its subdirectories
 
     @params
     path_to_organise: str: absolute path of folder to be organised
