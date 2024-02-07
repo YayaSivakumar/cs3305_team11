@@ -1,9 +1,11 @@
 from __future__ import annotations
+import shutil
+import os 
+import eyed3
 # import os
 # # from helper_funcs import time_convert, size_convert, get_all_file_paths, get_file_and_subdir_paths, move_file, save_to_json, File, revert_changes
 # from helper_funcs import *
 
-import eyed3
 
 # def get_music_data(path):
 #     file_paths = get_all_file_paths(path)
@@ -75,9 +77,7 @@ import eyed3
 # def list_dir(filepath: str) -> list[str]:
 #     return os.listdir(filepath)
 
-import shutil
-import os 
-import eyed3
+
 
 def get_all_file_paths(path: str) -> list[str]:
     """
@@ -114,7 +114,7 @@ def get_music_data(path):
     file_paths = get_all_file_paths(path)
     for file in file_paths:
         extension = file.split('.')[-1]
-        if extension in ['wav', 'mp3', 'aac']:
+        if extension in ['wav', 'mp3', 'aac', 'm4a']:
             try:
                 audio = eyed3.load(file)
                 if audio.tag is not None:
@@ -138,7 +138,7 @@ def create_directory(directory):
         os.makedirs(directory)
 
 
-def organise_music_files(files):
+def organise_by_artist(files):
     for file in files:
         artist_directory = os.path.join(music_directory, file.artist)
         create_directory(artist_directory)
@@ -148,10 +148,25 @@ def organise_music_files(files):
 music_directory = "C:/Users/evely/OneDrive/Documents/Testing files/test music"
 
 music_files = get_music_data(music_directory)
-organise_music_files(music_files)
+# organise_by_artist(music_files)
 
+def organise_by_album(files):
+    for file in files:
+        album_directory = os.path.join(music_directory, file.album)
+        create_directory(album_directory)
 
+        shutil.move(file.path, os.path.join(album_directory, os.path.basename(file.path)))
 
+# organise_by_album(music_files)
+
+def organise_by_song_year(files):
+    for file in files:
+        song_year_directory = os.path.join(music_directory, file.year)
+        create_directory(song_year_directory)
+
+        shutil.move(file.path, os.path.join(song_year_directory, os.path.basename(file.path)))
+
+organise_by_song_year(music_files)
 
 '''
 ### old music class ###
