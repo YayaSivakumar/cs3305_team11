@@ -173,9 +173,6 @@ cache = FileSystemCache()
 root_path = '/users/DanielCagney/Desktop'  # Change to your target directory
 root_directory = Directory(root_path, cache)
 
-print(root_directory.list_contents())  # List all files and folders in the root directory
-print(root_directory.find_file('test.txt'))  # Find a file by name
-print(root_directory.find_files_by_extension('.txt'))  # Find all files with a given extension
-(root_directory.find_files_by_extension('.txt'))
+
 
 

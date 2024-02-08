@@ -1,5 +1,4 @@
-import File
-
+from python.model.FileSystemNodeModel import File
 
 class Music(File):
     def __init__(self, path, cache):
