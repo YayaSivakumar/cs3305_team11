@@ -110,6 +110,13 @@ class File(FileSystemNode):
         except Exception as e:
             print(f"Error moving file: {e}")
 
+
+
+class Document(File):
+    def __init__(self, path, cache):
+        super().__init__(path, cache)
+
+
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
     def __init__(self, path, cache):
@@ -163,7 +170,7 @@ class Directory(FileSystemNode):
         return matching_files
 
 cache = FileSystemCache()
-root_path = 'add/your/folder/to/model/here'  # Change to your target directory
+root_path = '/users/DanielCagney/Desktop'  # Change to your target directory
 root_directory = Directory(root_path, cache)
 
 print(root_directory.list_contents())  # List all files and folders in the root directory
