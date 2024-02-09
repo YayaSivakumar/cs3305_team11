@@ -169,9 +169,12 @@ class Directory(FileSystemNode):
 
         return matching_files
 
-cache = FileSystemCache()
-root_path = '/users/DanielCagney/Desktop'  # Change to your target directory
-root_directory = Directory(root_path, cache)
+
+if __name__ == '__main__':
+    cache = FileSystemCache()
+    root_path = '/users/conor/Downloads'  # Change to your target directory
+    root_directory = Directory(root_path, cache)
+
 
 
 
