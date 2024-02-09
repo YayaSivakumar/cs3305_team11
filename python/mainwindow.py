@@ -8,6 +8,7 @@ from python.primary_windows.window4 import Window4
 from python.primary_windows.window5 import Window5
 from python.primary_windows.window6 import Window6
 from python.primary_windows.window7 import Window7
+from python.primary_windows.window8 import FileUploader
 from python.primary_windows.welcome_window import WelcomeWindow
 import styles.system_theme
 import styles.sidebar
@@ -47,6 +48,7 @@ class MainWindow(QMainWindow):
         self.window5 = Window5(5)
         self.window6 = Window6(6)
         self.window7 = Window7(7)
+        self.window8 = FileUploader(8)
 
         # Add the sidebar to the main layout
         self.main_layout.addWidget(self.sidebar, 2)  # 2/10 of the space for the sidebar
@@ -55,15 +57,15 @@ class MainWindow(QMainWindow):
         self.stacked_widget = QStackedWidget()
 
         # Add windows to the stacked widget
-        self.stacked_widget.addWidget(self.welcome_window)
-        self.stacked_widget.addWidget(self.window1)
-        self.stacked_widget.addWidget(self.window2)
-        self.stacked_widget.addWidget(self.window3)
-        self.stacked_widget.addWidget(self.window4)
-        self.stacked_widget.addWidget(self.window5)
-        self.stacked_widget.addWidget(self.window6)
-        self.stacked_widget.addWidget(self.window7)
-
+        self.stacked_widget.addWidget(self.welcome_window) # Add the welcome window
+        self.stacked_widget.addWidget(self.window1) # Add the file explorer window
+        self.stacked_widget.addWidget(self.window2) # Add the music explorer window
+        self.stacked_widget.addWidget(self.window3) # Add the pdf explorer window
+        self.stacked_widget.addWidget(self.window4) # Add the image explorer window
+        self.stacked_widget.addWidget(self.window5) # Add the video explorer window
+        self.stacked_widget.addWidget(self.window6) # Add the file shredder window
+        self.stacked_widget.addWidget(self.window7) # Add the visualise window
+        self.stacked_widget.addWidget(self.window8) # Add the file uploader window
         # Add the stacked widget to the main layout
         self.main_layout.addWidget(self.stacked_widget, 8)  # Adjusting space for main content
 
@@ -101,6 +103,11 @@ class MainWindow(QMainWindow):
         button_7_visualise = QPushButton(f"Visualise")
         button_7_visualise.clicked.connect(lambda: self.show_window(self.window7.window_index))
         self.sidebar_layout.addWidget(button_7_visualise)
+
+        # Add buttons to the sidebar
+        button_8_visualise = QPushButton(f"Cloud")
+        button_8_visualise.clicked.connect(lambda: self.show_window(self.window8.window_index))
+        self.sidebar_layout.addWidget(button_8_visualise)
 
         # Set the default screen to the welcome window
         self.stacked_widget.setCurrentIndex(0)
