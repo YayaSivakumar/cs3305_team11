@@ -47,8 +47,11 @@ class Video(File):
                 print(f"  Bitrate: {video.bitrate} kbps")
                 print(f"  Frame Rate: {video.frame_rate} fps")
                 print(f"  Audio Codec: {video.audio_codec}")
+                print(f"  Size: {video.size()}")
 
+directory_path = '/Users/danielcagney/Desktop/'
 
-
-
+cache = FileSystemCache()
+video_file = Video(directory_path, cache)
+video_file._show_video_data()
 
