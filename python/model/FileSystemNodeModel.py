@@ -55,7 +55,9 @@ class FileSystemNode:
         return None
 
     def print_tree(self, level=0):
-        """Print the tree structure."""
+        """Print the tree structure.
+            Level is used for recursive call, param not to be used for testing per say
+        """
         print('  ' * level + self.name())
         for child in self.children:
             child.print_tree(level + 1)
