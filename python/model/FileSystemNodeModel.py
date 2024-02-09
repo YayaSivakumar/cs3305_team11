@@ -112,11 +112,6 @@ class File(FileSystemNode):
 
 
 
-class Document(File):
-    def __init__(self, path, cache):
-        super().__init__(path, cache)
-
-
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
     def __init__(self, path, cache):
@@ -173,7 +168,9 @@ class Directory(FileSystemNode):
 if __name__ == '__main__':
     cache = FileSystemCache()
     root_path = '/users/conor/Downloads'  # Change to your target directory
-    root_directory = Directory(root_path, cache)
+    # root_directory = Directory(root_path, cache)
+    file_demo = FileSystemNode(root_path, cache)
+    file_demo.print_tree(3)
 
 
 
