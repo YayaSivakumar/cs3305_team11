@@ -111,7 +111,6 @@ class File(FileSystemNode):
             print(f"Error moving file: {e}")
 
 
-
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
     def __init__(self, path, cache):
@@ -141,7 +140,7 @@ class Directory(FileSystemNode):
         """List all files and folders in the directory."""
         return [child.name() for child in self.children]
     
-    def find_file(self, file_name):
+    def find_file(self, file_name: str):
         """Recursively find a file in the directory and its subdirectories."""
         for child in self.children:
             if child.name() == file_name:
@@ -152,7 +151,7 @@ class Directory(FileSystemNode):
                     return found
         return None
 
-    def find_files_by_extension(self, extension):
+    def find_files_by_extension(self, extension: str):
         """Recursively find all files with a given extension in the directory and its subdirectories."""
         matching_files = []  # List of matching files
         for child in self.children:  # Iterate over the children
@@ -166,11 +165,22 @@ class Directory(FileSystemNode):
 
 
 if __name__ == '__main__':
+    from dotenv import load_dotenv
     cache = FileSystemCache()
-    root_path = '/users/conor/Downloads'  # Change to your target directory
-    # root_directory = Directory(root_path, cache)
-    file_demo = FileSystemNode(root_path, cache)
-    file_demo.print_tree(3)
+
+    load_dotenv()
+
+    env_path = os.getenv('ROOT_PATH')
+    if env_path:
+        print('Running on path as given in .env file')
+        root_directory = Directory(env_path, cache)
+        file_demo = FileSystemNode(env_path, cache)
+    else:
+        print("DOCUMENTS_PATH environment variable is not set.")
+        root_path = '/add/a/path/here'  # Change to your target directory
+        root_directory = Directory(root_path, cache)
+        file_demo = FileSystemNode(root_path, cache)
+    # root_directory.find_files_by_extension('.txt')
 
 
 
