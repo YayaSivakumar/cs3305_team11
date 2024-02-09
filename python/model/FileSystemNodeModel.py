@@ -2,23 +2,25 @@ import os
 from datetime import datetime
 import shutil
 
+
 class FileSystemCache:
     """A simple cache for storing file and directory nodes."""
+
     def __init__(self):
         self.cache = {}
-    
+
     def get(self, path):
         """Get the file or directory node from the cache if it exists and is up to date."""
         if path in self.cache and not self.is_modified(path):
             return self.cache[path]
         else:
             return None
-    
+
     def update(self, path, node):
         """Update the cache with the given file or directory node."""
         self.cache[path] = node
         node.cache_timestamp = datetime.now()
-    
+
     def is_modified(self, path):
         """Check if the file or directory has been modified since it was last cached."""
         cached_node = self.cache.get(path, None)
@@ -31,8 +33,10 @@ class FileSystemCache:
         if path in self.cache:
             del self.cache[path]
 
+
 class FileSystemNode:
     """Represents a file or directory in the file system."""
+
     def __init__(self, path, cache):
         self.path = path
         self.cache_timestamp = None
@@ -55,22 +59,22 @@ class FileSystemNode:
         print('  ' * level + self.name())
         for child in self.children:
             child.print_tree(level + 1)
-    
+
     def name(self):
         """Return the name of the file or directory."""
         return os.path.basename(self.path)
-    
+
     def size(self):
         """Return the size of the file in bytes."""
         try:
             return os.path.getsize(self.path)
         except FileNotFoundError:
             return 0
-    
+
     def creation_date(self):
         """Return the creation date of the file."""
         return datetime.fromtimestamp(os.path.getctime(self.path))
-    
+
     def modification_date(self):
         """Return the modification date of the file."""
         return datetime.fromtimestamp(os.path.getmtime(self.path))
@@ -89,6 +93,7 @@ class FileSystemNode:
         """Change the permissions of the file."""
         os.chmod(self.path, mode)
 
+
 class File(FileSystemNode):
     def __init__(self, path, cache):
         super().__init__(path, cache)
@@ -100,7 +105,7 @@ class File(FileSystemNode):
         """Return the file's extension."""
         _, ext = os.path.splitext(self.path)
         return ext
-    
+
     def move(self, new_path):
         """Move the file to a new location."""
         try:
@@ -113,10 +118,11 @@ class File(FileSystemNode):
 
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
+
     def __init__(self, path, cache):
         super().__init__(path, cache)
         self._populate()  # Populate the directory with its children
-    
+
     def _populate(self):
         """Populate the directory with its children."""
         try:
@@ -139,7 +145,7 @@ class Directory(FileSystemNode):
     def list_contents(self):
         """List all files and folders in the directory."""
         return [child.name() for child in self.children]
-    
+
     def find_file(self, file_name: str):
         """Recursively find a file in the directory and its subdirectories."""
         for child in self.children:
@@ -166,23 +172,17 @@ class Directory(FileSystemNode):
 
 if __name__ == '__main__':
     from dotenv import load_dotenv
+
     cache = FileSystemCache()
 
     load_dotenv()
 
-    env_path = os.getenv('ROOT_PATH')
+    env_path: str = os.getenv('ROOT_PATH')
     if env_path:
         print('Running on path as given in .env file')
         root_directory = Directory(env_path, cache)
-        file_demo = FileSystemNode(env_path, cache)
     else:
         print("DOCUMENTS_PATH environment variable is not set.")
         root_path = '/add/a/path/here'  # Change to your target directory
         root_directory = Directory(root_path, cache)
-        file_demo = FileSystemNode(root_path, cache)
-    # root_directory.find_files_by_extension('.txt')
-
-
-
-
-
+    root_directory.print_tree()
