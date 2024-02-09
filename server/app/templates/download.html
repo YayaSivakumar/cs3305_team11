@@ -1,0 +1,69 @@
+<!-- templates/download.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download File</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #666;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Download File</h1>
+        <p><strong>Filename:</strong> {{ file.filename }}</p>
+        <p><strong>Message:</strong> {{ file.message }}</p>
+        <p><strong>Link Expires:</strong> {{ file.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
+
+        {% if file.is_password_protected %}
+        <p>This file is password protected. Please enter the password to download.</p>
+        <form action="{{ url_for('download_file', unique_id=file.unique_id) }}" method="post">
+            <input type="password" name="password" placeholder="Enter password" required>
+            <button type="submit">Submit Password</button>
+        </form>
+        {% else %}
+        <!-- Direct download link button -->
+        <form action="{{ file.download_link }}" method="get">
+            <button type="submit">Download Now</button>
+        </form>
+    {% endif %}
+    </div>
+</body>
+</html>
