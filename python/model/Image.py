@@ -6,7 +6,7 @@ import subprocess
 
 class Image(File):
 
-    def __init__(self, path, cache):
+    def __init__(self, path: str, cache):
         super().__init__(path, cache)
         self._filetype = 'image'
         self._format = self.path.split('.')[-1]
@@ -22,7 +22,7 @@ class Image(File):
         return self._format
 
     @format.setter
-    def format(self, value):
+    def format(self, value: str):
         self._format = value
 
     @property
@@ -31,7 +31,7 @@ class Image(File):
         return self._width
 
     @width.setter
-    def width(self, value):
+    def width(self, value: int):
         self._width = value
 
     @property
@@ -40,7 +40,7 @@ class Image(File):
         return self._height
 
     @height.setter
-    def height(self, value):
+    def height(self, value: int):
         self._height = value
 
     @property
@@ -49,7 +49,7 @@ class Image(File):
         return self._location
 
     @location.setter
-    def location(self, value):
+    def location(self, value: tuple):
         self._location = value
 
     @property
@@ -66,7 +66,7 @@ class Image(File):
         Populate the image metadata.
         """
         if self.format == 'HEIC':
-            self.heic_to_pillow_format(self.path)
+            self.heic_to_pillow_format()
 
         try:
             image = PIL.Image.open(self.path)
@@ -88,7 +88,7 @@ class Image(File):
         except IOError:
             print(f"Error: Cannot open {self.path}")
 
-    def heic_to_pillow_format(self, heic_path):
+    def heic_to_pillow_format(self):
         """
         Creates jpeg version of HEIC file in order to extract metadata using pillow library
 
@@ -100,7 +100,7 @@ class Image(File):
             # update path to the jpeg file
             self.path = "/Users/yachitrasivakumar/Downloads/IMG_5619.jpeg"
         except subprocess.CalledProcessError as e:
-            print(f"Failed to convert {heic_path} to JPEG. Error: {e}")
+            print(f"Failed to convert {self.path} to JPEG. Error: {e}")
 
     @staticmethod
     def dms_to_decimal(degrees, minutes, seconds, direction):
@@ -120,7 +120,7 @@ class Image(File):
         return decimal
 
     @staticmethod
-    def convert_gps_data(gps_data):
+    def convert_gps_data(gps_data: dict) -> tuple:
         """
         Converts GPS data from EXIF format to readable latitude and longitude.
 
@@ -141,6 +141,20 @@ class Image(File):
             return latitude, longitude
         else:
             return None
+
+    @staticmethod
+    def get_location_by_country(latitude: float, longitude: float):
+        """
+        Get the location of the image by country.
+
+        Parameters:
+        - latitude: The latitude of the image.
+        - longitude: The longitude of the image.
+
+        Returns:
+        The country of the image.
+        """
+        pass
 
 
 if __name__ == "__main__":
