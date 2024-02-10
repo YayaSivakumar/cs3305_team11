@@ -9,26 +9,26 @@ class FileSystemCache:
     def __init__(self):
         self.cache = {}
 
-    def get(self, path):
+    def get(self, path: str):
         """Get the file or directory node from the cache if it exists and is up to date."""
         if path in self.cache and not self.is_modified(path):
             return self.cache[path]
         else:
             return None
 
-    def update(self, path, node):
+    def update(self, path: str, node: object):
         """Update the cache with the given file or directory node."""
         self.cache[path] = node
         node.cache_timestamp = datetime.now()
 
-    def is_modified(self, path):
+    def is_modified(self, path: str):
         """Check if the file or directory has been modified since it was last cached."""
         cached_node = self.cache.get(path, None)
         if cached_node:
             return cached_node.modification_date() != datetime.fromtimestamp(os.path.getmtime(path))
         return True
 
-    def remove(self, path):
+    def remove(self, path: str):
         """Remove a file or directory from the cache."""
         if path in self.cache:
             del self.cache[path]
@@ -37,7 +37,7 @@ class FileSystemCache:
 class FileSystemNode:
     """Represents a file or directory in the file system."""
 
-    def __init__(self, path, cache):
+    def __init__(self, path: str, cache: FileSystemCache):
         self.path = path
         self.revert_path = path
         self.cache_timestamp = None
@@ -45,7 +45,7 @@ class FileSystemNode:
         self.parent = None
         self.children = []
 
-    def find_node(self, name):
+    def find_node(self, name: str):
         """Recursively find a node by name."""
         if self.name() == name:
             return self
@@ -118,7 +118,7 @@ class FileSystemNode:
 
 
 class File(FileSystemNode):
-    def __init__(self, path, cache):
+    def __init__(self, path: str, cache: FileSystemCache):
         super().__init__(path, cache)
 
     def __str__(self) -> str:
@@ -133,7 +133,7 @@ class File(FileSystemNode):
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
 
-    def __init__(self, path, cache):
+    def __init__(self, path: str, cache: FileSystemCache):
         super().__init__(path, cache)
         self._populate()  # Populate the directory with its children
 
@@ -151,12 +151,12 @@ class Directory(FileSystemNode):
         except FileNotFoundError:
             print(f"Directory not found: {self.path}")
 
-    def add_child(self, child):
+    def add_child(self, child: object):
         """Add a child file or directory."""
         self.children.append(child)
         child.parent = self
 
-    def remove_child(self, child):
+    def remove_child(self, child: object):
         """Remove a child file or directory."""
         self.children.remove(child)
 
