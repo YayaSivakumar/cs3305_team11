@@ -4,25 +4,7 @@ import datetime
 import json
 import os
 import shutil
-
-
-def delete_empty_directories(path: str) -> None:
-    """
-    Function to delete the empty directories at path.
-
-    @params
-    path: str: absolute path of directory to be checked
-    """
-    for root, dirname, filename in os.walk(path, topdown=False):
-        # walk through directories in reverse order
-        subdir_path = os.path.join(root, dirname)
-
-        # check if subdir path is empty
-        if not os.listdir(subdir_path):
-            # delete if empty
-            os.rmdir(subdir_path)
-            print(f"Deleted empty subdirectory: {subdir_path}")
-
+from python.model.FileSystemNodeModel import Directory
 
 
 def get_all_file_paths(path: str) -> list[str]:
@@ -114,7 +96,7 @@ def create_list_of_file_obj(file_dict: dict):
     return file_list
 
 
-def save_to_json(file_list: list[File], json_file_path: str = 'cache/file_data.json'):
+def save_to_json(dir_node: Directory):
     """
     function to save the original structure to a JSON file
 
@@ -122,15 +104,16 @@ def save_to_json(file_list: list[File], json_file_path: str = 'cache/file_data.j
     md_list: list: list of file with metadata attributes
     json_file_path: str: path to JSON file
     """
-    if not os.path.exists(json_file_path):
+    if not os.path.exists('cache/file_data.json'):
         # code to create file here
         os.makedirs('cache', exist_ok=True)
 
-    with open(json_file_path, 'w') as json_file:
-        file_info = {}
-        for file in file_list:
-            file_info[file.original_path] = file.to_dict()
-        json.dump(file_info, json_file)
+    with open('cache/file_data.json', 'w') as json_file:
+        directory_config = {}
+        for node in dir_node.children:
+            directory_config[node.path] = node.revert_path
+
+        json.dump(directory_config, json_file)
 
 
 def load_json(json_file_path: str | bytes) -> dict:
@@ -142,8 +125,37 @@ def load_json(json_file_path: str | bytes) -> dict:
     ret: dict: dictionary representation of json file
     """
     with open(json_file_path, 'r') as json_file:
-        ret = json.load(json_file)
-    return ret
+        directory_config = json.load(json_file)
+    return directory_config
+
+
+def delete_empty_directories(dir_node: Directory, root: Directory):
+    """
+    Recursive function to delete empty directories in the directory tree.
+
+    @params
+    dir_node: Directory: directory to be checked for empty subdirectories
+    root: Directory: root directory of the tree
+    """
+
+    # work on a copy of children to safely modify the list during iteration
+    for child in dir_node.children[:]:
+
+        if isinstance(child, Directory):
+
+            # recursively process child directories
+            delete_empty_directories(child, root)
+
+            # check if the child directory is now empty and child has not been deleted
+            if not child.children and child.cache.get(child.path):
+                child.delete()
+
+        elif child.is_invisible():
+            child.delete()
+
+    # check if the current directory is now empty and not the root
+    if not dir_node.children and dir_node != root:
+        dir_node.delete()
 
 
 class File:

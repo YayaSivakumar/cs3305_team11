@@ -2,6 +2,7 @@
 import os
 from python.model.FileSystemNodeModel import Directory, FileSystemCache
 
+
 def organise_by_date(dir_node: Directory):
     """
     main function for organise by date function.
@@ -26,10 +27,8 @@ def _organise_by_date(dir_node: Directory):
     month_names = {'01':'January', '02':'February', '03':'March', '04':'April', '05':'May', '06':'June',\
                    '07':'July', '08':'August', '09':'September', '10':'October', '11':'November', '12':'December'}
 
-    # create copy of child files to avoid changing the list while iterating
-    children = [child for child in dir_node.children]
-
-    for node in children:
+    # create copy of child list to avoid changing the list while iterating
+    for node in dir_node.children[:]:
 
         if not node.is_invisible():
 
