@@ -39,6 +39,7 @@ class FileSystemNode:
 
     def __init__(self, path, cache):
         self.path = path
+        self.revert_path = path
         self.cache_timestamp = None
         self.cache = cache
         self.parent = None
@@ -95,6 +96,26 @@ class FileSystemNode:
         """Change the permissions of the file."""
         os.chmod(self.path, mode)
 
+    def is_invisible(self):
+        """Check if the file is hidden."""
+        return self.name().startswith('.')
+
+    def move(self, new_path: str):
+        """Move the file to a new location."""
+        try:
+            shutil.move(self.path, new_path)
+            # update paths
+            self.revert_path = self.path
+            self.path = new_path
+            # update data structure
+            self.parent.remove_child(self)
+            self.parent = self.cache.get(os.path.dirname(new_path))
+            self.parent.add_child(self)
+            # update cache
+            self.cache.update(new_path, self)
+        except Exception as e:
+            print(f"Error moving Obj: {e}")
+
 
 class File(FileSystemNode):
     def __init__(self, path, cache):
@@ -107,15 +128,6 @@ class File(FileSystemNode):
         """Return the file's extension."""
         _, ext = os.path.splitext(self.path)
         return ext
-
-    def move(self, new_path):
-        """Move the file to a new location."""
-        try:
-            shutil.move(self.path, new_path)
-            self.path = new_path
-            self.cache.update(new_path, self)
-        except Exception as e:
-            print(f"Error moving file: {e}")
 
 
 class Directory(FileSystemNode):
@@ -143,6 +155,10 @@ class Directory(FileSystemNode):
         """Add a child file or directory."""
         self.children.append(child)
         child.parent = self
+
+    def remove_child(self, child):
+        """Remove a child file or directory."""
+        self.children.remove(child)
 
     def list_contents(self):
         """List all files and folders in the directory."""
