@@ -112,6 +112,7 @@ class FileSystemNode:
             self.parent = self.cache.get(os.path.dirname(new_path))
             self.parent.add_child(self)
             # update cache
+            self.cache.remove(self.revert_path)
             self.cache.update(new_path, self)
         except Exception as e:
             print(f"Error moving Obj: {e}")
