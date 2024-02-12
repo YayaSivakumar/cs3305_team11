@@ -1,7 +1,7 @@
 from FileSystemNodeModel import File
 import PIL.Image
 from PIL.ExifTags import TAGS
-import subprocess
+import subprocess, pandas as pd
 
 
 class Image(File):
@@ -15,6 +15,15 @@ class Image(File):
         self._location = None
         self._resolution = None
         self._populate_image_metadata()
+
+    @property
+    def filetype(self):
+        """Return the filetype of the image."""
+        return self._filetype
+
+    @filetype.setter
+    def filetype(self, value: str):
+        self._filetype = value
 
     @property
     def format(self):
@@ -154,16 +163,25 @@ class Image(File):
         Returns:
         The country of the image.
         """
-        pass
+        countries = pd.read_csv('/Users/yachitrasivakumar/Desktop/country-coord.csv')
+        print(countries.keys())
+
+        match = countries.loc[(countries['Latitude (average)'] == latitude) & (countries['Longitude (average)'] == longitude)]
+
+        if not match.empty:
+            return match.iloc[0]['Country']
+        else:
+            return "No country found for these coordinates."
 
 
 if __name__ == "__main__":
 
     # testing
-    file_obj = Image('/Users/yachitrasivakumar/Downloads/IMG_5619.HEIC', {})
-    print(file_obj.width, file_obj.height, file_obj.format, file_obj.location, file_obj.resolution)
-    file_obj = Image('/Users/yachitrasivakumar/Downloads/12382975864_2cd7755b03_b.jpg', {})
-    print(file_obj.width, file_obj.height, file_obj.format, file_obj.location, file_obj.resolution)
+    #file_obj = Image('/Users/yachitrasivakumar/Downloads/IMG_5619.HEIC', {})
+    #print(file_obj.width, file_obj.height, file_obj.format, file_obj.location, file_obj.resolution)
+    #file_obj = Image('/Users/yachitrasivakumar/Downloads/12382975864_2cd7755b03_b.jpg', {})
+    #print(file_obj.width, file_obj.height, file_obj.format, file_obj.location, file_obj.resolution)
+    print(Image.get_location_by_country(53, -8))
 
 
 

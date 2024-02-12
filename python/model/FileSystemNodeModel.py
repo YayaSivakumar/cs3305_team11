@@ -101,7 +101,7 @@ class FileSystemNode:
         return self.name().startswith('.')
 
     def move(self, new_path: str):
-        """Move the file to a new location."""
+        """Move the node to a new location."""
         try:
             shutil.move(self.path, new_path)
             # update paths
