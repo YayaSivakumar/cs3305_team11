@@ -2,6 +2,7 @@ import os
 import pickle
 from datetime import datetime
 import shutil
+import hashlib
 
 
 class FileSystemCache:
@@ -141,6 +142,37 @@ class FileSystemNode:
             'parent': self.parent,
             'self.children': self.children
         }
+
+    def get_hashed_value(self):
+        """
+        Hashes the contents of a file using SHA-256 and returns the hash in hexadecimal format.
+
+        Parameters:
+        - filepath: Path to the file to be hashed.
+
+        Returns:
+        - A hexadecimal string representation of the hash of the file's contents.
+        """
+        sha256_hash = hashlib.sha256()
+
+        try:
+            if os.path.isdir(self.path):
+                return None
+            else:
+                # open file
+                with open(self.path, "rb") as f:
+                    # read contents in chunks to avoid memory issues
+                    for byte_block in iter(lambda: f.read(4096), b""):
+                        # update hashed value with each chunk
+                        sha256_hash.update(byte_block)
+                # return in hexadecimal format
+                return sha256_hash.hexdigest()
+        except FileNotFoundError:
+            print(f"File not found: {self.path}")
+            return None
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return None
 
 
 class File(FileSystemNode):
