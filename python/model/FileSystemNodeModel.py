@@ -1,4 +1,5 @@
 import os
+import pickle
 from datetime import datetime
 import shutil
 
@@ -32,6 +33,20 @@ class FileSystemCache:
         """Remove a file or directory from the cache."""
         if path in self.cache:
             del self.cache[path]
+
+    def save_to_file(self):
+        if not os.path.exists('cache/system_model_cache.pkl'):
+            # code to create file here
+            os.makedirs('cache', exist_ok=True)
+        with open('cache/system_model_cache.pkl', 'wb') as pickle_file:
+            pickle.dump(self, pickle_file)
+
+    def load_from_file(self):
+        with open('cache/system_model_cache.pkl', 'rb') as pickle_file:
+            self.cache = pickle.load(pickle_file)
+
+    def __str__(self):
+        return str(self.cache)
 
 
 class FileSystemNode:
@@ -117,6 +132,16 @@ class FileSystemNode:
         except Exception as e:
             print(f"Error moving Obj: {e}")
 
+    def to_json(self):
+        return {
+            'path': self.path,
+            'revert_path': self.revert_path,
+            'cache_timestamp': self.cache_timestamp,
+            'cache': self.cache,
+            'parent': self.parent,
+            'self.children': self.children
+        }
+
 
 class File(FileSystemNode):
     def __init__(self, path: str, cache: FileSystemCache):
@@ -200,8 +225,18 @@ if __name__ == '__main__':
     if env_path:
         print('Running on path as given in .env file')
         root_directory = Directory(env_path, cache)
+        cache.save_to_file()
     else:
         print("DOCUMENTS_PATH environment variable is not set.")
         root_path = '/add/a/path/here'  # Change to your target directory
         root_directory = Directory(root_path, cache)
     root_directory.print_tree()
+
+    print("Attempting to load cache from pkl")
+    cache = FileSystemCache()
+    print("Before load:")
+    print(cache)
+    cache.load_from_file()
+    print("After load:")
+    print(cache)
+
