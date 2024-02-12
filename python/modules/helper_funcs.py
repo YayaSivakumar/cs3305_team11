@@ -1,35 +1,6 @@
 # script name: helper_funcs.py
 from __future__ import annotations
-import datetime
 from python.model.FileSystemNodeModel import Directory
-
-
-def size_convert(size: int | float) -> str:
-    """
-    function to convert bytes to kilobytes
-
-    @params
-    size: int: size in bytes
-    ret: str: size in kilobytes
-    """
-    try:
-        return str(round(size / 1000, 2)) + ' KB'
-    except TypeError as e:
-        raise TypeError(f"Error: {e}")
-
-
-def time_convert(timestamp: int | float) -> str:
-    """
-    function to convert time to a readable format
-
-    @params
-    timestamp: int: time in seconds
-    ret: str: time in readable format
-    """
-    try:
-        return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-    except TypeError as e:
-        raise TypeError(f"Error: {e}")
 
 
 def delete_empty_directories(dir_node: Directory, root: Directory):
