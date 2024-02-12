@@ -4,5 +4,9 @@ requests~=2.31.0
 matplotlib~=3.8.2
 numpy
 ffmpeg~=1.4
-python-dotenv
+python-dotenv~=1.0.1
 flask_sqlalchemy
+apscheduler~=3.10.4
+pillow~=10.2.0
+flask~=3.0.2
+werkzeug~=3.0.1
