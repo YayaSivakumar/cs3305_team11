@@ -20,6 +20,7 @@ class File(db.Model):
     unique_id = db.Column(db.String(100), unique=True, nullable=False)
     message = db.Column(db.String(500))
     expires_at = db.Column(db.DateTime, default=datetime.utcnow)
+    download_count = db.Column(db.Integer, default=0)
 
 def create_app():
     app = Flask(__name__)
@@ -50,9 +51,11 @@ def create_app():
                 new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
                 db.session.add(new_file)
                 db.session.commit()
-                link = url_for('download_file_page', unique_id=unique_id, _external=True)
-                return f'File uploaded successfully. Shareable link: {link}'
-        return render_template('upload.html')
+            return f'File uploaded successfully. Shareable link: {url_for("download_file_page", unique_id=unique_id, _external=True)}'
+
+        else:
+            # If it's not a POST request, just render the template without context
+            return render_template('upload_success.html')
 
     @app.route('/download/<unique_id>')
     def download_file_page(unique_id):
@@ -84,11 +87,32 @@ def create_app():
         if not os.path.isfile(filepath):
             abort(404)  # 404 Not Found if the file does not exist on the server
 
+        # Increment the download_count by 1
+        file_record.download_count += 1
+        db.session.commit()
+
         # Serve the file for download, using the original filename for the download
         return send_from_directory(directory=app.config['UPLOAD_FOLDER'],
                                    path=unique_id,
                                    as_attachment=True,
                                    download_name=file_record.filename)
+
+
+    @app.route('/upload/success/<unique_id>')
+    def upload_success(unique_id):
+        file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
+        file_details = {
+            'url': url_for('download_file_page', unique_id=unique_id, _external=True),
+            'filename': file_record.filename,
+            'message': file_record.message,
+            'expires_at': file_record.expires_at,
+            'download_link': url_for('direct_download_file', unique_id=unique_id, _external=True),
+            'download_count': file_record.download_count
+        }
+        return render_template('upload_success.html', file=file_details)
+
+
+
 
     return app
 
