@@ -1,6 +1,8 @@
 import os
+import pickle
 from datetime import datetime
 import shutil
+import hashlib
 
 
 class FileSystemCache:
@@ -9,42 +11,57 @@ class FileSystemCache:
     def __init__(self):
         self.cache = {}
 
-    def get(self, path):
+    def get(self, path: str):
         """Get the file or directory node from the cache if it exists and is up to date."""
         if path in self.cache and not self.is_modified(path):
             return self.cache[path]
         else:
             return None
 
-    def update(self, path, node):
+    def update(self, path: str, node: object):
         """Update the cache with the given file or directory node."""
         self.cache[path] = node
         node.cache_timestamp = datetime.now()
 
-    def is_modified(self, path):
+    def is_modified(self, path: str):
         """Check if the file or directory has been modified since it was last cached."""
         cached_node = self.cache.get(path, None)
         if cached_node:
             return cached_node.modification_date() != datetime.fromtimestamp(os.path.getmtime(path))
         return True
 
-    def remove(self, path):
+    def remove(self, path: str):
         """Remove a file or directory from the cache."""
         if path in self.cache:
             del self.cache[path]
+
+    def save_to_file(self):
+        if not os.path.exists('cache/system_model_cache.pkl'):
+            # code to create file here
+            os.makedirs('cache', exist_ok=True)
+        with open('cache/system_model_cache.pkl', 'wb') as pickle_file:
+            pickle.dump(self, pickle_file)
+
+    def load_from_file(self):
+        with open('cache/system_model_cache.pkl', 'rb') as pickle_file:
+            self.cache = pickle.load(pickle_file)
+
+    def __str__(self):
+        return str(self.cache)
 
 
 class FileSystemNode:
     """Represents a file or directory in the file system."""
 
-    def __init__(self, path, cache):
+    def __init__(self, path: str, cache: FileSystemCache):
         self.path = path
+        self.revert_path = path
         self.cache_timestamp = None
         self.cache = cache
         self.parent = None
         self.children = []
 
-    def find_node(self, name):
+    def find_node(self, name: str):
         """Recursively find a node by name."""
         if self.name() == name:
             return self
@@ -95,9 +112,71 @@ class FileSystemNode:
         """Change the permissions of the file."""
         os.chmod(self.path, mode)
 
+    def is_invisible(self):
+        """Check if the file is hidden."""
+        return self.name().startswith('.')
+
+    def move(self, new_path: str):
+        """Move the node to a new location."""
+        try:
+            shutil.move(self.path, new_path)
+            # update paths
+            self.revert_path = self.path
+            self.path = new_path
+            # update data structure
+            self.parent.remove_child(self)
+            self.parent = self.cache.get(os.path.dirname(new_path))
+            self.parent.add_child(self)
+            # update cache
+            self.cache.remove(self.revert_path)
+            self.cache.update(new_path, self)
+        except Exception as e:
+            print(f"Error moving Obj: {e}")
+
+    def to_json(self):
+        return {
+            'path': self.path,
+            'revert_path': self.revert_path,
+            'cache_timestamp': self.cache_timestamp,
+            'cache': self.cache,
+            'parent': self.parent,
+            'self.children': self.children
+        }
+
+    def get_hashed_value(self):
+        """
+        Hashes the contents of a file using SHA-256 and returns the hash in hexadecimal format.
+
+        Parameters:
+        - filepath: Path to the file to be hashed.
+
+        Returns:
+        - A hexadecimal string representation of the hash of the file's contents.
+        """
+        sha256_hash = hashlib.sha256()
+
+        try:
+            if os.path.isdir(self.path):
+                return None
+            else:
+                # open file
+                with open(self.path, "rb") as f:
+                    # read contents in chunks to avoid memory issues
+                    for byte_block in iter(lambda: f.read(4096), b""):
+                        # update hashed value with each chunk
+                        sha256_hash.update(byte_block)
+                # return in hexadecimal format
+                return sha256_hash.hexdigest()
+        except FileNotFoundError:
+            print(f"File not found: {self.path}")
+            return None
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return None
+
 
 class File(FileSystemNode):
-    def __init__(self, path, cache):
+    def __init__(self, path: str, cache: FileSystemCache):
         super().__init__(path, cache)
 
     def __str__(self) -> str:
@@ -108,20 +187,11 @@ class File(FileSystemNode):
         _, ext = os.path.splitext(self.path)
         return ext
 
-    def move(self, new_path):
-        """Move the file to a new location."""
-        try:
-            shutil.move(self.path, new_path)
-            self.path = new_path
-            self.cache.update(new_path, self)
-        except Exception as e:
-            print(f"Error moving file: {e}")
-
 
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
 
-    def __init__(self, path, cache):
+    def __init__(self, path: str, cache: FileSystemCache):
         super().__init__(path, cache)
         self._populate()  # Populate the directory with its children
 
@@ -139,10 +209,14 @@ class Directory(FileSystemNode):
         except FileNotFoundError:
             print(f"Directory not found: {self.path}")
 
-    def add_child(self, child):
+    def add_child(self, child: object):
         """Add a child file or directory."""
         self.children.append(child)
         child.parent = self
+
+    def remove_child(self, child: object):
+        """Remove a child file or directory."""
+        self.children.remove(child)
 
     def list_contents(self):
         """List all files and folders in the directory."""
@@ -183,8 +257,18 @@ if __name__ == '__main__':
     if env_path:
         print('Running on path as given in .env file')
         root_directory = Directory(env_path, cache)
+        cache.save_to_file()
     else:
         print("DOCUMENTS_PATH environment variable is not set.")
         root_path = '/add/a/path/here'  # Change to your target directory
         root_directory = Directory(root_path, cache)
     root_directory.print_tree()
+
+    print("Attempting to load cache from pkl")
+    cache = FileSystemCache()
+    print("Before load:")
+    print(cache)
+    cache.load_from_file()
+    print("After load:")
+    print(cache)
+

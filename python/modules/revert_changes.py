@@ -1,48 +1,62 @@
 # script name: revert_changes.py
-import os
-from helper_funcs import load_json, create_list_of_file_obj, move_file, save_to_json
+from python.model.FileSystemNodeModel import Directory, FileSystemCache
+from python.modules.helper_funcs import delete_empty_directories
+from organise_by_date import organise_by_date
 
 
-def revert_changes():
+def revert_changes(dir_node: Directory):
     try:
-        _revert_changes('cache/file_data.json')
+        _revert_changes(dir_node)
+
+        # delete empty directories
+        delete_empty_directories(dir_node, dir_node)
+
     except FileNotFoundError as e:
         print(e)
-        # print("Nothing to revert")
 
 
-def _revert_changes(json_file_path: str):
+def _revert_changes(dir_node: Directory):
     """
     function to revert changes and put files back in the original location
 
     @params
     json_file_path: str: path to JSON file containing original structure
     """
-    file_dict = load_json(json_file_path)
-    # create list of file objects from dictionary
-    file_list = create_list_of_file_obj(file_dict)
-    for file in file_list:
-        original_path = file.original_path
-        current_path = file.current_path
 
-        if os.path.exists(current_path) and (not (os.path.exists(original_path))):
-            move_file(current_path, original_path)
+    # create copy of child files to avoid changing the list while iterating
+    children = [child for child in dir_node.children]
 
-        file.original_path, file.current_path = file.current_path, file.original_path
+    for node in children:
+        # recursively revert changes
+        if isinstance(node, Directory):
+            _revert_changes(node)
 
-    save_to_json(file_list)
-    # print(f"Moved: {files_moved} files, checked: {files_checked} files")
+        if node.path != node.revert_path:
+            # move file back to original location
+            node.move(node.revert_path)
 
-
-def delete_empty_directories(parent_path: str):
-    """
-    Function to delete any subdirectories under specified path.
-
-    @params
-    parent_path: str: directory of parent folder
-    ret: None
-    """
-    
 
 if __name__ == "__main__":
-    revert_changes()
+    # testing
+    cache = FileSystemCache()
+    dir_obj = Directory('/Users/yachitrasivakumar/Desktop/test_by_date', cache)
+
+    def print_contents(node: Directory):
+        print(node.list_contents())
+        for child in node.children:
+            if isinstance(child, Directory):
+                print_contents(child)
+
+    organise_by_date(dir_obj)
+    # check for data structure consistency
+    print('after organising by date')
+    print_contents(dir_obj)
+
+    print('after reverting changes')
+    revert_changes(dir_obj)
+    # check for data structure consistency
+    print_contents(dir_obj)
+
+    #dir_obj = Directory('/Users/yachitrasivakumar/Desktop/empty', cache)
+    #delete_empty_directories(dir_obj, dir_obj)
+
