@@ -1,14 +1,14 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
-
-from PyQt5.QtCore import QThread, pyqtSignal
-import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QFileDialog, QLineEdit, QComboBox, \
+    QProgressBar
+from PyQt5.QtCore import QThread, pyqtSignal, QUrl
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+import sys, time
 import os
 import requests
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QFileDialog, QLineEdit, QComboBox
-
 class UploadThread(QThread):
     finished = pyqtSignal(str)
     error = pyqtSignal(Exception)
+    progress = pyqtSignal(int)  # Add a signal for progress updates
 
     def __init__(self, url, filePath, title, message, persistence_hours):
         super().__init__()
@@ -23,6 +23,10 @@ class UploadThread(QThread):
 
     def run(self):
         try:
+            # Simulate upload progress
+            for i in range(101):  # Simulate 0 to 100%
+                self.progress.emit(i)  # Emit progress update
+                time.sleep(0.02)  # Sleep to simulate upload time
             with open(self.filePath, 'rb') as f:
                 files = {'file': (os.path.basename(self.filePath), f)}
                 data = {'message': self.message, 'title': self.title, 'expiration_hours': self.persistence_hours}
@@ -39,20 +43,23 @@ class UploadThread(QThread):
 
 
 class FileUploader(QWidget):
+    uploadFinished = pyqtSignal(str)  # Signal to indicate upload is finished and pass URL
+
     def __init__(self, window_index):
         super().__init__()
         self.window_index = window_index
-        # Create a layout
-        layout = QVBoxLayout()
         self.filePath = ''  # Store the selected file path
         self.shareable_link = ''  # Initialize shareable_link
+        self.unique_id = ''  # Initialize unique_id
         self.initUI()
 
     def initUI(self):
         self.setWindowTitle('File Uploader')
 
+        # Initialize the layout first
         self.layout = QVBoxLayout()
 
+        # Continue adding other widgets to the layout
         self.label = QLabel('Select a file you wish to upload and share:')
         self.layout.addWidget(self.label)
 
@@ -60,43 +67,36 @@ class FileUploader(QWidget):
         self.uploadButton.clicked.connect(self.openFileDialog)
         self.layout.addWidget(self.uploadButton)
 
-        # Title input
         self.titleInput = QLineEdit()
         self.titleInput.setPlaceholderText('Enter a title (optional)')
         self.layout.addWidget(self.titleInput)
 
-        # Message input
         self.messageInput = QLineEdit()
         self.messageInput.setPlaceholderText('Enter a message (optional)')
         self.layout.addWidget(self.messageInput)
 
-        # Add to your FileUploader's initUI method
-        # self.passwordInput = QLineEdit()
-        # self.passwordInput.setPlaceholderText('Enter a password (optional)')
-        # self.passwordInput.setEchoMode(QLineEdit.Password)  # Hide password input
-        # self.layout.addWidget(self.passwordInput)
-
-        # Persistence selection
         self.persistenceComboBox = QComboBox()
         self.persistenceComboBox.addItems(['24 hours', '3-Days', '7-Days'])
         self.layout.addWidget(self.persistenceComboBox)
 
-        # Upload and Share button
         self.uploadShareButton = QPushButton('Upload And Share Now')
         self.uploadShareButton.clicked.connect(self.uploadAndShare)
         self.layout.addWidget(self.uploadShareButton)
 
+        # Initialize and add the progress bar to the layout
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setMaximum(100)  # Set the maximum value to 100%
+        self.layout.addWidget(self.progressBar)
+
         self.selectedFileLabel = QLabel('')
         self.layout.addWidget(self.selectedFileLabel)
 
-        # Add a Copy to Clipboard button
         self.copyButton = QPushButton('Copy Link for sharing')
         self.copyButton.clicked.connect(self.copyLinkToClipboard)
         self.layout.addWidget(self.copyButton)
+        self.copyButton.setEnabled(False)  # Initially disable the Copy to Clipboard button
 
-        # Ensure the Copy to Clipboard button is initially disabled
-        self.copyButton.setEnabled(False)
-
+        # Finally, set the layout for the widget
         self.setLayout(self.layout)
 
     def openFileDialog(self):
@@ -106,6 +106,7 @@ class FileUploader(QWidget):
             self.selectedFileLabel.setText(f'Selected File: {self.filePath}')
 
     def uploadAndShare(self):
+        self.progressBar.setValue(0)  # Reset progress bar
         if self.filePath:
             url = 'http://127.0.0.1:5000/upload'
             title = self.titleInput.text()  # Make sure to retrieve the title from the input field
@@ -119,6 +120,11 @@ class FileUploader(QWidget):
             self.uploadThread = UploadThread(url, self.filePath, title, message, persistence_hours)
             self.uploadThread.finished.connect(self.onUploadFinished)
             self.uploadThread.error.connect(self.onUploadError)
+
+            # Connect progress signal to both update the value and dynamically style the progress bar
+            self.uploadThread.progress.connect(lambda value: self.progressBar.setValue(value))
+            self.uploadThread.progress.connect(self.updateProgressBarStyle)
+
             self.uploadThread.start()
         else:
             self.selectedFileLabel.setText('No file selected.')
@@ -127,10 +133,18 @@ class FileUploader(QWidget):
         # Assume response_text contains the full message with the link
         # Extract just the URL part if necessary
         shareable_link = response_text.split(': ')[-1].strip()  # Adjust parsing as needed
+        print(f"shareable_link: {shareable_link}")
         self.shareable_link = shareable_link  # Ensure this is set
         self.selectedFileLabel.setText(f'File uploaded successfully. <a href="{shareable_link}">Click here</a> to access the file.')
         self.selectedFileLabel.setOpenExternalLinks(True)
         self.copyButton.setEnabled(True)  # Enable the Copy to Clipboard button after link is available
+        # Handle upload finished, extract URL, and emit signal
+        unique_id = shareable_link.split('/')[-1]
+        print(f"unique_id: {unique_id}")
+        success_url = f"http://127.0.0.1:5000/upload/success/{unique_id}"
+        self.uploadFinished.emit(success_url)
+        self.progressBar.setValue(0)  # Reset or hide progress bar
+
 
 
     def onUploadError(self, exception):
@@ -154,10 +168,10 @@ class FileUploader(QWidget):
 
                 # Split the response text and get the last part, assuming the format is consistent
                 shareable_link = response.text.split(': ')[-1]
+
                 self.selectedFileLabel.setText(f'File uploaded successfully. <a href="{shareable_link}">Click here</a> to access the file.')
                 self.selectedFileLabel.setOpenExternalLinks(True)
                 self.copyButton.setEnabled(True)  # Enable the Copy to Clipboard button after link is available
-
             else:
                 self.selectedFileLabel.setText(f'Failed to upload file. Status code: {response.status_code}')
         except Exception as e:
@@ -181,10 +195,27 @@ class FileUploader(QWidget):
         self.selectedFileLabel.setText('')  # Clear the selected file label
         self.copyButton.setEnabled(False)  # Disable the Copy to Clipboard button
 
-    # Call this method at the end of onUploadFinished and onUploadError
+    def updateProgressBarStyle(self, value):
 
+        colour = "#32CD32"  # Green
 
+        # Calculate the gradient transition based on current progress value
+        progress_percentage = value / 100
 
+        self.progressBar.setStyleSheet(f"""
+            QProgressBar {{
+                border: 2px solid grey;
+                border-radius: 7px;
+                text-align: center;
+                background-color: #F0F0F0;
+            }}
+
+            QProgressBar::chunk {{
+                background-color: {colour};
+                border-radius: 5px;
+                margin: 1px;
+            }}
+        """)
 
     @property
     def window_index(self):
