@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from flask import Flask, request, render_template, send_from_directory, abort, url_for
+from flask import Flask, request, render_template, send_from_directory, abort, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -20,6 +20,7 @@ class File(db.Model):
     unique_id = db.Column(db.String(100), unique=True, nullable=False)
     message = db.Column(db.String(500))
     expires_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 def create_app():
     app = Flask(__name__)
@@ -51,8 +52,16 @@ def create_app():
                 db.session.add(new_file)
                 db.session.commit()
                 link = url_for('download_file_page', unique_id=unique_id, _external=True)
-                return f'File uploaded successfully. Shareable link: {link}'
+                return jsonify({'message': 'File uploaded successfully.', 'link': link})
         return render_template('upload.html')
+
+    @app.route('/uploaded/<unique_id>', methods=['GET'])
+    def uploaded(unique_id):
+        file = File.query.filter_by(unique_id=unique_id).first()
+        if file:
+            return render_template('uploaded.html', file=file)
+        else:
+            return "File not found", 404
 
     @app.route('/download/<unique_id>')
     def download_file_page(unique_id):
@@ -103,10 +112,12 @@ def cleanup_expired_files(app):
             db.session.delete(file)
         db.session.commit()
 
+
 def start_scheduler(app):
     scheduler = BackgroundScheduler()
     scheduler.add_job(func=lambda: cleanup_expired_files(app), trigger="interval", hours=1)
     scheduler.start()
+
 
 if __name__ == '__main__':
     app_instance = create_app()

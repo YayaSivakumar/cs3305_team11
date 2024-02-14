@@ -1,3 +1,5 @@
+import webbrowser
+
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
 
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -151,9 +153,8 @@ class FileUploader(QWidget):
                 response = requests.post(url, files=files, data=data)
             if response.status_code == 200:
                 print(response.text)
-
-                # Split the response text and get the last part, assuming the format is consistent
-                shareable_link = response.text.split(': ')[-1]
+                response_json = response.json()
+                shareable_link = response_json['link']
                 self.selectedFileLabel.setText(f'File uploaded successfully. <a href="{shareable_link}">Click here</a> to access the file.')
                 self.selectedFileLabel.setOpenExternalLinks(True)
                 self.copyButton.setEnabled(True)  # Enable the Copy to Clipboard button after link is available
@@ -165,6 +166,11 @@ class FileUploader(QWidget):
         finally:
             self.filePath = ''  # Reset the file path after uploading
 
+    def openUploadPage(self):
+        unique_id = self.selectedFileLabel.text().split('/')[-1]  # Extract the unique ID from the shareable link
+        url = f'http://127.0.0.1:5000/uploaded/{unique_id}'  # URL of the new splash screen
+        webbrowser.open_new(url)
+
     # Ensure the copyLinkToClipboard method checks if shareable_link is set
     def copyLinkToClipboard(self):
         if self.shareable_link:
@@ -173,6 +179,7 @@ class FileUploader(QWidget):
             self.selectedFileLabel.setText('Shareable link copied to clipboard!')
         else:
             self.selectedFileLabel.setText('No shareable link available to copy.')
+        self.openUploadPage()
 
     def resetForm(self):
         self.filePath = ''  # Clear the selected file path

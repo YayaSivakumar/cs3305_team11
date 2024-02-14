@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- ... -->
+    <title>Upload Successful</title>
+</head>
+<body>
+    <h1>File Uploaded Successfully!</h1>
+    <p>Your file "{{ file.filename }}" was uploaded successfully.</p>
+    <p>Shareable link: <a href="{{ url_for('download_file_page', unique_id=file.unique_id, _external=True) }}">Click here</a></p>
+    <!-- You can add an image or gif here to make the page more visually appealing -->
+    <!-- ... -->
+</body>
+</html>
