@@ -9,7 +9,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 
-class Window7(QWidget):
+class VisualiseWindow(QWidget):
     def __init__(self, window_index):
         super().__init__()
         self.window_index = window_index
