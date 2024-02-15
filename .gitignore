@@ -131,7 +131,7 @@ env.bak/
 venv.bak/
 
 # Uploads
-server/UPLOADS_FOLDER/*
+UPLOADS_FOLDER
 
 # Spyder project settings
 .spyderproject

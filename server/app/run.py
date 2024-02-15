@@ -7,11 +7,11 @@ import os
 import uuid
 from dotenv import load_dotenv
 
-load_dotenv() # Load environment variables from .env file
+load_dotenv()  # Load environment variables from .env file
 
-db = SQLAlchemy() # Create a SQLAlchemy database instance
+db = SQLAlchemy()  # Create a SQLAlchemy database instance
 
-UPLOADS_FOLDER = os.getenv('UPLOADS_FOLDER') # Get the path to the uploads folder from the environment variables
+UPLOADS_FOLDER = os.getenv('UPLOADS_FOLDER')  # Get the path to the uploads folder from the environment variables
 
 
 class File(db.Model):
@@ -33,8 +33,8 @@ def create_app():
         db.create_all()
 
     @app.route('/')
-    def hello_world():
-        return 'Hello World!'
+    def home():
+        return render_template('index.html')
 
     @app.route('/upload', methods=['GET', 'POST'])
     def upload_file():
@@ -69,11 +69,11 @@ def create_app():
         print(File.query.all())
         file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
         file_details = {
-                    'filename': file_record.filename,
-                    'message': file_record.message,
-                    'expires_at': file_record.expires_at,
-                    'download_link': url_for('direct_download_file', unique_id=unique_id, _external=True)
-                }
+            'filename': file_record.filename,
+            'message': file_record.message,
+            'expires_at': file_record.expires_at,
+            'download_link': url_for('direct_download_file', unique_id=unique_id, _external=True)
+        }
 
         return render_template('download.html', file=file_details)
 
@@ -100,6 +100,7 @@ def create_app():
                                    download_name=file_record.filename)
 
     return app
+
 
 def cleanup_expired_files(app):
     with app.app_context():
