@@ -1,29 +1,23 @@
 import webbrowser
-
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QFileDialog, QLineEdit, QComboBox, \
-    QProgressBar
-from PyQt5.QtCore import QThread, pyqtSignal, QUrl
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-import sys, time
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QFileDialog, QLineEdit, QComboBox
+from PyQt5.QtWidgets import QProgressBar
+from PyQt5.QtCore import QThread, pyqtSignal
+import time
 import os
 import requests
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QFileDialog, QLineEdit, QComboBox
 
 class UploadThread(QThread):
-    finished = pyqtSignal(str)
+    finished = pyqtSignal(object) # Change the signal to emit an object instead of a string (JSON data)
     error = pyqtSignal(Exception)
     progress = pyqtSignal(int)  # Add a signal for progress updates
 
-    def __init__(self, url, filePath, title, message, persistence_hours):
+    def __init__(self, url, filePath, message, persistence_hours):
         super().__init__()
         self.url = url
         self.filePath = filePath
         self.message = message
-        self.title = title
         self.persistence_hours = persistence_hours
         # self.password = password
-
-
 
     def run(self):
         try:
@@ -33,18 +27,15 @@ class UploadThread(QThread):
                 time.sleep(0.02)  # Sleep to simulate upload time
             with open(self.filePath, 'rb') as f:
                 files = {'file': (os.path.basename(self.filePath), f)}
-                data = {'message': self.message, 'title': self.title, 'expiration_hours': self.persistence_hours}
+                data = {'message': self.message, 'expiration_hours': self.persistence_hours}
                 response = requests.post(self.url, files=files, data=data)
             if response.status_code == 200:
-                self.finished.emit(response.text)
+                response_data = response.json()  # Parse JSON data from the response
+                self.finished.emit(response_data)  # Emit the parsed JSON data instead of response.text
             else:
                 self.error.emit(Exception(f'Failed to upload file. Status code: {response.status_code}'))
         except Exception as e:
             self.error.emit(e)
-
-
-
-
 
 class FileUploader(QWidget):
     uploadFinished = pyqtSignal(str)  # Signal to indicate upload is finished and pass URL
@@ -70,10 +61,6 @@ class FileUploader(QWidget):
         self.uploadButton = QPushButton('Select File')
         self.uploadButton.clicked.connect(self.openFileDialog)
         self.layout.addWidget(self.uploadButton)
-
-        self.titleInput = QLineEdit()
-        self.titleInput.setPlaceholderText('Enter a title (optional)')
-        self.layout.addWidget(self.titleInput)
 
         self.messageInput = QLineEdit()
         self.messageInput.setPlaceholderText('Enter a message (optional)')
@@ -110,18 +97,16 @@ class FileUploader(QWidget):
             self.selectedFileLabel.setText(f'Selected File: {self.filePath}')
 
     def uploadAndShare(self):
+        '''Upload the file and share it. Also, emit the uploadFinished signal.'''
         self.progressBar.setValue(0)  # Reset progress bar
         if self.filePath:
-            url = 'http://127.0.0.1:5000/upload'
-            title = self.titleInput.text()  # Make sure to retrieve the title from the input field
-            message = self.messageInput.text()
-            persistence = self.persistenceComboBox.currentText()
+            url = 'http://127.0.0.1:5000/upload'  # URL of the Flask app's upload endpoint
+            message = self.messageInput.text() # Extract the message from the input field
+            persistence = self.persistenceComboBox.currentText() # Extract the selected persistence option
             persistence_hours = {'24 hours': 24, '3-Days': 72, '7-Days': 168}.get(persistence,
                                                                                   24)  # Corrected the dictionary keys to match the combobox items
-            # password = self.passwordInput.text()
 
-            # Correctly passing the 'title' argument now
-            self.uploadThread = UploadThread(url, self.filePath, title, message, persistence_hours)
+            self.uploadThread = UploadThread(url, self.filePath, message=message, persistence_hours=persistence_hours)  # Pass the file path to the thread
             self.uploadThread.finished.connect(self.onUploadFinished)
             self.uploadThread.error.connect(self.onUploadError)
 
@@ -133,10 +118,11 @@ class FileUploader(QWidget):
         else:
             self.selectedFileLabel.setText('No file selected.')
 
-    def onUploadFinished(self):
-        # Extract the shareable link from the response text
+    def onUploadFinished(self, response_data):
+        '''Handle the upload finished and extract the URL. Also, emit the uploadFinished signal.'''
+        # Handle the upload finished and extract the URL
+        self.shareable_link = response_data['link']
         print(f"shareable_link: {self.shareable_link}")
-        self.shareable_link = self.shareable_link  # Ensure this is set
         self.selectedFileLabel.setText(f'File uploaded successfully. <a href="{self.shareable_link}">Click here</a> to access the file.')
         self.selectedFileLabel.setOpenExternalLinks(True)
         self.copyButton.setEnabled(True)  # Enable the Copy to Clipboard button after link is available
@@ -148,41 +134,9 @@ class FileUploader(QWidget):
         self.progressBar.setValue(0)  # Reset or hide progress bar
 
 
-
     def onUploadError(self, exception):
         # Handle any errors that occurred during the upload
         self.selectedFileLabel.setText(f'Error: {str(exception)}')
-
-
-    def uploadFile(self, filePath):
-        url = 'http://127.0.0.1:5000/upload'  # URL of the Flask app's upload endpoint
-        message = self.messageInput.text()
-        persistence = self.persistenceComboBox.currentText()
-        # Convert persistence option to hours for the backend
-        persistence_hours = {'1-Day': 24, '3-Days': 72, '7-Days': 168}.get(persistence, 24)
-        try:
-            with open(filePath, 'rb') as f:
-                files = {'file': (os.path.basename(filePath), f)}
-                data = {'message': message, 'expiration_hours': persistence_hours}
-                response = requests.post(url, files=files, data=data)
-            if response.status_code == 200:
-                print(f'Response {response}')
-                print(f'Response Text{response.text}')
-
-                response_json = response.json()
-                print(f'Response JSON{response_json}')
-                self.shareable_link = response_json['link']
-                print(f'Shareable Link {self.shareable_link}')
-                self.selectedFileLabel.setText(f'File uploaded successfully. <a href="{self.shareable_link}">Click here</a> to access the file.')
-                self.selectedFileLabel.setOpenExternalLinks(True)
-                self.copyButton.setEnabled(True)  # Enable the Copy to Clipboard button after link is available
-
-            else:
-                self.selectedFileLabel.setText(f'Failed to upload file. Status code: {response.status_code}')
-        except Exception as e:
-            self.selectedFileLabel.setText(f'Error: {str(e)}')
-        finally:
-            self.filePath = ''  # Reset the file path after uploading
 
     def openUploadPage(self):
         unique_id = self.shareable_link.split('/')[-1]  # Extract the unique ID from the shareable link
