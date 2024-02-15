@@ -3,15 +3,11 @@ from PyQt5.QtCore import QUrl
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget, QAction
 
-from python.primary_windows.window1 import Window1
-from python.primary_windows.window2 import Window2
-from python.primary_windows.window3 import Window3
-from python.primary_windows.window4 import Window4
-from python.primary_windows.window5 import Window5
-from python.primary_windows.window6 import Window6
-from python.primary_windows.window7 import Window7
-from python.primary_windows.window8 import FileUploader
-from python.primary_windows.welcome_window import WelcomeWindow
+from python.primary_windows.organise_window import OrganiseWindow
+from python.primary_windows.optimise_window import OptimiseWindow
+from python.primary_windows.visualise_window import VisualiseWindow
+from python.primary_windows.file_sharing_window import FileUploader
+from python.primary_windows.search_window import SearchWindow
 import styles.system_theme
 import styles.sidebar
 
@@ -42,15 +38,11 @@ class MainWindow(QMainWindow):
         self.sidebar_layout = QVBoxLayout(self.sidebar)
 
         # Create the different screens
-        self.welcome_window = WelcomeWindow(0)
-        self.window1 = Window1(1)
-        self.window2 = Window2(2)
-        self.window3 = Window3(3)
-        self.window4 = Window4(4)
-        self.window5 = Window5(5)
-        self.window6 = Window6(6)
-        self.window7 = Window7(7)
-        self.window8 = FileUploader(8)
+        self.search_window = SearchWindow(0)
+        self.organise_window = OrganiseWindow(1)
+        self.optimise_window = OptimiseWindow(2)
+        self.visualise_window = VisualiseWindow(3)
+        self.file_sharing_window = FileUploader(4)
 
         # Add the sidebar to the main layout
         self.main_layout.addWidget(self.sidebar, 2)  # 2/10 of the space for the sidebar
@@ -59,61 +51,42 @@ class MainWindow(QMainWindow):
         self.stacked_widget = QStackedWidget()
 
         # Add windows to the stacked widget
-        self.stacked_widget.addWidget(self.welcome_window) # Add the welcome window
-        self.stacked_widget.addWidget(self.window1) # Add the file explorer window
-        self.stacked_widget.addWidget(self.window2) # Add the music explorer window
-        self.stacked_widget.addWidget(self.window3) # Add the pdf explorer window
-        self.stacked_widget.addWidget(self.window4) # Add the image explorer window
-        self.stacked_widget.addWidget(self.window5) # Add the video explorer window
-        self.stacked_widget.addWidget(self.window6) # Add the file shredder window
-        self.stacked_widget.addWidget(self.window7) # Add the visualise window
-        self.stacked_widget.addWidget(self.window8) # Add the file uploader window
+        self.stacked_widget.addWidget(self.search_window) # Add the welcome window
+        self.stacked_widget.addWidget(self.organise_window) # Add the file explorer window
+        self.stacked_widget.addWidget(self.optimise_window) # Add the music explorer window
+        self.stacked_widget.addWidget(self.visualise_window) # Add the visualise window
+        self.stacked_widget.addWidget(self.file_sharing_window) # Add the file uploader window
         # Add the stacked widget to the main layout
         self.main_layout.addWidget(self.stacked_widget, 8)  # Adjusting space for main content
 
 
         # Add the stacked widget to the main layout
-        self.window8.uploadFinished.connect(self.showWebView)
+        self.file_sharing_window.uploadFinished.connect(self.showWebView)
 
         # Add buttons to the sidebar
-        button_1_file_explorer = QPushButton(f"File Explorer")
-        button_1_file_explorer.clicked.connect(lambda: self.show_window(self.window1.window_index))
-        self.sidebar_layout.addWidget(button_1_file_explorer)
+        button_0_file_search = QPushButton(f"Search")
+        button_0_file_search.clicked.connect(lambda: self.show_window(self.search_window.window_index))
+        self.sidebar_layout.addWidget(button_0_file_search)
 
         # Add buttons to the sidebar
-        button_2_music = QPushButton(f"Music Explorer")
-        button_2_music.clicked.connect(lambda: self.show_window(self.window2.window_index))
-        self.sidebar_layout.addWidget(button_2_music)
+        button_1_organise = QPushButton(f"Organise")
+        button_1_organise.clicked.connect(lambda: self.show_window(self.organise_window.window_index))
+        self.sidebar_layout.addWidget(button_1_organise)
 
         # Add buttons to the sidebar
-        button_3_pdf_explorer = QPushButton(f"PDFDocument Explorer")
-        button_3_pdf_explorer.clicked.connect(lambda: self.show_window(self.window3.window_index))
-        self.sidebar_layout.addWidget(button_3_pdf_explorer)
+        button_2_optimise = QPushButton(f"Optimise")
+        button_2_optimise.clicked.connect(lambda: self.show_window(self.optimise_window.window_index))
+        self.sidebar_layout.addWidget(button_2_optimise)
 
         # Add buttons to the sidebar
-        button_4_image_explorer = QPushButton(f"Image Explorer")
-        button_4_image_explorer.clicked.connect(lambda: self.show_window(self.window4.window_index))
-        self.sidebar_layout.addWidget(button_4_image_explorer)
+        button_3_visualise = QPushButton(f"Visualise")
+        button_3_visualise.clicked.connect(lambda: self.show_window(self.visualise_window.window_index))
+        self.sidebar_layout.addWidget(button_3_visualise)
 
         # Add buttons to the sidebar
-        button_5_video_explorer = QPushButton(f"Video Explorer")
-        button_5_video_explorer.clicked.connect(lambda: self.show_window(self.window5.window_index))
-        self.sidebar_layout.addWidget(button_5_video_explorer)
-
-        # Add buttons to the sidebar
-        button_6_file_shredder = QPushButton(f"Shredder")
-        button_6_file_shredder.clicked.connect(lambda: self.show_window(self.window6.window_index))
-        self.sidebar_layout.addWidget(button_6_file_shredder)
-
-        # Add buttons to the sidebar
-        button_7_visualise = QPushButton(f"Visualise")
-        button_7_visualise.clicked.connect(lambda: self.show_window(self.window7.window_index))
-        self.sidebar_layout.addWidget(button_7_visualise)
-
-        # Add buttons to the sidebar
-        button_8_visualise = QPushButton(f"Cloud")
-        button_8_visualise.clicked.connect(lambda: self.show_window(self.window8.window_index))
-        self.sidebar_layout.addWidget(button_8_visualise)
+        button_4_file_sharing = QPushButton(f"File Sharing")
+        button_4_file_sharing.clicked.connect(lambda: self.show_window(self.file_sharing_window.window_index))
+        self.sidebar_layout.addWidget(button_4_file_sharing)
 
         # Set the default screen to the welcome window
         self.stacked_widget.setCurrentIndex(0)
