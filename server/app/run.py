@@ -22,7 +22,7 @@ class File(db.Model):
     message = db.Column(db.String(500))
     expires_at = db.Column(db.DateTime, default=datetime.utcnow)
     download_count = db.Column(db.Integer, default=0)
-    hashed_password = db.Column(db.String(128))
+    # hashed_password = db.Column(db.String(128))
 
     @property
     def password(self):  # This is a getter method for the password property
@@ -61,7 +61,7 @@ def create_app():
         if request.method == 'POST':
             message = request.form.get('message', '')
             expiration_hours = int(request.form.get('expiration_hours', 24))
-            password = request.form.get('password', '')
+            # password = request.form.get('password', '')
             file = request.files['file']
             if file:
                 filename = secure_filename(file.filename) # Sanitize the filename, prevent path traversal attacks
@@ -70,15 +70,16 @@ def create_app():
                 file.save(filepath)
                 expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
                 new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
-                new_file.password: str = password
+                # new_file.password: str = password
                 db.session.add(new_file)
                 db.session.commit()
                 link = url_for('download_file_page', unique_id=unique_id, _external=True)
+                print(link)
                 return jsonify({'message': 'File uploaded successfully.', 'link': link})
 
         else:
             # If it's not a POST request, just render the template without context
-            return render_template('upload_success.html')
+            return render_template('upload.html')
 
     @app.route('/uploaded/<unique_id>', methods=['GET'])
     def uploaded(unique_id):
