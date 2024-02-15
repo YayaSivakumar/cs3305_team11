@@ -114,7 +114,19 @@ def create_app():
         }
         return render_template('upload_success.html', file=file_details)
 
+    @property
+    def password(self):
+        '''The password property should not be readable.'''
+        raise AttributeError('password is not a readable attribute')
 
+    @password.setter
+    def password(self, password):
+        '''Set the password to a hashed password using the Werkzeug security library.'''
+        self.hashed_password = generate_password_hash(password)
+
+    def verify_password(self, password):
+        '''Check if the provided password matches the hashed password in the database.'''
+        return check_password_hash(self.hashed_password, password)
 
 
     return app
