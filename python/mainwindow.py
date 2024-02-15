@@ -1,4 +1,6 @@
-import sys
+
+from PyQt5.QtCore import QUrl
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget, QAction
 
 from python.primary_windows.window1 import Window1
@@ -19,7 +21,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         # Set the main window's title and initial size
-        self.setWindowTitle("Main Window with Sidebar")
+        self.setWindowTitle("K.L.A.A.S. - Knowledge Lookup and Archive Access Service")
         self.setGeometry(100, 100, 1000, 600)
 
         # Create actions
@@ -69,6 +71,10 @@ class MainWindow(QMainWindow):
         # Add the stacked widget to the main layout
         self.main_layout.addWidget(self.stacked_widget, 8)  # Adjusting space for main content
 
+
+        # Add the stacked widget to the main layout
+        self.window8.uploadFinished.connect(self.showWebView)
+
         # Add buttons to the sidebar
         button_1_file_explorer = QPushButton(f"File Explorer")
         button_1_file_explorer.clicked.connect(lambda: self.show_window(self.window1.window_index))
@@ -116,6 +122,18 @@ class MainWindow(QMainWindow):
 
     def show_window(self, window_index: int):
         self.stacked_widget.setCurrentIndex(window_index)
+
+    def showWebView(self, url):
+        # Check if the last widget is already a QWebEngineView to avoid duplicates
+        if isinstance(self.stacked_widget.currentWidget(), QWebEngineView):
+            # Update the URL of the existing web view
+            self.stacked_widget.currentWidget().setUrl(QUrl(url))
+        else:
+            # Create a new web view and add it to the stack
+            webView = QWebEngineView()
+            webView.setUrl(QUrl(url))
+            self.stacked_widget.addWidget(webView)
+            self.stacked_widget.setCurrentWidget(webView)
 
     def apply_system_theme(self, dark_mode):
         if dark_mode:
