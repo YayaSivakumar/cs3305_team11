@@ -133,17 +133,15 @@ class FileUploader(QWidget):
         else:
             self.selectedFileLabel.setText('No file selected.')
 
-    def onUploadFinished(self, response_text):
-        # Assume response_text contains the full message with the link
-        # Extract just the URL part if necessary
-        shareable_link = response_text.split(': ')[-1].strip()  # Adjust parsing as needed
-        print(f"shareable_link: {shareable_link}")
-        self.shareable_link = shareable_link  # Ensure this is set
-        self.selectedFileLabel.setText(f'File uploaded successfully. <a href="{shareable_link}">Click here</a> to access the file.')
+    def onUploadFinished(self):
+        # Extract the shareable link from the response text
+        print(f"shareable_link: {self.shareable_link}")
+        self.shareable_link = self.shareable_link  # Ensure this is set
+        self.selectedFileLabel.setText(f'File uploaded successfully. <a href="{self.shareable_link}">Click here</a> to access the file.')
         self.selectedFileLabel.setOpenExternalLinks(True)
         self.copyButton.setEnabled(True)  # Enable the Copy to Clipboard button after link is available
         # Handle upload finished, extract URL, and emit signal
-        unique_id = shareable_link.split('/')[-1]
+        unique_id = self.shareable_link.split('/')[-1]
         print(f"unique_id: {unique_id}")
         success_url = f"http://127.0.0.1:5000/upload/success/{unique_id}"
         self.uploadFinished.emit(success_url)
@@ -168,10 +166,14 @@ class FileUploader(QWidget):
                 data = {'message': message, 'expiration_hours': persistence_hours}
                 response = requests.post(url, files=files, data=data)
             if response.status_code == 200:
-                print(response.text)
+                print(f'Response {response}')
+                print(f'Response Text{response.text}')
+
                 response_json = response.json()
-                shareable_link = response_json['link']
-                self.selectedFileLabel.setText(f'File uploaded successfully. <a href="{shareable_link}">Click here</a> to access the file.')
+                print(f'Response JSON{response_json}')
+                self.shareable_link = response_json['link']
+                print(f'Shareable Link {self.shareable_link}')
+                self.selectedFileLabel.setText(f'File uploaded successfully. <a href="{self.shareable_link}">Click here</a> to access the file.')
                 self.selectedFileLabel.setOpenExternalLinks(True)
                 self.copyButton.setEnabled(True)  # Enable the Copy to Clipboard button after link is available
 
@@ -183,7 +185,7 @@ class FileUploader(QWidget):
             self.filePath = ''  # Reset the file path after uploading
 
     def openUploadPage(self):
-        unique_id = self.selectedFileLabel.text().split('/')[-1]  # Extract the unique ID from the shareable link
+        unique_id = self.shareable_link.split('/')[-1]  # Extract the unique ID from the shareable link
         url = f'http://127.0.0.1:5000/uploaded/{unique_id}'  # URL of the new splash screen
         webbrowser.open_new(url)
 
