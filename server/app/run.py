@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from flask import Flask, request, render_template, send_from_directory, abort, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from apscheduler.schedulers.background import BackgroundScheduler
 import os
 import uuid
@@ -21,6 +22,7 @@ class File(db.Model):
     message = db.Column(db.String(500))
     expires_at = db.Column(db.DateTime, default=datetime.utcnow)
     download_count = db.Column(db.Integer, default=0)
+    hashed_password = db.Column(db.String(128))
 
 def create_app():
     app = Flask(__name__)
@@ -41,6 +43,7 @@ def create_app():
         if request.method == 'POST':
             message = request.form.get('message', '')
             expiration_hours = int(request.form.get('expiration_hours', 24))
+            password = request.form.get('password', '')
             file = request.files['file']
             if file:
                 filename = secure_filename(file.filename)
@@ -48,7 +51,7 @@ def create_app():
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_id)
                 file.save(filepath)
                 expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
-                new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
+                new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at, password=password)
                 db.session.add(new_file)
                 db.session.commit()
             return f'File uploaded successfully. Shareable link: {url_for("download_file_page", unique_id=unique_id, _external=True)}'
