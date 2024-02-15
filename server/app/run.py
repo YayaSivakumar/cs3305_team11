@@ -24,6 +24,22 @@ class File(db.Model):
     download_count = db.Column(db.Integer, default=0)
     hashed_password = db.Column(db.String(128))
 
+    @property
+    def password(self):  # This is a getter method for the password property
+        '''The password property is a read-only property.
+        It raises an AttributeError when accessed. This is because the password should not be read directly from the database.
+        Instead, the verify_password method should be used to compare a password with the hashed password stored in the database.'''
+        raise AttributeError('password is not a readable attribute')
+
+    @password.setter  # This is a setter method for the password property
+    def password(self, password):
+        '''The password setter method is used to hash the password before storing it in the database.'''
+        self.hashed_password = generate_password_hash(password)
+
+    def verify_password(self, password):  # This is a method to verify the password
+        ''' The verify_password method is used to compare a password with the hashed password stored in the database.'''
+        return check_password_hash(self.hashed_password, password)
+
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
@@ -40,18 +56,20 @@ def create_app():
 
     @app.route('/upload', methods=['GET', 'POST'])
     def upload_file():
+        '''This function handles file uploads. It accepts POST requests with a file, message, expiration_hours, and password fields.'''
         if request.method == 'POST':
             message = request.form.get('message', '')
             expiration_hours = int(request.form.get('expiration_hours', 24))
             password = request.form.get('password', '')
             file = request.files['file']
             if file:
-                filename = secure_filename(file.filename)
+                filename = secure_filename(file.filename) # Sanitize the filename, prevent path traversal attacks
                 unique_id = str(uuid.uuid4())
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_id)
                 file.save(filepath)
                 expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
-                new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at, password=password)
+                new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
+                new_file.password: str = password
                 db.session.add(new_file)
                 db.session.commit()
             return f'File uploaded successfully. Shareable link: {url_for("download_file_page", unique_id=unique_id, _external=True)}'
@@ -114,22 +132,7 @@ def create_app():
         }
         return render_template('upload_success.html', file=file_details)
 
-    @property
-    def password(self):
-        '''The password property should not be readable.'''
-        raise AttributeError('password is not a readable attribute')
-
-    @password.setter
-    def password(self, password):
-        '''Set the password to a hashed password using the Werkzeug security library.'''
-        self.hashed_password = generate_password_hash(password)
-
-    def verify_password(self, password):
-        '''Check if the provided password matches the hashed password in the database.'''
-        return check_password_hash(self.hashed_password, password)
-
-
-    return app
+    return app # Return the Flask app instance
 
 def cleanup_expired_files(app):
     with app.app_context():
