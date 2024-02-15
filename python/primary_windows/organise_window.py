@@ -5,7 +5,7 @@ from python.ui.drag_drop import *
 from python.ui.custom_file_system_model import *
 
 
-class Window1(QWidget):
+class OrganiseWindow(QWidget):
     def __init__(self, window_index: int):
         super().__init__()
         self.window_index = window_index
