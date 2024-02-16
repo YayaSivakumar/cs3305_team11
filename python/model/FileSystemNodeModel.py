@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import pickle
 from datetime import datetime
@@ -9,31 +10,31 @@ class FileSystemCache:
     """A simple cache for storing file and directory nodes."""
 
     def __init__(self):
-        self.cache = {}
+        self.body = {}
 
     def get(self, path: str):
         """Get the file or directory node from the cache if it exists and is up to date."""
-        if path in self.cache and not self.is_modified(path):
-            return self.cache[path]
+        if path in self.body and not self.is_modified(path):
+            return self.body[path]
         else:
             return None
 
     def update(self, path: str, node: object):
         """Update the cache with the given file or directory node."""
-        self.cache[path] = node
+        self.body[path] = node
         node.cache_timestamp = datetime.now()
 
     def is_modified(self, path: str):
         """Check if the file or directory has been modified since it was last cached."""
-        cached_node = self.cache.get(path, None)
+        cached_node = self.body.get(path, None)
         if cached_node:
             return cached_node.modification_date() != datetime.fromtimestamp(os.path.getmtime(path))
         return True
 
     def remove(self, path: str):
         """Remove a file or directory from the cache."""
-        if path in self.cache:
-            del self.cache[path]
+        if path in self.body:
+            del self.body[path]
 
     def save_to_file(self):
         if not os.path.exists('cache/system_model_cache.pkl'):
@@ -44,10 +45,13 @@ class FileSystemCache:
 
     def load_from_file(self):
         with open('cache/system_model_cache.pkl', 'rb') as pickle_file:
-            self.cache = pickle.load(pickle_file)
+            self.body = pickle.load(pickle_file)
 
     def __str__(self):
-        return str(self.cache)
+        return str(self.body)
+
+    def __getitem__(self, item):
+        return self.body[item]
 
 
 class FileSystemNode:
@@ -70,6 +74,12 @@ class FileSystemNode:
             if found:
                 return found
         return None
+
+    def find_node_from_cache(self, name: str) -> FileSystemNode:
+        try:
+            return self.cache[name]
+        except KeyError:
+            raise Exception(f"File {name} not found.")
 
     def print_tree(self, level=0):
         """Print the tree structure.
@@ -202,8 +212,10 @@ class Directory(FileSystemNode):
                 full_path = os.path.join(self.path, item)
                 if os.path.isdir(full_path):
                     child = Directory(full_path, self.cache)
+                    self.cache.update(child.path, child)
                 else:
                     child = File(full_path, self.cache)
+                    self.cache.update(child.path, child)
                 self.add_child(child)
             self.cache.update(self.path, self)
         except FileNotFoundError:
@@ -272,3 +284,7 @@ if __name__ == '__main__':
     print("After load:")
     print(cache)
 
+    print("Testing find node by name")
+    search = root_directory.find_node_from_cache('/Users/jackmoloney/Downloads/Jordan B. Peterson - 12 Rules for '
+                                                 'Life_ An Antidote to Chaos-Random House Canada (2018).epub')
+    print(search, type(search))
