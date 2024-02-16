@@ -1,38 +1,19 @@
-from FileSystemNodeModel import File
+from FileSystemNodeModel import File, FileSystemCache
 import PIL.Image
 from PIL.ExifTags import TAGS
 import subprocess, pandas as pd
-
+    
 
 class Image(File):
 
     def __init__(self, path: str, cache):
         super().__init__(path, cache)
-        self._filetype = 'image'
-        self._format = self.path.split('.')[-1]
         self._width = None
         self._height = None
+        self._coords = None
         self._location = None
         self._resolution = None
         self._populate_image_metadata()
-
-    @property
-    def filetype(self):
-        """Return the filetype of the image."""
-        return self._filetype
-
-    @filetype.setter
-    def filetype(self, value: str):
-        self._filetype = value
-
-    @property
-    def format(self):
-        """Return the format of the image."""
-        return self._format
-
-    @format.setter
-    def format(self, value: str):
-        self._format = value
 
     @property
     def width(self):
@@ -51,6 +32,15 @@ class Image(File):
     @height.setter
     def height(self, value: int):
         self._height = value
+
+    @property
+    def coords(self):
+        """Return the location of the image."""
+        return self._coords
+
+    @coords.setter
+    def coords(self, value: tuple):
+        self._coords = value
 
     @property
     def location(self):
@@ -74,7 +64,7 @@ class Image(File):
         """
         Populate the image metadata.
         """
-        if self.format == 'HEIC':
+        if self.extension() == 'HEIC':
             self.heic_to_pillow_format()
 
         try:
@@ -91,8 +81,9 @@ class Image(File):
 
             self.width = exif_data['ExifImageWidth'] if 'ExifImageWidth' in exif_data else image.width
             self.height = exif_data['ExifImageHeight'] if 'ExifImageHeight' in exif_data else image.height
-            self.location = self.convert_gps_data(exif_data['GPSInfo']) if 'GPSInfo' in exif_data else None
+            self.coords = self.convert_gps_data(exif_data['GPSInfo']) if 'GPSInfo' in exif_data else None
             self.resolution = exif_data['XResolution'] if 'XResolution' in exif_data else None
+            self.location = self.get_location_by_country(self.coords)
 
         except IOError:
             print(f"Error: Cannot open {self.path}")
@@ -105,9 +96,8 @@ class Image(File):
         - heic_path: Path to the HEIC file.
         """
         try:
-            subprocess.run(['heif-convert', self.path, "/Users/yachitrasivakumar/Downloads/IMG_5619.jpeg"], check=True)
-            # update path to the jpeg file
-            self.path = "/Users/yachitrasivakumar/Downloads/IMG_5619.jpeg"
+            subprocess.run(['heif-convert', self.path, self.path.split('.')[0]+'.jpeg'], check=True)
+            self.path = self.path.split('.')[0]+'.jpeg'
         except subprocess.CalledProcessError as e:
             print(f"Failed to convert {self.path} to JPEG. Error: {e}")
 
@@ -164,7 +154,6 @@ class Image(File):
         The country of the image.
         """
         countries = pd.read_csv('/Users/yachitrasivakumar/Desktop/country-coord.csv')
-        print(countries.keys())
 
         match = countries.loc[(countries['Latitude (average)'] == latitude) & (countries['Longitude (average)'] == longitude)]
 
@@ -176,12 +165,13 @@ class Image(File):
 
 if __name__ == "__main__":
 
-    # testing
-    #file_obj = Image('/Users/yachitrasivakumar/Downloads/IMG_5619.HEIC', {})
+    #testing
+    #cache = FileSystemCache()
+    #file_obj = Image('/Users/yachitrasivakumar/Downloads/IMG_5619.HEIC', cache)
     #print(file_obj.width, file_obj.height, file_obj.format, file_obj.location, file_obj.resolution)
     #file_obj = Image('/Users/yachitrasivakumar/Downloads/12382975864_2cd7755b03_b.jpg', {})
     #print(file_obj.width, file_obj.height, file_obj.format, file_obj.location, file_obj.resolution)
-    print(Image.get_location_by_country(53, -8))
-
+    #print(Image.get_location_by_country(53, -8))
+    pass
 
 
