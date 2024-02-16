@@ -2,6 +2,7 @@ pyqt5~=5.15.10
 pdf2doi~=1.5
 requests~=2.31.0
 matplotlib~=3.8.2
+python-docx
 numpy
 ffmpeg~=1.4
 python-dotenv~=1.0.1
