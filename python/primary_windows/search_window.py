@@ -113,6 +113,15 @@ class SearchWindow(QWidget):
                 'py': 'ui/images/icons/python_icon.png',
                 'html': 'ui/images/icons/html_icon.png',
                 'js': 'ui/images/icons/js_icon.png',
+                'java': 'ui/images/icons/java_icon.png',
+                'json': 'ui/images/icons/json_icon.png',
+                'cpp': 'ui/images/icons/cpp_icon.png',
+                'c': 'ui/images/icons/c_icon.png',
+                'mov': 'ui/images/icons/mov_icon.png',
+                'mkv': 'ui/images/icons/mkv_icon.png',
+                'zip': 'ui/images/icons/zip_icon.png',
+                'rar': 'ui/images/icons/rar_icon.png',
+
                 # ... add more mappings as needed
             }
 
