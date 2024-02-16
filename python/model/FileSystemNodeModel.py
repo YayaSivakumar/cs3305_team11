@@ -1,11 +1,8 @@
 from __future__ import annotations
 import os
-import pickle
 from datetime import datetime
 import shutil
 import hashlib
-from FileSystemCache import FileSystemCache
-
 
 
 class FileSystemNode:
@@ -216,6 +213,7 @@ class Directory(FileSystemNode):
 
 
 if __name__ == '__main__':
+    '''
     from dotenv import load_dotenv
 
     cache = FileSystemCache()
@@ -245,3 +243,4 @@ if __name__ == '__main__':
     search = root_directory.find_node_from_cache('/Users/jackmoloney/Downloads/Jordan B. Peterson - 12 Rules for '
                                                  'Life_ An Antidote to Chaos-Random House Canada (2018).epub')
     print(search, type(search))
+'''
