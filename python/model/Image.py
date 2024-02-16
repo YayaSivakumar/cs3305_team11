@@ -1,7 +1,7 @@
-from FileSystemNodeModel import File, FileSystemCache
 import PIL.Image
 from PIL.ExifTags import TAGS
-import subprocess, pandas as pd
+import subprocess, pandas as pd, numpy as np
+from python.model.FileSystemNodeModel import File
     
 
 class Image(File):
@@ -64,8 +64,12 @@ class Image(File):
         """
         Populate the image metadata.
         """
-        if self.extension() == 'HEIC':
+        if self.extension() == '.HEIC':
             self.heic_to_pillow_format()
+
+        self._populate_jpeg_metadata()
+
+    def _populate_jpeg_metadata(self):
 
         try:
             image = PIL.Image.open(self.path)
@@ -82,11 +86,14 @@ class Image(File):
             self.width = exif_data['ExifImageWidth'] if 'ExifImageWidth' in exif_data else image.width
             self.height = exif_data['ExifImageHeight'] if 'ExifImageHeight' in exif_data else image.height
             self.coords = self.convert_gps_data(exif_data['GPSInfo']) if 'GPSInfo' in exif_data else None
+            self.location = self.get_location_by_country() if self.coords else None
             self.resolution = exif_data['XResolution'] if 'XResolution' in exif_data else None
-            self.location = self.get_location_by_country(self.coords)
 
         except IOError:
             print(f"Error: Cannot open {self.path}")
+
+    def populate_heic_metadata(self):
+        pass
 
     def heic_to_pillow_format(self):
         """
@@ -100,6 +107,37 @@ class Image(File):
             self.path = self.path.split('.')[0]+'.jpeg'
         except subprocess.CalledProcessError as e:
             print(f"Failed to convert {self.path} to JPEG. Error: {e}")
+
+    def get_location_by_country(self):
+        """
+        Get the location of the image by country using proximity logic.
+
+        Parameters:
+        - latitude: The latitude of the image.
+        - longitude: The longitude of the image.
+
+        Returns:
+        The country of the image.
+        """
+        latitude, longitude = self.coords
+
+        # Load the countries data
+        countries = pd.read_csv('/Users/yachitrasivakumar/Desktop/country-coord.csv')
+
+        # Apply the Haversine formula to each country's coordinates
+        countries['Distance'] = countries.apply(
+            lambda row: Image.haversine(latitude, longitude, row['Latitude (average)'],
+                                                 row['Longitude (average)']),
+            axis=1
+        )
+
+        # Find the country with the minimum distance to the given coordinates
+        nearest_country = countries.loc[countries['Distance'].idxmin()]
+
+        if not nearest_country.empty:
+            return nearest_country['Country']
+        else:
+            return "No country found for these coordinates."
 
     @staticmethod
     def dms_to_decimal(degrees, minutes, seconds, direction):
@@ -142,36 +180,30 @@ class Image(File):
             return None
 
     @staticmethod
-    def get_location_by_country(latitude: float, longitude: float):
+    def haversine(lat1, lon1, lat2, lon2):
         """
-        Get the location of the image by country.
-
-        Parameters:
-        - latitude: The latitude of the image.
-        - longitude: The longitude of the image.
-
-        Returns:
-        The country of the image.
+        Calculate the great circle distance in kilometers between two points
+        on the earth (specified in decimal degrees).
         """
-        countries = pd.read_csv('/Users/yachitrasivakumar/Desktop/country-coord.csv')
+        # Convert decimal degrees to radians
+        lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
 
-        match = countries.loc[(countries['Latitude (average)'] == latitude) & (countries['Longitude (average)'] == longitude)]
-
-        if not match.empty:
-            return match.iloc[0]['Country']
-        else:
-            return "No country found for these coordinates."
+        # Haversine formula
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
+        c = 2 * np.arcsin(np.sqrt(a))
+        r = 6371  # Radius of earth in kilometers. Use 3956 for miles
+        return c * r
 
 
 if __name__ == "__main__":
-
     #testing
     #cache = FileSystemCache()
+    #file_obj = Image('/Users/yachitrasivakumar/Desktop/YEAR3/1.png', cache)
+    #print(file_obj.width, file_obj.height, file_obj.format, file_obj.location, file_obj.resolution)
     #file_obj = Image('/Users/yachitrasivakumar/Downloads/IMG_5619.HEIC', cache)
-    #print(file_obj.width, file_obj.height, file_obj.format, file_obj.location, file_obj.resolution)
-    #file_obj = Image('/Users/yachitrasivakumar/Downloads/12382975864_2cd7755b03_b.jpg', {})
-    #print(file_obj.width, file_obj.height, file_obj.format, file_obj.location, file_obj.resolution)
-    #print(Image.get_location_by_country(53, -8))
+    #print(file_obj.width, file_obj.height, file_obj.coords, file_obj.location, file_obj.resolution)
     pass
 
 
