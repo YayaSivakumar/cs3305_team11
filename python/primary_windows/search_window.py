@@ -2,6 +2,7 @@ import os
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QStackedLayout
 from PyQt5.QtGui import QFont, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QSize
+from python.tests.filename_generator import generate_filename
 
 
 # Custom widget that includes a label for the filename and a label for the file path
@@ -48,6 +49,7 @@ class SearchWindow(QWidget):
         self.initUI()
 
     def initUI(self):
+        self.all_possible_results = generate_filename()  # Replace with actual search results
         self.setWindowTitle("Search Example")
         self.setGeometry(100, 100, 800, 600)
 
@@ -80,34 +82,17 @@ class SearchWindow(QWidget):
 
     def on_search_text_changed(self, text):
         self.resultsList.clear()
-        self.resultsList.setSpacing(4)  # Add some space between items for better readability
+        self.resultsList.setSpacing(4)
+
         if text:
+            # Convert the search text to lowercase for a case-insensitive search
+            search_text = text.lower()
+
+            # Filter the results based on the search text
+            filtered_results = [result for result in self.all_possible_results if search_text in result.lower()]
 
             # Show the results list if there is text
             self.stackedLayout.setCurrentWidget(self.resultsList)
-
-            # Example search results, replace with actual search logic - Jack working on this
-            search_results = [
-                'downloads',
-                'document.txt',
-                'document.doc',
-                'script1.py',
-                'script2.py',
-                'script3.py',
-                'document.docx',
-                'spreadsheet.xls',
-                'spreadsheet.xlsx',
-                'presentation.ppt',
-                'presentation.pptx',
-                'image.png',
-                'music.mp3',
-                'video.mp4',
-                'pdf.pdf',
-                'other_document.txt',
-                'script.py',
-                'script.js',
-                # ... add more file types as needed
-            ]
 
             # Dictionary mapping file extensions to icon paths
             icon_paths = {
@@ -131,8 +116,7 @@ class SearchWindow(QWidget):
                 # ... add more mappings as needed
             }
 
-            # Loop through the search results
-            for file_name in search_results:
+            for file_name in filtered_results:
                 # Example filepath for this example; replace with actual filepath from your search logic
                 filepath = '/absolute/path/to/' + file_name
 
