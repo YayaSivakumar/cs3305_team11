@@ -4,54 +4,8 @@ import pickle
 from datetime import datetime
 import shutil
 import hashlib
+from FileSystemCache import FileSystemCache
 
-
-class FileSystemCache:
-    """A simple cache for storing file and directory nodes."""
-
-    def __init__(self):
-        self.body = {}
-
-    def get(self, path: str):
-        """Get the file or directory node from the cache if it exists and is up to date."""
-        if path in self.body and not self.is_modified(path):
-            return self.body[path]
-        else:
-            return None
-
-    def update(self, path: str, node: object):
-        """Update the cache with the given file or directory node."""
-        self.body[path] = node
-        node.cache_timestamp = datetime.now()
-
-    def is_modified(self, path: str):
-        """Check if the file or directory has been modified since it was last cached."""
-        cached_node = self.body.get(path, None)
-        if cached_node:
-            return cached_node.modification_date() != datetime.fromtimestamp(os.path.getmtime(path))
-        return True
-
-    def remove(self, path: str):
-        """Remove a file or directory from the cache."""
-        if path in self.body:
-            del self.body[path]
-
-    def save_to_file(self):
-        if not os.path.exists('cache/system_model_cache.pkl'):
-            # code to create file here
-            os.makedirs('cache', exist_ok=True)
-        with open('cache/system_model_cache.pkl', 'wb') as pickle_file:
-            pickle.dump(self, pickle_file)
-
-    def load_from_file(self):
-        with open('cache/system_model_cache.pkl', 'rb') as pickle_file:
-            self.body = pickle.load(pickle_file)
-
-    def __str__(self):
-        return str(self.body)
-
-    def __getitem__(self, item):
-        return self.body[item]
 
 
 class FileSystemNode:
@@ -59,6 +13,7 @@ class FileSystemNode:
 
     def __init__(self, path: str, cache: FileSystemCache):
         self.path = path
+        self.name = None
         self.revert_path = path
         self.cache_timestamp = None
         self.cache = cache
@@ -91,7 +46,7 @@ class FileSystemNode:
 
     def name(self):
         """Return the name of the file or directory."""
-        return os.path.basename(self.path)
+        return self.name
 
     def size(self):
         """Return the size of the file in bytes."""
@@ -135,7 +90,7 @@ class FileSystemNode:
             self.path = new_path
             # update data structure
             self.parent.remove_child(self)
-            self.parent = self.cache.get(os.path.dirname(new_path))
+            self.parent = self.cache[os.path.dirname(new_path)]
             self.parent.add_child(self)
             # update cache
             self.cache.remove(self.revert_path)
@@ -188,9 +143,10 @@ class FileSystemNode:
 class File(FileSystemNode):
     def __init__(self, path: str, cache: FileSystemCache):
         super().__init__(path, cache)
+        self.name = os.path.basename(path)  # give file a name
 
     def __str__(self) -> str:
-        return self.name()
+        return self.name
 
     def extension(self):
         """Return the file's extension."""
@@ -201,8 +157,9 @@ class File(FileSystemNode):
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
 
-    def __init__(self, path: str, cache: FileSystemCache):
-        super().__init__(path, cache)
+    def __init__(self, path: str, cacheObj: FileSystemCache):
+        super().__init__(path, cacheObj)
+        self.name = os.path.basename(path.rstrip(os.sep))
         self._populate()  # Populate the directory with its children
 
     def _populate(self):
