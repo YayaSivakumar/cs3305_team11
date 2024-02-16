@@ -1,7 +1,26 @@
+import os
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QStackedLayout
 from PyQt5.QtGui import QFont, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QSize
 
+
+# Custom widget that includes a label for the filename and a label for the file path
+class FileListItem(QWidget):
+    def __init__(self, filename, filepath, parent=None):
+        super(FileListItem, self).__init__(parent)
+        self.layout = QVBoxLayout(self)  # Use QVBoxLayout for vertical stacking
+
+        self.filenameLabel = QLabel(filename)
+        self.filenameLabel.setStyleSheet("font-size: 16px;")  # Larger font size for filenames
+        self.filepathLabel = QLabel(filepath)
+        self.filepathLabel.setStyleSheet(
+            "color: grey; font-size: 12px;")  # Smaller font size and grey color for filepaths
+
+        self.layout.addWidget(self.filenameLabel)
+        self.layout.addWidget(self.filepathLabel)
+        self.layout.setContentsMargins(10, 0, 0, 0)  # Remove margins if needed
+
+        self.setLayout(self.layout)
 class SearchBar(QLineEdit):
     def __init__(self, parent=None):
         super(SearchBar, self).__init__(parent)
@@ -46,7 +65,7 @@ class SearchWindow(QWidget):
 
         # Results list for when there are search results
         self.resultsList = QListWidget(self)
-        self.resultsList.setIconSize(QSize(28, 28))  # Set the size of the icons
+        self.resultsList.setIconSize(QSize(32, 32))  # Set the size of the icons
 
         # Add both the placeholder and the results list to the stacked layout
         self.stackedLayout.addWidget(self.placeholderWidget)
@@ -69,6 +88,7 @@ class SearchWindow(QWidget):
 
             # Example search results, replace with actual search logic - Jack working on this
             search_results = [
+                'downloads',
                 'document.txt',
                 'document.doc',
                 'script1.py',
@@ -113,15 +133,28 @@ class SearchWindow(QWidget):
 
             # Loop through the search results
             for file_name in search_results:
-                extension = file_name.split('.')[-1]  # Get the file extension
-                icon_path = icon_paths.get(extension, 'ui/images/icons/default_icon.png')  # Get the corresponding icon path or a default one
-                item = QListWidgetItem(QIcon(QPixmap(icon_path)), file_name)
-                pixmap = QPixmap(icon_path)
-                if pixmap.isNull():
-                    print(f"Failed to load icon: {icon_path}")
-                font = QFont('Arial', 18)
-                item.setFont(font)
+                # Example filepath for this example; replace with actual filepath from your search logic
+                filepath = '/absolute/path/to/' + file_name
+
+                # Check if it's a folder or if there's no file extension
+                if os.path.isdir(filepath) or '.' not in file_name:
+                    icon_path = 'ui/images/icons/folder_icon.png'
+                else:
+                    # Get the file extension and convert it to lower case
+                    extension = file_name.split('.')[-1].lower()
+                    # Get the corresponding icon path or a default one
+                    icon_path = icon_paths.get(extension, 'ui/images/icons/default_icon.png')
+
+                item = QListWidgetItem(QIcon(QPixmap(icon_path)), "")
+                fileItemWidget = FileListItem(file_name, filepath)
+
+                # Set size hint for the item
+                item_size = QSize(fileItemWidget.sizeHint().width(), fileItemWidget.sizeHint().height())
+                item.setSizeHint(item_size)
+
                 self.resultsList.addItem(item)
+                self.resultsList.setItemWidget(item, fileItemWidget)
+
         else:
             # Show the placeholder when there is no text
             self.stackedLayout.setCurrentWidget(self.placeholderWidget)
