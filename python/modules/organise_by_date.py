@@ -1,6 +1,6 @@
 # script name: organise_by_date.py
 import os
-from python.model.FileSystemNodeModel import Directory, FileSystemCache
+from python.model.FileSystemNodeModel import Directory
 
 
 def organise_by_date(dir_node: Directory):
@@ -46,7 +46,7 @@ def _organise_by_date(dir_node: Directory):
                 year_node.add_child(Directory(dir_node.path + '/' + year + '/' + month, dir_node.cache))
 
             # move item to the correct directory
-            new_file_path = os.path.join(dir_node.path+'/'+year+'/'+month + '/' + node.name())
+            new_file_path = os.path.join(dir_node.path+'/'+year+'/'+month + '/' + node.name)
             node.move(new_file_path)
 
 
