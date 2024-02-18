@@ -10,4 +10,5 @@ apscheduler~=3.10.4
 pillow~=10.2.0
 flask~=3.0.2
 werkzeug~=3.0.1
-pandas
+pandas~=2.2.0
+mutagen~=1.47.0
