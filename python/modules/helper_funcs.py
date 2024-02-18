@@ -1,9 +1,10 @@
 # script name: helper_funcs.py
 from __future__ import annotations
 from python.model.FileSystemNodeModel import Directory
+from python.model.FileSystemCache import FileSystemCache
 
 
-def delete_empty_directories(dir_node: Directory, root: Directory):
+def delete_empty_directories(dir_node: Directory):
     """
     Recursive function to delete empty directories in the directory tree.
 
@@ -18,7 +19,7 @@ def delete_empty_directories(dir_node: Directory, root: Directory):
         if isinstance(child, Directory):
 
             # recursively process child directories
-            delete_empty_directories(child, root)
+            delete_empty_directories(child)
 
             # check if the child directory is now empty and child has not been deleted
             if not child.children and child.cache[child.path]:
@@ -27,10 +28,8 @@ def delete_empty_directories(dir_node: Directory, root: Directory):
         elif child.is_invisible():
             child.delete()
 
-    # check if the current directory is now empty and not the root
-    if not dir_node.children and dir_node != root:
-        dir_node.delete()
-
 
 if __name__ == "__main__":
-    pass
+    cache = FileSystemCache()
+    dir_node = Directory('/Users/yachitrasivakumar/Desktop/empty', cache)
+    delete_empty_directories(dir_node)

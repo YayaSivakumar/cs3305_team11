@@ -76,7 +76,7 @@ class FileSystemNode:
 
     def is_invisible(self):
         """Check if the file is hidden."""
-        return self.name().startswith('.')
+        return self.name.startswith('.')
 
     def move(self, new_path: str):
         """Move the node to a new location."""
