@@ -30,6 +30,4 @@ def delete_empty_directories(dir_node: Directory):
 
 
 if __name__ == "__main__":
-    cache = FileSystemCache()
-    dir_node = Directory('/Users/yachitrasivakumar/Desktop/empty', cache)
-    delete_empty_directories(dir_node)
+    pass
