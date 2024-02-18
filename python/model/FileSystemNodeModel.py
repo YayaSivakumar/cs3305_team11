@@ -191,7 +191,7 @@ class Directory(FileSystemNode):
     def find_file(self, file_name: str):
         """Recursively find a file in the directory and its subdirectories."""
         for child in self.children:
-            if child.name() == file_name:
+            if child.name == file_name:
                 return child
             if isinstance(child, Directory):
                 found = child.find_file(file_name)

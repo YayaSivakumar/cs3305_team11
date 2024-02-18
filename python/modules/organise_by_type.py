@@ -16,7 +16,6 @@ def organise_by_type_func(dir_path: str):
     """
     dir_node = Directory(dir_path, FileSystemCache())
     # determine different file types present, create list of needed directories
-    created_directories = set()
     num_files_moved = 0
 
     # iterate through children
@@ -26,15 +25,15 @@ def organise_by_type_func(dir_path: str):
 
             # get filetype
             filetype = determine_filetype(file_node)
+            found = dir_node.find_file(filetype)
 
             # if filetype directory not already created, create it
-            if filetype not in created_directories:
+            if not found:
                 # create directory
                 os.makedirs(dir_node.path + '/' + filetype)
                 new_dir = Directory(dir_node.path + '/' + filetype, dir_node.cache)
                 # update attributes
                 dir_node.add_child(new_dir)
-                created_directories.add(filetype)
 
             # move file to appropriate directory
             file_node.move(dir_node.path + '/' + filetype + '/' + file_node.name)
