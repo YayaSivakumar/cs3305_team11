@@ -1,12 +1,10 @@
 # script name: organise_by_type.py
-from python.modules.helper_funcs import *
+from python.model.FileSystemNodeModel import *
+from python.model.FileSystemCache import FileSystemCache
+import os
 
 
-def organise_by_type_func(path_to_organise: str,
-                          folder_names: dict[str:str] = {
-                              'documents': 'Documents', 'photos': 'Photos', 'videos': 'Videos', 'music': 'Music',
-                              'misc': 'Misc'}
-                          ) -> None:
+def organise_by_type_func(dir_path: str):
     """
     Main function for organise by filetype feature. Takes a file path and breaks every file in that directory
     and its subdirectories
@@ -16,36 +14,36 @@ def organise_by_type_func(path_to_organise: str,
     folder_names: dict[str:str]: dictionary containing k,v pairs of file classification and the name of folder it will be placed in.
     ret: None
     """
-    file_paths = get_all_file_paths(path_to_organise)  # array of file paths
-    file_obj_array: list[File] = []
-
-    # Determine different file types present, create list of needed directories
-    directories_to_create: set[str] = set()
-    for file in file_paths:
-        # get filetype
-        filetype = determine_filetype(file)
-        # if filetype not already in list of directories to create, add it
-        if filetype not in directories_to_create:
-            directories_to_create.add(filetype)
-        temp = File(file, filetype)
-        file_obj_array.append(temp)
-
-    # Folder names are defined here, pending later feature addition
-    create_target_directories(path_to_organise, list(directories_to_create), folder_names)  # create directories
+    dir_node = Directory(dir_path, FileSystemCache())
+    # determine different file types present, create list of needed directories
+    created_directories = set()
     num_files_moved = 0
-    # move files to appropriate target
-    for file_obj in file_obj_array:
-        source = file_obj.original_path
-        destination = path_to_organise + '/' + folder_names[file_obj.filetype]
-        move_file(source, destination)
-        # set file objects new path to destination
-        file_obj.current_path = destination + '/' + (file_obj.original_path.split('/'))[-1]
-        num_files_moved += 1
-    print(f'Moved {num_files_moved} files')
-    save_to_json(file_obj_array)
+
+    # iterate through children
+    for file_node in dir_node.children[:]:
+
+        if type(file_node) == File:
+
+            # get filetype
+            filetype = determine_filetype(file_node)
+
+            # if filetype directory not already created, create it
+            if filetype not in created_directories:
+                # create directory
+                os.makedirs(dir_node.path + '/' + filetype)
+                new_dir = Directory(dir_node.path + '/' + filetype, dir_node.cache)
+                # update attributes
+                dir_node.add_child(new_dir)
+                created_directories.add(filetype)
+
+            # move file to appropriate directory
+            file_node.move(dir_node.path + '/' + filetype + '/' + file_node.name)
+            num_files_moved += 1
+
+    return f'Moved {num_files_moved} files'
 
 
-def determine_filetype(filename: str) -> str:
+def determine_filetype(file_node: File) -> str:
     """
     function to determine what type a file is based on the filename
 
@@ -53,40 +51,18 @@ def determine_filetype(filename: str) -> str:
     filename: Name of file to be checked
     ret: file type based on categories returned as a string
     """
-    extension = filename.split('.')[-1]
-    # print(f"ext: {extension}")
-    types = {'documents': ['pdf', 'docx', 'doc', 'txt', 'text'],
-             'photos': ['jpeg', 'jpg', 'svg', 'png', 'PNG'],
-             'videos': ['mp4', 'mov', 'avi'],
-             'music': ['wav', 'mp3', 'aac']}
 
+    types = {'Documents': ['.pdf', '.docx', '.doc', '.txt', '.text'],
+             'Photos': ['.jpeg', '.jpg', '.svg', '.png', '.PNG'],
+             'Videos': ['.mp4', '.mov', '.avi'],
+             'Music': ['.wav', '.mp3', '.aac']}
+
+    extension = file_node.extension()
     for category in types:
         if extension in types[category]:
             return category
 
-    return 'misc'
-
-
-def create_target_directories(filepath: str, required: list[str], folder_names: dict[str:str]):
-    """
-
-    @params
-    filepath: str: path to create directories at
-    required: list[str]: list of the required folders
-    """
-    contents = list_dir(filepath)  # return [str] of files/directories
-    for i in required:
-        directory = folder_names[i]
-        if directory not in contents:
-            os.makedirs(filepath + '/' + directory)
-
-
-def get_pwd():
-    return os.getcwd()
-
-
-def list_dir(filepath: str) -> list[str]:
-    return os.listdir(filepath)
+    return 'Misc'
 
 
 if __name__ == "__main__":
