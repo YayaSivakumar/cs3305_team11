@@ -1,8 +1,12 @@
+import numpy as np
+import pandas as pd
+import subprocess
+
 import PIL.Image
 from PIL.ExifTags import TAGS
-import subprocess, pandas as pd, numpy as np
+
 from python.model.FileSystemNodeModel import File
-    
+
 
 class Image(File):
 
@@ -12,7 +16,6 @@ class Image(File):
         self._height = None
         self._coords = None
         self._location = None
-        self._resolution = None
         self._populate_image_metadata()
 
     @property
@@ -51,15 +54,6 @@ class Image(File):
     def location(self, value: tuple):
         self._location = value
 
-    @property
-    def resolution(self):
-        """Return the resolution of the image."""
-        return self._resolution
-
-    @resolution.setter
-    def resolution(self, value):
-        self._resolution = value
-
     def _populate_image_metadata(self):
         """
         Populate the image metadata.
@@ -70,7 +64,6 @@ class Image(File):
         self._populate_jpeg_metadata()
 
     def _populate_jpeg_metadata(self):
-
         try:
             image = PIL.Image.open(self.path)
 
@@ -87,10 +80,8 @@ class Image(File):
             self.height = exif_data['ExifImageHeight'] if 'ExifImageHeight' in exif_data else image.height
             self.coords = self.convert_gps_data(exif_data['GPSInfo']) if 'GPSInfo' in exif_data else None
             self.location = self.get_location_by_country() if self.coords else None
-            self.resolution = exif_data['XResolution'] if 'XResolution' in exif_data else None
-
-        except IOError:
-            print(f"Error: Cannot open {self.path}")
+        except Exception as e:
+            print(f"Failed to extract metadata from {self.path}. Error: {e}")
 
     def populate_heic_metadata(self):
         pass
@@ -122,14 +113,12 @@ class Image(File):
         latitude, longitude = self.coords
 
         # Load the countries data
-        countries = pd.read_csv('/Users/yachitrasivakumar/Desktop/country-coord.csv')
+        countries = pd.read_csv('../../country-coord.csv')
 
         # Apply the Haversine formula to each country's coordinates
         countries['Distance'] = countries.apply(
             lambda row: Image.haversine(latitude, longitude, row['Latitude (average)'],
-                                                 row['Longitude (average)']),
-            axis=1
-        )
+                                                 row['Longitude (average)']), axis=1)
 
         # Find the country with the minimum distance to the given coordinates
         nearest_country = countries.loc[countries['Distance'].idxmin()]
@@ -193,17 +182,14 @@ class Image(File):
         dlon = lon2 - lon1
         a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
         c = 2 * np.arcsin(np.sqrt(a))
-        r = 6371  # Radius of earth in kilometers. Use 3956 for miles
+        r = 6371  # Radius of earth in kilometers
         return c * r
 
 
 if __name__ == "__main__":
-    #testing
-    #cache = FileSystemCache()
-    #file_obj = Image('/Users/yachitrasivakumar/Desktop/YEAR3/1.png', cache)
-    #print(file_obj.width, file_obj.height, file_obj.format, file_obj.location, file_obj.resolution)
-    #file_obj = Image('/Users/yachitrasivakumar/Downloads/IMG_5619.HEIC', cache)
-    #print(file_obj.width, file_obj.height, file_obj.coords, file_obj.location, file_obj.resolution)
+    #ca = FileSystemCache()
+    #file = Image("/Users/yachitrasivakumar/Desktop/location/IMG_5619.HEIC", ca)
+    #print(file.width, file.height, file.coords, file.location)
     pass
 
 
