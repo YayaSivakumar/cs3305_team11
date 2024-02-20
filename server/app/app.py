@@ -2,12 +2,11 @@ import os
 from datetime import datetime, timedelta
 from flask import Flask
 from apscheduler.schedulers.background import BackgroundScheduler
-from db import db
-from models.file import File
-from routes import main_routes, file_routes
+from .db import db
+from .models.file import File
+from .routes import main_routes as m, file_routes as f, user_routes as u
 from flask_login import LoginManager
-
-UPLOADS_FOLDER = os.getenv('UPLOADS_FOLDER')
+from .config import UPLOADS_FOLDER
 
 
 def create_app():
@@ -23,8 +22,9 @@ def create_app():
     login_manager = LoginManager()
     login_manager.init_app(app)
 
-    app.register_blueprint(main_routes.main_routes)
-    app.register_blueprint(file_routes.file_routes)
+    app.register_blueprint(m.main_routes)
+    app.register_blueprint(f.file_routes)
+    app.register_blueprint(u.user_routes)
 
     return app
 

@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template
-from ..db import db
 
 user_routes = Blueprint('user_routes', __name__)
 

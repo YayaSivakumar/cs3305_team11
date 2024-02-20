@@ -5,6 +5,7 @@ from flask import Blueprint
 from flask import request, render_template, send_from_directory, abort, url_for, jsonify
 from werkzeug.utils import secure_filename
 from ..db import db
+from ..config import UPLOADS_FOLDER
 
 from ..models.file import File
 
@@ -20,9 +21,9 @@ def upload_file():
         # password = request.form.get('password', '')
         file = request.files['file']
         if file:
-            filename = secure_filename(file.filename) # Sanitize the filename, prevent path traversal attacks
+            filename = secure_filename(file.filename)  # Sanitize the filename, prevent path traversal attacks
             unique_id = str(uuid.uuid4())
-            filepath = os.path.join(file_routes.upload_folder, unique_id)
+            filepath = os.path.join(UPLOADS_FOLDER, unique_id)
             file.save(filepath)
             expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
             new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
@@ -72,7 +73,7 @@ def direct_download_file(unique_id):
         abort(410)  # 410 Gone indicates that the resource is no longer available and will not be available again.
 
     # Build the filepath using the UPLOAD_FOLDER setting and the unique file identifier
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_id)
+    filepath = os.path.join(UPLOADS_FOLDER, unique_id)
 
     # Check if the file exists in the filesystem
     if not os.path.isfile(filepath):
@@ -83,7 +84,7 @@ def direct_download_file(unique_id):
     db.session.commit()
 
     # Serve the file for download, using the original filename for the download
-    return send_from_directory(directory=app.config['UPLOAD_FOLDER'],
+    return send_from_directory(directory=UPLOADS_FOLDER,
                                path=unique_id,
                                as_attachment=True,
                                download_name=file_record.filename)
