@@ -4,6 +4,7 @@ from flask import Flask
 from apscheduler.schedulers.background import BackgroundScheduler
 from .db import db
 from .models.file import File
+from .models.user import User
 from .routes import main_routes as m, file_routes as f, user_routes as u
 from flask_login import LoginManager
 from .config import UPLOADS_FOLDER
@@ -21,6 +22,10 @@ def create_app():
 
     login_manager = LoginManager()
     login_manager.init_app(app)
+
+    @login_manager.user_loader  # Add user_loader callback here
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
     app.register_blueprint(m.main_routes)
     app.register_blueprint(f.file_routes)
