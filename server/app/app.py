@@ -1,25 +1,19 @@
-from datetime import datetime, timedelta
-from flask import Flask, request, render_template, send_from_directory, abort, url_for, jsonify
-
-from werkzeug.utils import secure_filename
-from apscheduler.schedulers.background import BackgroundScheduler
 import os
-import uuid
-from dotenv import load_dotenv
-from models.file import File
-from models.user import User
-from flask_login import LoginManager
+from datetime import datetime, timedelta
+from flask import Flask
+from apscheduler.schedulers.background import BackgroundScheduler
 from db import db
+from models.file import File
+from routes import main_routes, file_routes
+from flask_login import LoginManager
 
-load_dotenv()  # Load environment variables from .env file
+UPLOADS_FOLDER = os.getenv('UPLOADS_FOLDER')
 
-
-UPLOADS_FOLDER = os.getenv('UPLOADS_FOLDER')  # Get the path to the uploads folder from the environment variables
 
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-    app.config['UPLOAD_FOLDER'] = UPLOADS_FOLDER  # Update path as needed
+    app.config['UPLOAD_FOLDER'] = UPLOADS_FOLDER
 
     db.init_app(app)
 
@@ -29,7 +23,10 @@ def create_app():
     login_manager = LoginManager()
     login_manager.init_app(app)
 
-    return app  # Return the Flask app instance
+    app.register_blueprint(main_routes.main_routes)
+    app.register_blueprint(file_routes.file_routes)
+
+    return app
 
 
 def cleanup_expired_files(app):
@@ -48,9 +45,3 @@ def start_scheduler(app):
     scheduler = BackgroundScheduler()
     scheduler.add_job(func=lambda: cleanup_expired_files(app), trigger="interval", hours=1)
     scheduler.start()
-
-
-if __name__ == '__main__':
-    app_instance = create_app()
-    import routes
-    start_scheduler(app_instance)
