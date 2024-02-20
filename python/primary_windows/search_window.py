@@ -1,8 +1,14 @@
 import os
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QStackedLayout
+import threading
+from dotenv import load_dotenv
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QStackedLayout, QPushButton
 from PyQt5.QtGui import QFont, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QSize
 from python.tests.filename_generator import generate_filename
+from python.model.FileSystemNodeModel import *
+from python.model.FileSystemCache import FileSystemCache
+
+load_dotenv()
 
 
 # Custom widget that includes a label for the filename and a label for the file path
@@ -22,6 +28,7 @@ class FileListItem(QWidget):
         self.layout.setContentsMargins(10, 0, 0, 0)  # Remove margins if needed
 
         self.setLayout(self.layout)
+
 class SearchBar(QLineEdit):
     def __init__(self, parent=None):
         super(SearchBar, self).__init__(parent)
@@ -42,10 +49,13 @@ class SearchBar(QLineEdit):
                     }
                 """)
 
+
 class SearchWindow(QWidget):
     def __init__(self, window_index: int):
         super().__init__()
+        self.all_possible_results = None
         self._window_index = window_index
+        self.fileSystemModel = None
         self.initUI()
 
     def initUI(self):
@@ -78,6 +88,10 @@ class SearchWindow(QWidget):
 
         layout.addLayout(self.stackedLayout)
 
+        self.scanButton = QPushButton("Start Scan", self)
+        self.scanButton.clicked.connect(self.on_start_scan)  # Connect button click to handler
+        layout.addWidget(self.scanButton)  # Add the scan button to the layout
+
         self.setLayout(layout)
 
     def on_search_text_changed(self, text):
@@ -87,6 +101,10 @@ class SearchWindow(QWidget):
         if text:
             # Convert the search text to lowercase for a case-insensitive search
             search_text = text.lower()
+
+            """---------------"""
+
+            """---------------"""
 
             # Filter the results based on the search text
             filtered_results = [result for result in self.all_possible_results if search_text in result.lower()]
@@ -153,8 +171,33 @@ class SearchWindow(QWidget):
             self.stackedLayout.setCurrentWidget(self.placeholderWidget)
 
     def on_start_scan(self):
-        # Placeholder for start scan function
-        print("Scan started!")
+        print("Scan started! (on separate thread)")
+        threading.Thread(target=self.scan_file_system, args=(os.environ.get("SCAN_PATH"),)).start()
+
+    def scan_file_system(self, root_path: str):
+        print("SCAN PATH: ", root_path)
+        FSCache = FileSystemCache()
+        # if there is already a dump just use that (needs to be improved)
+        if not FSCache.load_from_file():
+            print("No cache found.")
+            if os.path.isdir(root_path):
+                print("Valid path given, creating directory object")
+                self.fileSystemModel = Directory(root_path, FSCache)
+            else:
+                print("Path given to scan was not a directory.")
+                raise Exception("Path given to scan was not a directory.")
+        else:
+            print("Existing cache found:")
+            print(FSCache)
+            # create fileSystemModel from cache
+            self.fileSystemModel = FSCache[root_path]
+            print(type(self.fileSystemModel))
+            print(self.fileSystemModel)
+
+
+        print("Scan Finished")
+
+
 
     @property
     def window_index(self):
