@@ -3,15 +3,18 @@ from ..db import db
 
 user_routes = Blueprint('user_routes', __name__)
 
+
 @user_routes.route('/login')
 def login():
     # Login route logic
     pass
 
+
 @user_routes.route('/logout')
 def logout():
     # Logout route logic
     pass
+
 
 @user_routes.route('/signup')
 def signup():

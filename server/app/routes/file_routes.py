@@ -37,6 +37,7 @@ def upload_file():
         # If it's not a POST request, just render the template without context
         return render_template('upload.html')
 
+
 @file_routes.route('/uploaded/<unique_id>', methods=['GET'])
 def uploaded(unique_id):
     file = File.query.filter_by(unique_id=unique_id).first()
@@ -44,6 +45,7 @@ def uploaded(unique_id):
         return render_template('uploaded.html', file=file)
     else:
         return "File not found", 404
+
 
 @file_routes.route('/download/<unique_id>')
 def download_file_page(unique_id):
@@ -58,6 +60,7 @@ def download_file_page(unique_id):
     }
 
     return render_template('download.html', file=file_details)
+
 
 @file_routes.route('/download/file/<unique_id>')
 def direct_download_file(unique_id):
