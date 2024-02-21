@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, url_for, redirect
+from flask import Blueprint, render_template, request, url_for, redirect, flash
 from flask_login import login_required, logout_user, login_user
 from werkzeug.security import check_password_hash
 from ..models.user import User
@@ -7,18 +7,21 @@ from ..db import db
 user_routes = Blueprint('user_routes', __name__)
 
 
-@user_routes.route('/sign_up', methods=['POST'])
+@user_routes.route('/sign_up', methods=['GET', 'POST'])
 def sign_up():
-    email = request.form.get('email')
-    password = request.form.get('password')
-    user = User.query.filter_by(email=email).first()  # Check if user already exists
-    if user:
-        flash('Email address already exists')
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user = User.query.filter_by(email=email).first()  # Check if user already exists
+        if user:
+            flash('Email address already exists')
+            return redirect(url_for('main.home'))
+        new_user = User(email=email)
+        db.session.add(new_user)
+        db.session.commit()
         return redirect(url_for('main.home'))
-    new_user = User(email=email, password=password)
-    db.session.add(new_user)
-    db.session.commit()
-    return redirect(url_for('main.home'))
+    else:
+        return render_template('sign_up.html')
 
 
 @user_routes.route('/login', methods=['POST'])
