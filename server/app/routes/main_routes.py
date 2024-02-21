@@ -10,7 +10,8 @@ main_routes = Blueprint('main', __name__)
 def home():
     return render_template('index.html',
                            file_routes=file_routes,
-                           user_routes=user_routes)
+                           user_routes=user_routes,
+                           main_routes=main_routes)
 
 
 @main_routes.route('/about')

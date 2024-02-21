@@ -5,12 +5,11 @@ from ..models.user import User
 from ..db import db
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms import StringField, SubmitField, PasswordField, EmailField
+from wtforms.validators import DataRequired, Email
 
 from . import file_routes  # Import Blueprint instance from the main application package
 from . import main_routes  # Import Blueprint instance from the main application package
-
 
 user_routes = Blueprint('user_routes', __name__)
 
@@ -21,50 +20,57 @@ class SignUpForm(FlaskForm):
     """
     name = StringField("Enter name:",
                        validators=[DataRequired()])
-    email = StringField("Enter email: ",
-                        validators=[DataRequired()])
-    password = StringField("Enter password: ",
-                           validators=[DataRequired()])
+    email = EmailField("Enter email: ",
+                       validators=[DataRequired(), Email()])
+    password = PasswordField("Enter password: ",
+                             validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+
+class LoginForm(FlaskForm):
+    """
+    Login user form
+    """
+    email = EmailField("Enter email: ",
+                       validators=[DataRequired(), Email()])
+    password = PasswordField("Enter password: ",
+                             validators=[DataRequired()])
     submit = SubmitField("Submit")
 
 
 @user_routes.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = User.query.filter_by(email=email).first()  # Check if user already exists
-        if user:
-            flash('Email address already exists')
-            return redirect(url_for('main.home'))
+    # if request.method == 'POST':
+    name = None
+    email = None
+    password = None
+    form = SignUpForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        form.name.data = ''
+        email = form.email.data
+        form.email.data = ''
+        password = form.password.data
+        form.password.data = ''
+
+        email_check = User.query.filter_by(email=email).first()  # Check if email already taken
+        if email_check:
+            flash('Email already exists.')
+            return redirect(url_for('user_routes.signup'))
+
         new_user = User(name=name, email=email)
         new_user.password = password
         db.session.add(new_user)
         db.session.commit()
-        return redirect(url_for('main.home'))
-    else:
-        # init form variables
-        name = None
-        email = None
-        password = None
-        form = SignUpForm()
-
-        if form.validate_on_submit():
-            name = form.name.data
-            form.name.data = ''
-            email = form.email.data
-            form.email.data = ''
-            password = form.password.data
-            form.password.data = ''
-
-        return render_template('signup.html',
-                               name=name,
-                               email=email,
-                               password=password,
-                               form=form,
-                               file_routes=file_routes,
-                               main_routes=main_routes)
+        flash('Account created successfully')
+        # return redirect(url_for('main.home'))
+    our_users = User.query.order_by(User.id).all()
+    return render_template('signup.html',
+                           form=form,
+                           user_routes=user_routes,
+                           file_routes=file_routes,
+                           main_routes=main_routes,
+                           our_users=our_users)
 
 
 @user_routes.route('/login', methods=['GET', 'POST'])
@@ -79,7 +85,15 @@ def login():
         login_user(user)  # Log in the user
         return redirect(url_for('main.home'))
     else:
-        return render_template('login.html', file_routes=file_routes, main_routes=main_routes)
+        name = None
+        email = None
+        password = None
+        form = LoginForm()
+        return render_template('login.html',
+                               form=form,
+                               file_routes=file_routes,
+                               user_routes=user_routes,
+                               main_routes=main_routes)
 
 
 @user_routes.route('/logout')

@@ -44,6 +44,7 @@ def upload():
         # If it's not a POST request, just render the template without context
         return render_template('upload.html',
                                user_routes=user_routes,
+                               file_routes=file_routes,
                                main_routes=main_routes)
 
 
@@ -54,6 +55,7 @@ def uploaded(unique_id):
         return render_template('uploaded.html',
                                file=file,
                                user_routes=user_routes,
+                               file_routes=file_routes,
                                main_routes=main_routes)
     else:
         return "File not found", 404
@@ -68,12 +70,15 @@ def download_file_page(unique_id):
         'filename': file_record.filename,
         'message': file_record.message,
         'expires_at': file_record.expires_at,
-        'download_link': url_for('file_routes.direct_download_file', unique_id=unique_id, _external=True)
+        'download_link': url_for('file_routes.direct_download_file',
+                                 unique_id=unique_id,
+                                 _external=True)
     }
 
     return render_template('download.html',
                            file=file_details,
                            user_routes=user_routes,
+                           file_routes=file_routes,
                            main_routes=main_routes)
 
 
@@ -118,4 +123,5 @@ def upload_success(unique_id):
     return render_template('upload_success.html',
                            file=file_details,
                            user_routes=user_routes,
+                           file_routes=file_routes,
                            main_routes=main_routes)
