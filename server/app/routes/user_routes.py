@@ -10,13 +10,15 @@ user_routes = Blueprint('user_routes', __name__)
 @user_routes.route('/sign_up', methods=['GET', 'POST'])
 def sign_up():
     if request.method == 'POST':
+        name = request.form.get('name')
         email = request.form.get('email')
         password = request.form.get('password')
         user = User.query.filter_by(email=email).first()  # Check if user already exists
         if user:
             flash('Email address already exists')
             return redirect(url_for('main.home'))
-        new_user = User(email=email)
+        new_user = User(name=name, email=email)
+        new_user.password = password
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('main.home'))
