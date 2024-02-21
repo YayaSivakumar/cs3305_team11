@@ -5,15 +5,22 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from .db import db
 from .models.file import File
 from .models.user import User
+
+from .routes import register_routes
 from .routes import main_routes as m, file_routes as f, user_routes as u
 from flask_login import LoginManager
+
 from .config import UPLOADS_FOLDER
+from .config import SECRET_KEY
+
+
 
 
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
     app.config['UPLOAD_FOLDER'] = UPLOADS_FOLDER
+    app.config['SECRET_KEY'] = SECRET_KEY
 
     db.init_app(app)
 
@@ -27,9 +34,10 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    app.register_blueprint(m.main_routes)
-    app.register_blueprint(f.file_routes)
-    app.register_blueprint(u.user_routes)
+    register_routes(app)
+    # app.register_blueprint(m.main_routes)
+    # app.register_blueprint(f.file_routes)
+    # app.register_blueprint(u.user_routes)
 
     return app
 

@@ -7,6 +7,8 @@
     <!-- Include Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
+<!--TODO: Check if this is responsive -->
+<!--TODO: make every other template extend from base.html -->
 <body class="bg-gray-100">
     <!-- Navigation Bar -->
     <nav class="bg-blue-500 p-4">
@@ -14,8 +16,8 @@
             <h1 class="text-white text-xl font-semibold">File Upload App</h1>
             <div>
                 <a href="#" class="text-white mr-4">About</a>
-                <a href="/download" class="text-white mr-4">Download</a>
-                <a href="#" class="text-white">Log In</a>
+                <a href="{{ url_for('file_routes.upload') }}" class="text-white mr-4">Upload</a>
+                <a href="{{ url_for('user_routes.login') }}" class="text-white">Log In</a>
             </div>
         </div>
     </nav>

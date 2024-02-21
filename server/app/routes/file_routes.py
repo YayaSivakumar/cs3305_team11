@@ -9,12 +9,18 @@ from ..config import UPLOADS_FOLDER
 
 from ..models.file import File
 
+from . import user_routes  # Import Blueprint instance from the main application package
+from . import main_routes  # Import Blueprint instance from the main application package
+
 file_routes = Blueprint('file_routes', __name__)
 
 
 @file_routes.route('/upload', methods=['GET', 'POST'])
-def upload_file():
-    '''This function handles file uploads. It accepts POST requests with a file, message, expiration_hours, and password fields.'''
+def upload():
+    """
+    This function handles file uploads. It accepts POST requests with a file, message, expiration_hours,
+    and password fields.
+    """
     if request.method == 'POST':
         message = request.form.get('message', '')
         expiration_hours = int(request.form.get('expiration_hours', 24))
@@ -30,20 +36,25 @@ def upload_file():
             # new_file.password: str = password
             db.session.add(new_file)
             db.session.commit()
-            link = url_for('download_file_page', unique_id=unique_id, _external=True)
+            link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
             print(link)
             return jsonify({'message': 'File uploaded successfully.', 'link': link})
 
     else:
         # If it's not a POST request, just render the template without context
-        return render_template('upload.html')
+        return render_template('upload.html',
+                               user_routes=user_routes,
+                               main_routes=main_routes)
 
 
 @file_routes.route('/uploaded/<unique_id>', methods=['GET'])
 def uploaded(unique_id):
     file = File.query.filter_by(unique_id=unique_id).first()
     if file:
-        return render_template('uploaded.html', file=file)
+        return render_template('uploaded.html',
+                               file=file,
+                               user_routes=user_routes,
+                               main_routes=main_routes)
     else:
         return "File not found", 404
 
@@ -57,10 +68,13 @@ def download_file_page(unique_id):
         'filename': file_record.filename,
         'message': file_record.message,
         'expires_at': file_record.expires_at,
-        'download_link': url_for('direct_download_file', unique_id=unique_id, _external=True)
+        'download_link': url_for('file_routes.direct_download_file', unique_id=unique_id, _external=True)
     }
 
-    return render_template('download.html', file=file_details)
+    return render_template('download.html',
+                           file=file_details,
+                           user_routes=user_routes,
+                           main_routes=main_routes)
 
 
 @file_routes.route('/download/file/<unique_id>')
@@ -94,11 +108,14 @@ def direct_download_file(unique_id):
 def upload_success(unique_id):
     file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
     file_details = {
-        'url': url_for('download_file_page', unique_id=unique_id, _external=True),
+        'url': url_for('file_routes.download_file_page', unique_id=unique_id, _external=True),
         'filename': file_record.filename,
         'message': file_record.message,
         'expires_at': file_record.expires_at,
         'download_link': url_for('direct_download_file', unique_id=unique_id, _external=True),
         'download_count': file_record.download_count
     }
-    return render_template('upload_success.html', file=file_details)
+    return render_template('upload_success.html',
+                           file=file_details,
+                           user_routes=user_routes,
+                           main_routes=main_routes)
