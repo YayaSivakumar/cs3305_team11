@@ -202,6 +202,15 @@ class OptimiseWindow(QWidget):
 
             if reply == QMessageBox.Yes:
                 for path in paths_to_deduplicate:
+
+                    # check if path is a file
+                    if not os.path.isdir(path):
+                        QMessageBox.information(self, 'Error',
+                                                'Please select a directory from the tree view or drag and drop a directory.',
+                                                QMessageBox.Ok)
+                        return
+
+                    # if path is a directory
                     self.duplicate_files = deduplicate(path)
                     if self.duplicate_files:
                         QMessageBox.information(self, 'Success',
