@@ -173,7 +173,7 @@ class SearchWindow(QWidget):
 
     def on_start_scan(self):
         print("Scan started! (on separate thread)")
-        threading.Thread(target=self.scan_file_system, args=('/Users/yachitrasivakumar/Desktop/screenies',)).start()
+        threading.Thread(target=self.scan_file_system, args=(os.environ.get("SCAN_PATH"),)).start()
 
     def scan_file_system(self, root_path: str):
         print("SCAN PATH: ", root_path)
