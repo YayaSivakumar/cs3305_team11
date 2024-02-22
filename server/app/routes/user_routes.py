@@ -95,7 +95,10 @@ def login():
 
         if user and user.verify_password(password):
             login_user(user, remember=True)
-            return redirect(url_for('user_routes.profile', id=user.id))
+            flash("Login successful!")
+            return redirect(url_for('user_routes.profile'))
+        else:
+            flash("Incorrect credentials - Try again")
 
     return render_template('login.html',
                            form=form,
@@ -111,10 +114,10 @@ def logout():
     return redirect(url_for('main_routes.home'))
 
 
-@user_routes.route('/profile/<int:id>', methods=['GET'])
-@login_required
+@user_routes.route('/profile', methods=['GET'])
+# @login_required
 def profile():
-    user = login_manager.user_loader(id)
+    user = 'Conor'
 
     return render_template('profile.html',
                            user=user,
