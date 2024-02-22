@@ -4,31 +4,49 @@ import os
 
 from python.model.FileSystemNodeModel import File, Directory
 from python.model.FileSystemCache import FileSystemCache
-from python.model.Music import Music
-from python.model.Video import Video
 
 
-def compress(file_node: object):
+def compress(file_path: str):
     """Compression based on type of file."""
+    '''
+        # will change to this after the FileSystemNodeModel scan is implemented
+        if type(file_node) == Music:
+            # reduce the bitrate of the audio
+            output_path = _compress_audio(file_node)
+            # compress the reduced quality audio
+            compressed = Music(output_path, file_node.cache)
+            output_path = _compress_single_file_gzip(compressed)
 
-    if type(file_node) == Music:
+        elif type(file_node) == Video:
+            # reduce the bitrate of the video + audio
+            output_path = _compress_video(file_node)
+            # compress the reduced quality video
+            compressed = Video(output_path, file_node.cache)
+            output_path = _compress_single_file_gzip(compressed)
+
+        elif type(file_node) == Directory:
+            # compress the entire directory using tar with gzip compression
+            output_path = _compress_directory_tar_gzip(file_node)
+
+        else:
+            # compress the file using gzip
+            output_path = _compress_single_file_gzip(file_node)
+        '''
+
+    file_node = File(file_path, FileSystemCache())
+    if file_node.path.endswith('.mp3') or file_node.path.endswith('.wav') or file_node.path.endswith('.aac'):
         # reduce the bitrate of the audio
         output_path = _compress_audio(file_node)
         # compress the reduced quality audio
-        compressed = Music(output_path, file_node.cache)
-        output_path = _compress_single_file_gzip(compressed)
-
-    elif type(file_node) == Video:
+        output_path = _compress_single_file_gzip(output_path)
+    elif file_node.path.endswith('.mp4') or file_node.path.endswith('.mov') or file_node.path.endswith('.avi'):
         # reduce the bitrate of the video + audio
         output_path = _compress_video(file_node)
         # compress the reduced quality video
-        compressed = Video(output_path, file_node.cache)
-        output_path = _compress_single_file_gzip(compressed)
-
-    elif type(file_node) == Directory:
+        output_path = _compress_single_file_gzip(output_path)
+    elif os.path.isdir(file_node.path):
         # compress the entire directory using tar with gzip compression
         output_path = _compress_directory_tar_gzip(file_node)
-
     else:
         # compress the file using gzip
         output_path = _compress_single_file_gzip(file_node)
@@ -105,5 +123,4 @@ def _compress_directory_tar_gzip(dir_node: Directory):
 
 
 if __name__ == "__main__":
-    cache = FileSystemCache()
     pass
