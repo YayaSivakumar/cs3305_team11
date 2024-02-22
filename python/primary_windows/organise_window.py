@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt, QDir
 from PyQt5.QtWidgets import QWidget, QDirModel, QColumnView, QHBoxLayout, QPushButton, QMessageBox, QVBoxLayout, QVBoxLayout, QLabel
 from python.modules.organise_by_type import organise_by_type_func
+from python.modules.revert_changes import revert_changes, Directory
 from python.ui.drag_drop import *
 from python.ui.custom_file_system_model import *
 
@@ -8,6 +9,7 @@ from python.ui.custom_file_system_model import *
 class OrganiseWindow(QWidget):
     def __init__(self, window_index: int):
         super().__init__()
+        self.organised = []
         self.window_index = window_index
         # Create main layout
         layout = QHBoxLayout(self)
@@ -41,6 +43,12 @@ class OrganiseWindow(QWidget):
         self.organizeButton.clicked.connect(self.onOrganizeClicked)
         right_layout.addWidget(self.organizeButton)
 
+        # Add revert button to trigger revert changes after organizing
+        self.revertButton = QPushButton("Revert Changes")
+        self.revertButton.clicked.connect(self.onRevertClicked)
+        right_layout.addWidget(self.revertButton)
+        self.revertButton.setDisabled(True)
+
         # Ensure that the organize button stays at the bottom
         right_layout.addStretch()
 
@@ -66,6 +74,8 @@ class OrganiseWindow(QWidget):
 
         # If there are paths to organize, either from drag-and-drop or tree view
         if paths_to_organize:
+            # clear the previous list of organized items
+            self.organised.clear()
             message = f"Do you want to organize the following items?\n\n" + "\n".join(paths_to_organize)
             reply = QMessageBox.question(self, 'Organize Confirmation', message, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
@@ -73,13 +83,47 @@ class OrganiseWindow(QWidget):
                 for path in paths_to_organize:
                     print(f"Organizing: {path}")
                     # Call Bash script with each path
-                    organise_by_type_func(path)
+                    dir_node = organise_by_type_func(path)
+                    self.organised.append(dir_node)
 
                 # Optionally clear the drag-and-drop list after processing
                 self.dragDropLabel.droppedFiles.clear()
 
+                # Enable the revert button
+                self.revertButton.setEnabled(True)
+
         else:
             QMessageBox.information(self, 'No Selection', 'Please select a file or folder from the tree view or drag and drop files.', QMessageBox.Ok)
+
+    def onRevertClicked(self):
+        """
+        Revert the changes made by the organize function.
+        """
+
+        if self.organised:
+            message = f"Do you want to revert the previous organisation"
+            reply = QMessageBox.question(self, 'Revert Confirmation', message, QMessageBox.Yes | QMessageBox.No,
+                                         QMessageBox.No)
+
+            if reply == QMessageBox.Yes:
+                for dir_node in self.organised:
+                    if isinstance(dir_node, Directory):
+                        print(f"Reverting: {dir_node}")
+                        # Call Bash script with each path
+                        revert_changes(dir_node)
+                    else:
+                        print(f"{dir_node} is not a directory. Skipping...")
+
+                # Disable the revert button after processing
+                self.revertButton.setDisabled(True)
+
+                # Clear the organized list
+                self.organised.clear()
+
+        else:
+            QMessageBox.information(self, 'No files to revert',
+                                    'Please organise a folder using the tree view or drag and drop files before attempting revert.',
+                                    QMessageBox.Ok)
 
     @property
     def window_index(self):

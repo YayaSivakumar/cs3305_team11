@@ -39,7 +39,8 @@ def organise_by_type_func(dir_path: str):
             file_node.move(dir_node.path + '/' + filetype + '/' + file_node.name)
             num_files_moved += 1
 
-    return f'Moved {num_files_moved} files'
+    print(f"Moved {num_files_moved} files")
+    return dir_node
 
 
 def determine_filetype(file_node: File) -> str:
