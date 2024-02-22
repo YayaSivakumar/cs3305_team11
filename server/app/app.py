@@ -2,7 +2,10 @@ import os
 from datetime import datetime, timedelta
 from flask import Flask
 from apscheduler.schedulers.background import BackgroundScheduler
+
 from .db import db
+from .login_manager import login_manager
+
 from .models.file import File
 from .models.user import User
 
@@ -14,8 +17,6 @@ from .config import UPLOADS_FOLDER
 from .config import SECRET_KEY
 
 
-
-
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
@@ -23,12 +24,11 @@ def create_app():
     app.config['SECRET_KEY'] = SECRET_KEY
 
     db.init_app(app)
-
     with app.app_context():
         db.create_all()
 
-    login_manager = LoginManager()
     login_manager.init_app(app)
+    login_manager.login_view = 'user_routes.login'
 
     @login_manager.user_loader  # Add user_loader callback here
     def load_user(user_id):

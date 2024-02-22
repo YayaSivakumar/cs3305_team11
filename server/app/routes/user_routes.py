@@ -1,12 +1,21 @@
 from flask import Blueprint, render_template, request, url_for, redirect, flash
 from flask_login import login_required, logout_user, login_user
+
 from werkzeug.security import check_password_hash
+# TODO: change werkzeug.security to bcrypt for File model
+
+# TODO: Users database stuff - need delete, and update aswell
+# TODO: Add user profile page, this would show all the files uploaded by the user
+#  and maybe admin dashboard for this
+#   TODO: need to make sure to keep simple, and not overcomplicate things, this is not core feature
 from ..models.user import User
 from ..db import db
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, EmailField
 from wtforms.validators import DataRequired, Email
+
+from ..login_manager import login_manager
 
 from . import file_routes  # Import Blueprint instance from the main application package
 from . import main_routes  # Import Blueprint instance from the main application package
@@ -75,29 +84,40 @@ def signup():
 
 @user_routes.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
+    form = LoginForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        form.email.data = ''
+        password = form.password.data
+        form.password.data = ''
+
         user = User.query.filter_by(email=email).first()
-        if not user or not check_password_hash(user.password_hashed, password):
-            flash('Please check your login details and try again.')
-            return redirect(url_for('main.home'))  # if user doesn't exist or password is wrong, reload the page
-        login_user(user)  # Log in the user
-        return redirect(url_for('main.home'))
-    else:
-        name = None
-        email = None
-        password = None
-        form = LoginForm()
-        return render_template('login.html',
-                               form=form,
-                               file_routes=file_routes,
-                               user_routes=user_routes,
-                               main_routes=main_routes)
+
+        if user and user.verify_password(password):
+            login_user(user, remember=True)
+            return redirect(url_for('user_routes.profile', id=user.id))
+
+    return render_template('login.html',
+                           form=form,
+                           user_routes=user_routes,
+                           file_routes=file_routes,
+                           main_routes=main_routes)
 
 
 @user_routes.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('main.home'))
+    return redirect(url_for('main_routes.home'))
+
+
+@user_routes.route('/profile/<int:id>', methods=['GET'])
+@login_required
+def profile():
+    user = login_manager.user_loader(id)
+
+    return render_template('profile.html',
+                           user=user,
+                           user_routes=user_routes,
+                           file_routes=file_routes,
+                           main_routes=main_routes)
