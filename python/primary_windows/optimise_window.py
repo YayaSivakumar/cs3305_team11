@@ -13,7 +13,7 @@ class OptimiseWindow(QWidget):
     def __init__(self, window_index):
         super().__init__()
         self.window_index = window_index
-        self.duplicate_files = []
+        self.duplicate_files = None
 
         # Create a tab widgets
         self.tabs = QTabWidget()
@@ -99,8 +99,16 @@ class OptimiseWindow(QWidget):
         deduplication_description_label.setAlignment(Qt.AlignTop)  # Align the text to the top
 
         # Add a button to trigger file organization
-        self.deduplicationButton = QPushButton("De-Duplicate")
+        self.deduplicationButton = QPushButton("Scan Directory for Duplicates")
         self.deduplicationButton.clicked.connect(self.onDeDuplicateClicked)
+
+        self.duplicate_files_label = QLabel(f"{self.duplicate_files}")
+        self.duplicate_files_label.setWordWrap(True)
+
+        # Add a button to remove duplicates
+        self.deleteDuplicatesButton = QPushButton("Remove Duplicates")
+        self.deleteDuplicatesButton.clicked.connect(self.deleteDuplicates)
+        self.deleteDuplicatesButton.setDisabled(True)
 
         # Initialize the model for the ColumnView
         self.model2 = CustomFileSystemModel()
@@ -120,6 +128,8 @@ class OptimiseWindow(QWidget):
         self.tab2_right_layout.addWidget(deduplication_description_label)  # Add the description label to the layout
         self.tab2_right_layout.addWidget(self.dragDropLabel2)
         self.tab2_right_layout.addWidget(self.deduplicationButton)
+        self.tab2_right_layout.addWidget(self.duplicate_files_label)
+        self.tab2_right_layout.addWidget(self.deleteDuplicatesButton)
         self.tab2_right_layout.addStretch()
 
         # Add the column view and the VBox to the tab layout
@@ -195,8 +205,12 @@ class OptimiseWindow(QWidget):
                     self.duplicate_files = deduplicate(path)
                     if self.duplicate_files:
                         QMessageBox.information(self, 'Success',
-                                                f'The following files are duplicates: {self.duplicate_files}',
+                                                f'Duplicates found in {path}.',
                                                 QMessageBox.Ok)
+                        # update label
+                        reformatted_duplicates = "\n".join(self.duplicate_files)
+                        self.duplicate_files_label.setText(f"{reformatted_duplicates}")
+                        self.deleteDuplicatesButton.setDisabled(False)
                     else:
                         QMessageBox.information(self, 'Success',
                                                 f'No duplicates found in {path}.',
@@ -205,6 +219,13 @@ class OptimiseWindow(QWidget):
             QMessageBox.information(self, 'No Selection',
                                     'Please select a file or folder from the tree view or drag and drop files.',
                                     QMessageBox.Ok)
+
+    def deleteDuplicates(self):
+        # delete functionality will be implemented here once scan functionality is implemented for FileSystemNodeModel
+        self.duplicate_files.clear()
+        self.duplicate_files_label.setText(f"None")
+        self.deleteDuplicatesButton.setDisabled(True)
+        pass
 
     def onScheduleSelected(self):
         pass
