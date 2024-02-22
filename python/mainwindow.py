@@ -1,7 +1,9 @@
 
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, Qt, QSize
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget, QAction
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget, \
+    QAction, QLabel
 
 from python.primary_windows.organise_window import OrganiseWindow
 from python.primary_windows.optimise_window import OptimiseWindow
@@ -65,26 +67,41 @@ class MainWindow(QMainWindow):
 
         # Add buttons to the sidebar
         button_0_file_search = QPushButton(f"Search")
+        icon = QIcon("ui/images/icons/search_icon.svg")  # Replace with the path to your SVG icon
+        button_0_file_search.setIcon(icon)
+        button_0_file_search.setIconSize(QSize(24, 24))  # Adjust the size as needed
         button_0_file_search.clicked.connect(lambda: self.show_window(self.search_window.window_index))
         self.sidebar_layout.addWidget(button_0_file_search)
 
         # Add buttons to the sidebar
         button_1_organise = QPushButton(f"Organise")
+        icon = QIcon("ui/images/icons/organise_icon.png")  # Replace with the path to your SVG icon
+        button_1_organise.setIcon(icon)
+        button_1_organise.setIconSize(QSize(24, 24))  # Adjust the size as needed
         button_1_organise.clicked.connect(lambda: self.show_window(self.organise_window.window_index))
         self.sidebar_layout.addWidget(button_1_organise)
 
         # Add buttons to the sidebar
         button_2_optimise = QPushButton(f"Optimise")
+        icon = QIcon("ui/images/icons/optimise_icon.png")  # Replace with the path to your SVG icon
+        button_2_optimise.setIcon(icon)
+        button_2_optimise.setIconSize(QSize(24, 24))  # Adjust the size as needed
         button_2_optimise.clicked.connect(lambda: self.show_window(self.optimise_window.window_index))
         self.sidebar_layout.addWidget(button_2_optimise)
 
         # Add buttons to the sidebar
         button_3_visualise = QPushButton(f"Visualise")
+        icon = QIcon("ui/images/icons/visualise_icon.png")  # Replace with the path to your SVG icon
+        button_3_visualise.setIcon(icon)
+        button_3_visualise.setIconSize(QSize(24, 24))  # Adjust the size as needed
         button_3_visualise.clicked.connect(lambda: self.show_window(self.visualise_window.window_index))
         self.sidebar_layout.addWidget(button_3_visualise)
 
         # Add buttons to the sidebar
         button_4_file_sharing = QPushButton(f"File Sharing")
+        icon = QIcon("ui/images/icons/cloud_icon.svg")  # Replace with the path to your SVG icon
+        button_4_file_sharing.setIcon(icon)
+        button_4_file_sharing.setIconSize(QSize(24, 24))  # Adjust the size as needed
         button_4_file_sharing.clicked.connect(lambda: self.show_window(self.file_sharing_window.window_index))
         self.sidebar_layout.addWidget(button_4_file_sharing)
 
@@ -168,3 +185,5 @@ class MainWindow(QMainWindow):
     def toggleDarkMode(self):
         self.apply_system_theme(self.dark_mode)
         self.dark_mode = not self.dark_mode
+
+
