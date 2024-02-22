@@ -59,7 +59,7 @@ class SearchWindow(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.all_possible_results = generate_filename()  # Replace with actual search results
+        self.all_possible_results = []     # Replace with actual search results
         self.setWindowTitle("Search Example")
         self.setGeometry(100, 100, 800, 600)
 
@@ -107,7 +107,7 @@ class SearchWindow(QWidget):
             """---------------"""
 
             # Filter the results based on the search text
-            filtered_results = [result for result in self.all_possible_results if search_text in result.lower()]
+            filtered_results = [node for node in self.all_possible_results if search_text in node.name.lower()]
 
             # Show the results list if there is text
             self.stackedLayout.setCurrentWidget(self.resultsList)
@@ -143,16 +143,17 @@ class SearchWindow(QWidget):
                 # ... add more mappings as needed
             }
 
-            for file_name in filtered_results:
-                # Example filepath for this example; replace with actual filepath from your search logic
-                filepath = '/absolute/path/to/' + file_name
+            for file_node in filtered_results:
+                # Extract the file name and path
+                file_name = file_node.name
+                filepath = file_node.path
 
                 # Check if it's a folder or if there's no file extension
-                if os.path.isdir(filepath) or '.' not in file_name:
+                if os.path.isdir(filepath) or '.' not in filepath:
                     icon_path = 'ui/images/icons/folder_icon.png'
                 else:
                     # Get the file extension and convert it to lower case
-                    extension = file_name.split('.')[-1].lower()
+                    extension = file_node.extension().lower()[1:]
                     # Get the corresponding icon path or a default one
                     icon_path = icon_paths.get(extension, 'ui/images/icons/default_icon.png')
 
@@ -172,28 +173,28 @@ class SearchWindow(QWidget):
 
     def on_start_scan(self):
         print("Scan started! (on separate thread)")
-        threading.Thread(target=self.scan_file_system, args=(os.environ.get("SCAN_PATH"),)).start()
+        threading.Thread(target=self.scan_file_system, args=('/Users/yachitrasivakumar/Desktop/screenies',)).start()
 
     def scan_file_system(self, root_path: str):
         print("SCAN PATH: ", root_path)
         FSCache = FileSystemCache()
-        # if there is already a dump just use that (needs to be improved)
-        if not FSCache.load_from_file():
-            print("No cache found.")
+
+        # if there is cache
+        if FSCache.load_from_file():
+            # create fileSystemModel from cache
+            print('loading from cache')
+            self.fileSystemModel = FSCache[root_path]
+
+        else:
+            # create model from scan path
+            print('no cache found, scanning')
             if os.path.isdir(root_path):
-                print("Valid path given, creating directory object")
                 self.fileSystemModel = Directory(root_path, FSCache)
             else:
-                print("Path given to scan was not a directory.")
                 raise Exception("Path given to scan was not a directory.")
-        else:
-            print("Existing cache found:")
-            print(FSCache)
-            # create fileSystemModel from cache
-            self.fileSystemModel = FSCache[root_path]
-            print(type(self.fileSystemModel))
-            print(self.fileSystemModel)
 
+        # update search results
+        self.all_possible_results = [node for node in FSCache.body.values()]
 
         print("Scan Finished")
 

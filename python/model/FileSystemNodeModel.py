@@ -167,7 +167,6 @@ class Directory(FileSystemNode):
                 full_path = os.path.join(self.path, item)
                 if os.path.isdir(full_path):
                     child = Directory(full_path, self.cache)
-                    self.cache.update(child.path, child)
                 else:
                     child = File(full_path, self.cache)
                     self.cache.update(child.path, child)

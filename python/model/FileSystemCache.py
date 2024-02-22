@@ -82,13 +82,13 @@ class FileSystemCache:
             pickle.dump(self, pickle_file)
 
     def load_from_file(self):
-        if os.path.exists('cache/system_model_cache.pkl'):
+        try:
             with open('cache/system_model_cache.pkl', 'rb') as pickle_file:
                 loaded: FileSystemCache = pickle.load(pickle_file)
                 self.body = loaded.body
                 self.keyword_index = loaded.keyword_index
             return True
-        else:
+        except:
             return False
 
     @staticmethod
