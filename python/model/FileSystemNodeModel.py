@@ -19,7 +19,7 @@ class FileSystemNode:
 
     def find_node(self, name: str):
         """Recursively find a node by name."""
-        if self.name() == name:
+        if self.name == name:
             return self
         for child in self.children:
             found = child.find_node(name)
@@ -37,7 +37,7 @@ class FileSystemNode:
         """Print the tree structure.
             Level is used for recursive call, param not to be used for testing per say
         """
-        print('  ' * level + self.name())
+        print('  ' * level + self.name)
         for child in self.children:
             child.print_tree(level + 1)
 
@@ -76,7 +76,7 @@ class FileSystemNode:
 
     def is_invisible(self):
         """Check if the file is hidden."""
-        return self.name().startswith('.')
+        return self.name.startswith('.')
 
     def move(self, new_path: str):
         """Move the node to a new location."""
@@ -187,12 +187,12 @@ class Directory(FileSystemNode):
 
     def list_contents(self):
         """List all files and folders in the directory."""
-        return [child.name() for child in self.children]
+        return [child.name for child in self.children]
 
     def find_file(self, file_name: str):
         """Recursively find a file in the directory and its subdirectories."""
         for child in self.children:
-            if child.name() == file_name:
+            if child.name == file_name:
                 return child
             if isinstance(child, Directory):
                 found = child.find_file(file_name)

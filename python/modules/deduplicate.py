@@ -1,22 +1,20 @@
 # script_name: deduplicate.py
 from python.model.FileSystemNodeModel import Directory
-from python.modules.helper_funcs import delete_empty_directories
+from python.model.FileSystemCache import FileSystemCache
 
 
-def deduplicate(dir_node: Directory):
+def deduplicate(dir_path: str):
     """
     Recursive function to delete duplicate files in the directory tree.
     """
+    dir_node = Directory(dir_path, FileSystemCache())
 
     # set to store hashed values of files
     seen = set()
 
-    deleted_files = _deduplicate(dir_node, seen)
+    duplicate_files = _deduplicate(dir_node, seen)
 
-    # delete empty directories if any after deduplication
-    delete_empty_directories(dir_node, dir_node)
-
-    return deleted_files
+    return duplicate_files
 
 
 def _deduplicate(dir_node: Directory, seen: set):
@@ -39,7 +37,6 @@ def _deduplicate(dir_node: Directory, seen: set):
         elif hashed_value:
             seen.add(hashed_value)
 
-    print(f"Deleted: {deleted}")
     return deleted
 
 

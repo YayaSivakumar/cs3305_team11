@@ -1,7 +1,6 @@
 # script name: revert_changes.py
-from python.model.FileSystemNodeModel import Directory, FileSystemCache
+from python.model.FileSystemNodeModel import Directory
 from python.modules.helper_funcs import delete_empty_directories
-from organise_by_date import organise_by_date
 
 
 def revert_changes(dir_node: Directory):
@@ -9,7 +8,7 @@ def revert_changes(dir_node: Directory):
         _revert_changes(dir_node)
 
         # delete empty directories
-        delete_empty_directories(dir_node, dir_node)
+        delete_empty_directories(dir_node)
 
     except FileNotFoundError as e:
         print(e)
@@ -23,23 +22,24 @@ def _revert_changes(dir_node: Directory):
     json_file_path: str: path to JSON file containing original structure
     """
 
-    # create copy of child files to avoid changing the list while iterating
-    children = [child for child in dir_node.children]
+    # iterate through shallow copy of children list to avoid changing the list while iterating
+    for node in dir_node.children[:]:
 
-    for node in children:
-        # recursively revert changes
+        # recursively revert changes for each file
         if isinstance(node, Directory):
             _revert_changes(node)
 
         if node.path != node.revert_path:
+            print(node.name, node.path, node.revert_path)
             # move file back to original location
             node.move(node.revert_path)
 
 
 if __name__ == "__main__":
     # testing
+    '''
     cache = FileSystemCache()
-    dir_obj = Directory('/Users/yachitrasivakumar/Desktop/test_by_date', cache)
+    dir_obj = Directory('/Users/yachitrasivakumar/Desktop/YEAR3/Semester2Year3/cs3305_team11/test_by_date', cache)
 
     def print_contents(node: Directory):
         print(node.list_contents())
@@ -56,7 +56,5 @@ if __name__ == "__main__":
     revert_changes(dir_obj)
     # check for data structure consistency
     print_contents(dir_obj)
-
-    #dir_obj = Directory('/Users/yachitrasivakumar/Desktop/empty', cache)
-    #delete_empty_directories(dir_obj, dir_obj)
+    '''
 

@@ -68,5 +68,4 @@ class Document(File):
 
 
 if __name__ == "__main__":
-    d = Document('/Users/yachitrasivakumar/Library/Group Containers/group.net.whatsapp.WhatsApp.shared/Message/Media/353860524489@s.whatsapp.net/8/1/81ce2c62-7220-405d-a47b-53ebb2a0537c.docx', {})
-    print(d.title, d.authors, d.keywords)
+    pass
