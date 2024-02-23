@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QStackedLayout, QPushButton
 from PyQt5.QtGui import QFont, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QSize
-from python.tests.filename_generator import generate_filename
 from python.model.FileSystemNodeModel import *
 from python.model.FileSystemCache import FileSystemCache
 
@@ -28,6 +27,7 @@ class FileListItem(QWidget):
         self.layout.setContentsMargins(10, 0, 0, 0)  # Remove margins if needed
 
         self.setLayout(self.layout)
+
 
 class SearchBar(QLineEdit):
     def __init__(self, parent=None):
@@ -101,10 +101,6 @@ class SearchWindow(QWidget):
         if text:
             # Convert the search text to lowercase for a case-insensitive search
             search_text = text.lower()
-
-            """---------------"""
-
-            """---------------"""
 
             # Filter the results based on the search text
             filtered_results = [node for node in self.all_possible_results if search_text in node.name.lower()]
@@ -197,8 +193,6 @@ class SearchWindow(QWidget):
         self.all_possible_results = [node for node in FSCache.body.values()]
 
         print("Scan Finished")
-
-
 
     @property
     def window_index(self):

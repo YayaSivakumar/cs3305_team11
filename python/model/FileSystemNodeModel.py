@@ -166,6 +166,9 @@ class Directory(FileSystemNode):
             for item in os.listdir(self.path):
                 full_path = os.path.join(self.path, item)
                 if os.path.isdir(full_path):
+                    if '.' in item:
+                        # do not recurse through .info directories for lib files
+                        continue
                     child = Directory(full_path, self.cache)
                 else:
                     child = File(full_path, self.cache)
