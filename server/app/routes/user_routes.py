@@ -96,7 +96,7 @@ def login():
         if user and user.verify_password(password):
             login_user(user, remember=True)
             flash("Login successful!")
-            return redirect(url_for(f'user_routes.profile/{user.id}'))
+            return redirect(url_for(f'user_routes.profile'))
         else:
             flash("Incorrect credentials - Try again")
 
@@ -111,20 +111,16 @@ def login():
 @login_required
 def logout():
     logout_user()
+    flash("You have been logged out")
     return redirect(url_for('main_routes.home'))
 
 
 # TODO: Why is profile not working with ID??
-@user_routes.route('/profile/<id>', methods=['GET'])
+@user_routes.route('/profile', methods=['GET'])
 @login_required
 def profile():
-    user = User.query.get(id=id).first()
-    if user:
-        return render_template('profile.html',
-                               user=user,
-                               user_routes=user_routes,
-                               file_routes=file_routes,
-                               main_routes=main_routes)
-    else:
-        flash("User not found")
-        return redirect(url_for('main_routes.home'))
+    return render_template('profile.html',
+                           user_routes=user_routes,
+                           file_routes=file_routes,
+                           main_routes=main_routes)
+
