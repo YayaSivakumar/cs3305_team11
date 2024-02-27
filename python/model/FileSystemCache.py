@@ -22,7 +22,7 @@ class FileSystemCache:
         for keyword in keywords:
             if keyword not in self.keyword_index:
                 self.keyword_index[keyword] = set()
-            self.keyword_index[keyword].add(path)
+            self.keyword_index[keyword].add(node)
 
     def search(self, query: str, match_any: bool = False):
         """

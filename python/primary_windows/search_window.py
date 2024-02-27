@@ -103,7 +103,7 @@ class SearchWindow(QWidget):
             search_text = text.lower()
 
             # Filter the results based on the search text
-            filtered_results = [node for node in self.all_possible_results if search_text in node.name.lower()]
+            filtered_results = self.fileSystemModel.search(search_text)
 
             # Show the results list if there is text
             self.stackedLayout.setCurrentWidget(self.resultsList)

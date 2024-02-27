@@ -136,6 +136,13 @@ class FileSystemNode:
             print(f"An error occurred: {e}")
             return None
 
+    def search(self, searh_term: str):
+        """Search for nodes including search_term in cache"""
+        if searh_term in self.cache.keyword_index:
+            result_list = list(self.cache.keyword_index[searh_term])
+            return result_list
+        # no matches found
+        return []
 
 class File(FileSystemNode):
     def __init__(self, path: str, cache: FileSystemCache):
