@@ -136,6 +136,13 @@ class FileSystemNode:
             print(f"An error occurred: {e}")
             return None
 
+    def search(self, searh_term: str):
+        """Search for nodes including search_term in cache"""
+        if searh_term in self.cache.keyword_index:
+            result_list = list(self.cache.keyword_index[searh_term])
+            return result_list
+        # no matches found
+        return []
 
 class File(FileSystemNode):
     def __init__(self, path: str, cache: FileSystemCache):
@@ -158,6 +165,7 @@ class Directory(FileSystemNode):
         super().__init__(path, cacheObj)
         self.name = os.path.basename(path.rstrip(os.sep))
         self._populate()  # Populate the directory with its children
+        cacheObj.save_to_file()
 
     def _populate(self):
         """Populate the directory with its children."""
@@ -165,8 +173,10 @@ class Directory(FileSystemNode):
             for item in os.listdir(self.path):
                 full_path = os.path.join(self.path, item)
                 if os.path.isdir(full_path):
+                    if '.' in item:
+                        # do not recurse through .info directories for lib files
+                        continue
                     child = Directory(full_path, self.cache)
-                    self.cache.update(child.path, child)
                 else:
                     child = File(full_path, self.cache)
                     self.cache.update(child.path, child)

@@ -1,6 +1,8 @@
 pyqt5~=5.15.10
 pypdf2~=3.0.1
 python-docx
+pyqtwebengine~=5.15.6
+pdf2doi~=1.5
 requests~=2.31.0
 matplotlib~=3.8.2
 python-docx

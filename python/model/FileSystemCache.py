@@ -9,7 +9,7 @@ class FileSystemCache:
     """A simple cache for storing file and directory nodes."""
 
     def __init__(self):
-        self.body = {}
+        self.body: dict = {}
         self.keyword_index = {}
 
     def update(self, path: str, node: FileSystemNode):
@@ -22,7 +22,7 @@ class FileSystemCache:
         for keyword in keywords:
             if keyword not in self.keyword_index:
                 self.keyword_index[keyword] = set()
-            self.keyword_index[keyword].add(path)
+            self.keyword_index[keyword].add(node)
 
     def search(self, query: str, match_any: bool = False):
         """
@@ -62,10 +62,9 @@ class FileSystemCache:
 
         return matching_files
 
-
     def is_modified(self, path: str):
         """Check if the file or directory has been modified since it was last cached."""
-        cached_node = self.body.get(path, None)
+        cached_node = self.body[path]
         if cached_node:
             return cached_node.modification_date() != datetime.fromtimestamp(os.path.getmtime(path))
         return True
@@ -83,8 +82,14 @@ class FileSystemCache:
             pickle.dump(self, pickle_file)
 
     def load_from_file(self):
-        with open('cache/system_model_cache.pkl', 'rb') as pickle_file:
-            self.body = pickle.load(pickle_file)
+        try:
+            with open('cache/system_model_cache.pkl', 'rb') as pickle_file:
+                loaded: FileSystemCache = pickle.load(pickle_file)
+                self.body = loaded.body
+                self.keyword_index = loaded.keyword_index
+            return True
+        except:
+            return False
 
     @staticmethod
     def extract_keywords(node: FileSystemNode):
@@ -102,11 +107,15 @@ class FileSystemCache:
         node_keywords.discard('')
 
         return node_keywords
+
     def __str__(self):
-        return str(self.body)
+        ret = ""
+        ret += str(self.body) + '\n\n\n'
+        ret += str(self.keyword_index)
+        return ret
 
     def __getitem__(self, key):
-        if key in self.body:
+        if key in self.body.keys():
             if self.is_modified(key):
                 raise Exception(f"Item {key} outdated in cache.")
             return self.body[key]

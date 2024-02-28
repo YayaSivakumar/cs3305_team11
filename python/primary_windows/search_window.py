@@ -1,8 +1,13 @@
 import os
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QStackedLayout
+import threading
+from dotenv import load_dotenv
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QStackedLayout, QPushButton
 from PyQt5.QtGui import QFont, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QSize
-from python.tests.filename_generator import generate_filename
+from python.model.FileSystemNodeModel import *
+from python.model.FileSystemCache import FileSystemCache
+
+load_dotenv()
 
 
 # Custom widget that includes a label for the filename and a label for the file path
@@ -22,6 +27,8 @@ class FileListItem(QWidget):
         self.layout.setContentsMargins(10, 0, 0, 0)  # Remove margins if needed
 
         self.setLayout(self.layout)
+
+
 class SearchBar(QLineEdit):
     def __init__(self, parent=None):
         super(SearchBar, self).__init__(parent)
@@ -42,14 +49,17 @@ class SearchBar(QLineEdit):
                     }
                 """)
 
+
 class SearchWindow(QWidget):
     def __init__(self, window_index: int):
         super().__init__()
+        self.all_possible_results = None
         self._window_index = window_index
+        self.fileSystemModel = None
         self.initUI()
 
     def initUI(self):
-        self.all_possible_results = generate_filename()  # Replace with actual search results
+        self.all_possible_results = []     # Replace with actual search results
         self.setWindowTitle("Search Example")
         self.setGeometry(100, 100, 800, 600)
 
@@ -78,6 +88,10 @@ class SearchWindow(QWidget):
 
         layout.addLayout(self.stackedLayout)
 
+        self.scanButton = QPushButton("Start Scan", self)
+        self.scanButton.clicked.connect(self.on_start_scan)  # Connect button click to handler
+        layout.addWidget(self.scanButton)  # Add the scan button to the layout
+
         self.setLayout(layout)
 
     def on_search_text_changed(self, text):
@@ -89,7 +103,7 @@ class SearchWindow(QWidget):
             search_text = text.lower()
 
             # Filter the results based on the search text
-            filtered_results = [result for result in self.all_possible_results if search_text in result.lower()]
+            filtered_results = self.fileSystemModel.search(search_text)
 
             # Show the results list if there is text
             self.stackedLayout.setCurrentWidget(self.resultsList)
@@ -125,16 +139,17 @@ class SearchWindow(QWidget):
                 # ... add more mappings as needed
             }
 
-            for file_name in filtered_results:
-                # Example filepath for this example; replace with actual filepath from your search logic
-                filepath = '/absolute/path/to/' + file_name
+            for file_node in filtered_results:
+                # Extract the file name and path
+                file_name = file_node.name
+                filepath = file_node.path
 
                 # Check if it's a folder or if there's no file extension
-                if os.path.isdir(filepath) or '.' not in file_name:
+                if os.path.isdir(filepath) or '.' not in filepath:
                     icon_path = 'ui/images/icons/folder_icon.png'
                 else:
                     # Get the file extension and convert it to lower case
-                    extension = file_name.split('.')[-1].lower()
+                    extension = file_node.extension().lower()[1:]
                     # Get the corresponding icon path or a default one
                     icon_path = icon_paths.get(extension, 'ui/images/icons/default_icon.png')
 
@@ -153,8 +168,31 @@ class SearchWindow(QWidget):
             self.stackedLayout.setCurrentWidget(self.placeholderWidget)
 
     def on_start_scan(self):
-        # Placeholder for start scan function
-        print("Scan started!")
+        print("Scan started! (on separate thread)")
+        threading.Thread(target=self.scan_file_system, args=(os.environ.get("SCAN_PATH"),)).start()
+
+    def scan_file_system(self, root_path: str):
+        print("SCAN PATH: ", root_path)
+        FSCache = FileSystemCache()
+
+        # if there is cache
+        if FSCache.load_from_file():
+            # create fileSystemModel from cache
+            print('loading from cache')
+            self.fileSystemModel = FSCache[root_path]
+
+        else:
+            # create model from scan path
+            print('no cache found, scanning')
+            if os.path.isdir(root_path):
+                self.fileSystemModel = Directory(root_path, FSCache)
+            else:
+                raise Exception("Path given to scan was not a directory.")
+
+        # update search results
+        self.all_possible_results = [node for node in FSCache.body.values()]
+
+        print("Scan Finished")
 
     @property
     def window_index(self):
