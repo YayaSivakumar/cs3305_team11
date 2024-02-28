@@ -1,10 +1,9 @@
 # script name: organise_by_type.py
 from python.model.FileSystemNodeModel import *
-from python.model.FileSystemCache import FileSystemCache
 import os
 
 
-def organise_by_type_func(dir_path: str):
+def organise_by_type_func(dir_node: Directory) -> None:
     """
     Main function for organise by filetype feature. Takes a file path and breaks every file in that directory
     and its subdirectories
@@ -14,7 +13,6 @@ def organise_by_type_func(dir_path: str):
     folder_names: dict[str:str]: dictionary containing k,v pairs of file classification and the name of folder it will be placed in.
     ret: None
     """
-    dir_node = Directory(dir_path, FileSystemCache())
     # determine different file types present, create list of needed directories
     num_files_moved = 0
 
@@ -40,7 +38,6 @@ def organise_by_type_func(dir_path: str):
             num_files_moved += 1
 
     print(f"Moved {num_files_moved} files")
-    return dir_node
 
 
 def determine_filetype(file_node: File) -> str:

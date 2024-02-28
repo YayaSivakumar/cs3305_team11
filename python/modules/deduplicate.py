@@ -1,14 +1,10 @@
 # script_name: deduplicate.py
 from python.model.FileSystemNodeModel import Directory
-from python.model.FileSystemCache import FileSystemCache
 
-
-def deduplicate(dir_path: str):
+def deduplicate(dir_node: Directory):
     """
     Recursive function to delete duplicate files in the directory tree.
     """
-    dir_node = Directory(dir_path, FileSystemCache())
-
     # set to store hashed values of files
     seen = set()
 

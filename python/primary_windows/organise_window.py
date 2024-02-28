@@ -1,9 +1,11 @@
 from PyQt5.QtCore import Qt, QDir
-from PyQt5.QtWidgets import QWidget, QDirModel, QColumnView, QHBoxLayout, QPushButton, QMessageBox, QVBoxLayout, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QWidget, QDirModel, QColumnView, QHBoxLayout, QPushButton, QMessageBox, QVBoxLayout, QVBoxLayout, QLabel, QTreeView
 from python.modules.organise_by_type import organise_by_type_func
-from python.modules.revert_changes import revert_changes, Directory
+from python.modules.revert_changes import revert_changes
 from python.ui.drag_drop import *
 from python.ui.custom_file_system_model import *
+from python.model.FileSystemCache import FileSystemCache
+from python.model.FileSystemNodeModel import File, Directory
 
 
 class OrganiseWindow(QWidget):
@@ -25,13 +27,13 @@ class OrganiseWindow(QWidget):
 
         # Initialize the model for the ColumnView
         self.model = CustomFileSystemModel()
-        self.model.setRootPath(QDir.currentPath())
+        self.model.setRootPath(QDir.rootPath())
         self.model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)
 
-        # Setup the ColumnView
+        # Set up the ColumnView
         self.column_view = QColumnView()
         self.column_view.setModel(self.model)
-        self.column_view.setRootIndex(self.model.index(os.path.expanduser('~')))
+        self.column_view.setRootIndex(self.model.index(os.environ.get("SCAN_PATH")))
 
         # Create a QVBoxLayout for the description label, organize button, and dragDropLabel
         right_layout = QVBoxLayout()
@@ -74,17 +76,36 @@ class OrganiseWindow(QWidget):
 
         # If there are paths to organize, either from drag-and-drop or tree view
         if paths_to_organize:
+            # load cache
+            cache = FileSystemCache()
+
+            if not cache.load_from_file():
+                QMessageBox.information(self, 'No cache found',
+                                        'Please scan a folder before attempting to organize files.',
+                                        QMessageBox.Ok)
+                return
+
             # clear the previous list of organized items
             self.organised.clear()
             message = f"Do you want to organize the following items?\n\n" + "\n".join(paths_to_organize)
-            reply = QMessageBox.question(self, 'Organize Confirmation', message, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            reply = QMessageBox.question(self, 'Organize Confirmation', message, QMessageBox.Yes | QMessageBox.No,
+                                         QMessageBox.No)
 
             if reply == QMessageBox.Yes:
+
                 for path in paths_to_organize:
-                    print(f"Organizing: {path}")
-                    # Call Bash script with each path
-                    dir_node = organise_by_type_func(path)
-                    self.organised.append(dir_node)
+
+                    # get nodes from cache
+                    node = cache[path]
+
+                    if node.isinstance(File):
+                        QMessageBox.information(self, 'File Selected',
+                                                'Please select a directory for optimisation.',
+                                                QMessageBox.Ok)
+                        return
+
+                    organise_by_type_func(node)
+                    self.organised.append(node)
 
                 # Optionally clear the drag-and-drop list after processing
                 self.dragDropLabel.droppedFiles.clear()
@@ -108,8 +129,7 @@ class OrganiseWindow(QWidget):
             if reply == QMessageBox.Yes:
                 for dir_node in self.organised:
                     if isinstance(dir_node, Directory):
-                        print(f"Reverting: {dir_node}")
-                        # Call Bash script with each path
+                        # revert changes
                         revert_changes(dir_node)
                     else:
                         print(f"{dir_node} is not a directory. Skipping...")

@@ -2,13 +2,11 @@
 import subprocess
 import os
 from python.model.FileSystemNodeModel import File, Directory
-from python.model.FileSystemCache import FileSystemCache
 
 
-def compress(file_path: str):
+def compress(file_node: File):
     """Compression based on type of file."""
 
-    file_node = File(file_path, FileSystemCache())
     if file_node.path.endswith('.mp3') or file_node.path.endswith('.wav') or file_node.path.endswith('.aac'):
         # reduce the bitrate of the audio
         output_path = _compress_audio(file_node)

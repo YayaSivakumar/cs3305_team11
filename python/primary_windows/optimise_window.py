@@ -4,6 +4,8 @@ from PyQt5.QtWidgets import QWidget, QTabWidget, QColumnView, QHBoxLayout, QPush
 from python.ui.drag_drop import *
 from python.ui.custom_file_system_model import *
 
+from python.model.FileSystemNodeModel import *
+from python.model.FileSystemCache import FileSystemCache
 from python.modules.compress import compress
 from python.modules.deduplicate import deduplicate
 # from python.modules.scheduler import scheduler
@@ -34,10 +36,11 @@ class OptimiseWindow(QWidget):
         self.model.setRootPath(QDir.currentPath())
         self.model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)
 
-        # Setup the ColumnView
+        # Set up the ColumnView
         self.column_view = QColumnView()
         self.column_view.setModel(self.model)
-        self.column_view.setRootIndex(self.model.index(os.path.expanduser('~')))
+        # only show paths in cache
+        self.column_view.setRootIndex(self.model.index(os.environ.get("SCAN_PATH")))
 
         self.duplicate_files_label = QLabel(f"{self.duplicate_files}")
         self.duplicate_files_label.setWordWrap(True)
@@ -85,27 +88,37 @@ class OptimiseWindow(QWidget):
         # If there are paths to organize, either from drag-and-drop or tree view
         if paths_to_optimise:
 
+            # load cache
+            cache = FileSystemCache()
+            if not cache.load_from_file():
+                QMessageBox.information(self, 'No cache found',
+                                        'Please scan a folder before attempting to organize files.',
+                                        QMessageBox.Ok)
+                return
+
             message = f"Do you want to organize the following items?\n\n" + "\n".join(paths_to_optimise)
             reply = QMessageBox.question(self, 'Optimise Confirmation', message, QMessageBox.Yes | QMessageBox.No,
                                          QMessageBox.No)
 
             if reply == QMessageBox.Yes:
-                for path in paths_to_optimise:
 
-                    # check if path is a file
-                    if not os.path.isdir(path):
-                        QMessageBox.information(self, 'Error',
-                                                'Please select a directory from the tree view or drag and drop a directory.',
+                for path in paths_to_optimise:
+                    # get nodes from cache
+                    node = cache[path]
+
+                    if node.isinstance(File):
+                        QMessageBox.information(self, 'File Selected',
+                                                'Please select a directory for optimisation.',
                                                 QMessageBox.Ok)
                         return
 
                     # check for duplicate files in directory
-                    self.duplicate_files = deduplicate(path)
+                    self.duplicate_files = deduplicate(node)
 
                     # compress large files
                     # for file in path:
                     #     if file.size > 1000000:
-                    #           self.compressed_files.append(compress(path))
+                    #           self.compressed_files.append(compress(node))
 
                     if self.duplicate_files:
                         QMessageBox.information(self, 'Success',

@@ -144,6 +144,10 @@ class FileSystemNode:
         # no matches found
         return []
 
+    def isinstance(self, obj_type: object):
+        """Check if the node is an instance of the given type."""
+        return isinstance(self.__class__, obj_type)
+
 class File(FileSystemNode):
     def __init__(self, path: str, cache: FileSystemCache):
         super().__init__(path, cache)
