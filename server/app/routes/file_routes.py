@@ -33,6 +33,7 @@ def upload():
             file.save(filepath)
             expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
             new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
+
             # new_file.password: str = password
             db.session.add(new_file)
             db.session.commit()
