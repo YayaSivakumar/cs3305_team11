@@ -10,198 +10,87 @@ from python.modules.deduplicate import deduplicate
 
 
 class OptimiseWindow(QWidget):
-    def __init__(self, window_index):
+
+    def __init__(self, window_index: int):
         super().__init__()
+        self.organised = []
         self.window_index = window_index
-        self.duplicate_files = None
+        self.duplicate_files = []
 
-        # Create a tab widgets
-        self.tabs = QTabWidget()
-        self._compression_tab = QWidget()
-        self._deduplication_tab = QWidget()
-        self._scheduling_tab = QWidget()
+        # Create main layout
+        layout = QHBoxLayout(self)
 
-        # Create a layout
-        self.layout = QVBoxLayout()
+        # Create the dragDropLabel
+        self.dragDropLabel = CircularDragDropLabel()
 
-        # Add tabs
-        self.tabs.addTab(self._compression_tab, "Compression")
-        self.tabs.addTab(self._deduplication_tab, "Deduplication")
-        self.tabs.addTab(self._scheduling_tab, "Scheduling")
-        self.tabs.setStyleSheet("""
-        QTabBar::tab {
-            background: lightgray;
-            width: 200px;
-            padding: 10px;
-            border: 1px solid #C4C4C3;
-            border-bottom-color: #C2C7CB;
-        }
-        QTabBar::tab:selected, QTabBar::tab:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                        stop: 0 #fafafa, stop: 0.4 #f4f4f4,
-                                        stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);
-        }
-        QTabWidget::pane { 
-            border-top: 2px solid #C2C7CB;
-        }
-        """)
-
-        # Compression tab layout
-        self.tab1Layout = QHBoxLayout()
+        # Create a description label
+        description_label = QLabel(
+            "Description: Drag and drop files to the area below or select files from the column view to scan for duplicate files and compress large files. Click the 'Optimise Files' button to start the process.")
+        description_label.setWordWrap(True)  # Allow text to wrap to the next line
+        description_label.setAlignment(Qt.AlignTop)  # Align the text to the top
 
         # Initialize the model for the ColumnView
         self.model = CustomFileSystemModel()
         self.model.setRootPath(QDir.currentPath())
         self.model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)
 
-        # Set up the ColumnView
+        # Setup the ColumnView
         self.column_view = QColumnView()
         self.column_view.setModel(self.model)
         self.column_view.setRootIndex(self.model.index(os.path.expanduser('~')))
 
-        # Create the dragDropLabel
-        self.dragDropLabel = CircularDragDropLabel()
-
-        # Create a description label
-        compression_description_label = QLabel(
-            "Select file or directory for compression. Types:\n"
-            "Image: (jpeg, jpg, HEIC)\n"
-            "Video: (mp4, mov, avi)\n"
-            "Audio: (wav, mp3, aac)\n"
-            "Documents: (pdf, docx, doc)")
-        compression_description_label.setWordWrap(True)
-        compression_description_label.setAlignment(Qt.AlignTop)  # Align the text to the top
-
-        # Add a button to trigger file organization
-        self.compressButton = QPushButton("Compress")
-        self.compressButton.clicked.connect(self.onCompressClicked)
-
-        # Create a QVBoxLayout for the description label, compress button, and dragDropLabel
-        self.tab1_right_layout = QVBoxLayout()
-        self.tab1_right_layout.addWidget(compression_description_label)  # Add the description label to the layout
-        self.tab1_right_layout.addWidget(self.dragDropLabel)
-        self.tab1_right_layout.addWidget(self.compressButton)
-        self.tab1_right_layout.addStretch()
-
-        # Add the column view and the VBox to the tab layout
-        self.tab1Layout.addWidget(self.column_view)
-        self.tab1Layout.addLayout(self.tab1_right_layout)
-
-        self._compression_tab.setLayout(self.tab1Layout)
-
-        # Deduplication layout
-        self.tab2Layout = QHBoxLayout()
-
-        # Create a description label
-        deduplication_description_label = QLabel(
-            "Select a Directory for processing, returns list of paths for all duplicate files)")
-        deduplication_description_label.setWordWrap(True)
-        deduplication_description_label.setAlignment(Qt.AlignTop)  # Align the text to the top
-
-        # Add a button to trigger file organization
-        self.deduplicationButton = QPushButton("Scan Directory for Duplicates")
-        self.deduplicationButton.clicked.connect(self.onDeDuplicateClicked)
-
         self.duplicate_files_label = QLabel(f"{self.duplicate_files}")
         self.duplicate_files_label.setWordWrap(True)
 
-        # Add a button to remove duplicates
-        self.deleteDuplicatesButton = QPushButton("Remove Duplicates")
+        # Add a button to trigger file organization
+        self.optimiseButton = QPushButton("Optimise Files")
+        self.optimiseButton.clicked.connect(self.onOptimiseClicked)
+
+        # Add a button to trigger duplicate file deletion
+        self.deleteDuplicatesButton = QPushButton("Delete Duplicate Files")
         self.deleteDuplicatesButton.clicked.connect(self.deleteDuplicates)
         self.deleteDuplicatesButton.setDisabled(True)
 
-        # Initialize the model for the ColumnView
-        self.model2 = CustomFileSystemModel()
-        self.model2.setRootPath(QDir.currentPath())
-        self.model2.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)
+        # Create a QVBoxLayout for the description label, organize button, and dragDropLabel
+        right_layout = QVBoxLayout()
+        right_layout.addWidget(description_label)  # Add the description label to the layout
+        right_layout.addWidget(self.dragDropLabel)
+        right_layout.addWidget(self.duplicate_files_label)
+        right_layout.addWidget(self.optimiseButton)
+        right_layout.addWidget(self.deleteDuplicatesButton)
 
-        # Set up the ColumnView
-        self.column_view2 = QColumnView()
-        self.column_view2.setModel(self.model2)
-        self.column_view2.setRootIndex(self.model2.index(os.path.expanduser('~')))
+        # Ensure that the optimise button stays at the bottom
+        right_layout.addStretch()
 
-        # Create the dragDropLabel
-        self.dragDropLabel2 = CircularDragDropLabel()
-
-        # Create a QVBoxLayout for the description label, compress button, and dragDropLabel
-        self.tab2_right_layout = QVBoxLayout()
-        self.tab2_right_layout.addWidget(deduplication_description_label)  # Add the description label to the layout
-        self.tab2_right_layout.addWidget(self.dragDropLabel2)
-        self.tab2_right_layout.addWidget(self.deduplicationButton)
-        self.tab2_right_layout.addWidget(self.duplicate_files_label)
-        self.tab2_right_layout.addWidget(self.deleteDuplicatesButton)
-        self.tab2_right_layout.addStretch()
-
-        # Add the column view and the VBox to the tab layout
-        self.tab2Layout.addWidget(self.column_view2)
-        self.tab2Layout.addLayout(self.tab2_right_layout)
-
-        self._deduplication_tab.setLayout(self.tab2Layout)
-
-        # Scheduling layout
-        self.tab3Layout = QVBoxLayout()
-        self.tab3Label = QLabel("Scheduling Settings Here")
-        self.tab3Layout.addWidget(self.tab3Label)
-        self._scheduling_tab.setLayout(self.tab3Layout)
-
-        # Add tabs to main layout
-        self.layout.addWidget(self.tabs)
+        # Add the column view and the VBox to the main layout
+        layout.addWidget(self.column_view)
+        layout.addLayout(right_layout)
 
         # Set the layout for the widget
-        self.setLayout(self.layout)
+        self.setLayout(layout)
 
-    def onCompressClicked(self):
-        paths_to_compress = []
+    def onOptimiseClicked(self):
+        paths_to_optimise = []
 
         # Check if there are files dropped in drag-and-drop area
         if self.dragDropLabel.droppedFiles:
-            paths_to_compress.extend(self.dragDropLabel.droppedFiles)
+            paths_to_optimise.extend(self.dragDropLabel2.droppedFiles)
 
         # Check if there is a selection in the tree view
         elif self.column_view.currentIndex().isValid():
             tree_view_path = self.model.filePath(self.column_view.currentIndex())
             if tree_view_path:
-                paths_to_compress.append(tree_view_path)
+                paths_to_optimise.append(tree_view_path)
 
-        # If there are paths selected
-        if paths_to_compress:
-            message = f"Do you want to organize the following items?\n\n" + "\n".join(paths_to_compress)
-            reply = QMessageBox.question(self, 'Organize Confirmation', message, QMessageBox.Yes | QMessageBox.No,
+        # If there are paths to organize, either from drag-and-drop or tree view
+        if paths_to_optimise:
+
+            message = f"Do you want to organize the following items?\n\n" + "\n".join(paths_to_optimise)
+            reply = QMessageBox.question(self, 'Optimise Confirmation', message, QMessageBox.Yes | QMessageBox.No,
                                          QMessageBox.No)
 
             if reply == QMessageBox.Yes:
-                for path in paths_to_compress:
-                    path_to_new_file = compress(path)
-                    QMessageBox.information(self, 'Success',
-                                            f'Created: {path_to_new_file}',
-                                            QMessageBox.Ok)
-
-        else:
-            QMessageBox.information(self, 'No Selection',
-                                    'Please select a file or folder from the tree view or drag and drop files.',
-                                    QMessageBox.Ok)
-
-    def onDeDuplicateClicked(self):
-        paths_to_deduplicate = []
-
-        # Check if there are files dropped in drag-and-drop area
-        if self.dragDropLabel2.droppedFiles:
-            paths_to_deduplicate.extend(self.dragDropLabel2.droppedFiles)
-
-        # Check if there is a selection in the tree view
-        elif self.column_view2.currentIndex().isValid():
-            tree_view_path = self.model.filePath(self.column_view2.currentIndex())
-            if tree_view_path:
-                paths_to_deduplicate.append(tree_view_path)
-
-        # If there are paths selected
-        if paths_to_deduplicate:
-            message = f"Do you want to optimise the following items?\n\n" + "\n".join(paths_to_deduplicate)
-            reply = QMessageBox.question(self, 'Organize Confirmation', message, QMessageBox.Yes | QMessageBox.No,
-                                         QMessageBox.No)
-
-            if reply == QMessageBox.Yes:
-                for path in paths_to_deduplicate:
+                for path in paths_to_optimise:
 
                     # check if path is a file
                     if not os.path.isdir(path):
@@ -210,8 +99,14 @@ class OptimiseWindow(QWidget):
                                                 QMessageBox.Ok)
                         return
 
-                    # if path is a directory
+                    # check for duplicate files in directory
                     self.duplicate_files = deduplicate(path)
+
+                    # compress large files
+                    # for file in path:
+                    #     if file.size > 1000000:
+                    #           self.compressed_files.append(compress(path))
+
                     if self.duplicate_files:
                         QMessageBox.information(self, 'Success',
                                                 f'Duplicates found in {path}.',
@@ -224,10 +119,10 @@ class OptimiseWindow(QWidget):
                         QMessageBox.information(self, 'Success',
                                                 f'No duplicates found in {path}.',
                                                 QMessageBox.Ok)
-        else:
-            QMessageBox.information(self, 'No Selection',
-                                    'Please select a file or folder from the tree view or drag and drop files.',
-                                    QMessageBox.Ok)
+            else:
+                QMessageBox.information(self, 'No Selection',
+                                        'Please select a file or folder from the tree view or drag and drop files.',
+                                        QMessageBox.Ok)
 
     def deleteDuplicates(self):
         # delete functionality will be implemented here once scan functionality is implemented for FileSystemNodeModel

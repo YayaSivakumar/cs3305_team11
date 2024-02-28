@@ -1,37 +1,12 @@
 # script_name: compress.py
 import subprocess
 import os
-
 from python.model.FileSystemNodeModel import File, Directory
 from python.model.FileSystemCache import FileSystemCache
 
 
 def compress(file_path: str):
     """Compression based on type of file."""
-    '''
-        # will change to this after the FileSystemNodeModel scan is implemented
-        if type(file_node) == Music:
-            # reduce the bitrate of the audio
-            output_path = _compress_audio(file_node)
-            # compress the reduced quality audio
-            compressed = Music(output_path, file_node.cache)
-            output_path = _compress_single_file_gzip(compressed)
-
-        elif type(file_node) == Video:
-            # reduce the bitrate of the video + audio
-            output_path = _compress_video(file_node)
-            # compress the reduced quality video
-            compressed = Video(output_path, file_node.cache)
-            output_path = _compress_single_file_gzip(compressed)
-
-        elif type(file_node) == Directory:
-            # compress the entire directory using tar with gzip compression
-            output_path = _compress_directory_tar_gzip(file_node)
-
-        else:
-            # compress the file using gzip
-            output_path = _compress_single_file_gzip(file_node)
-        '''
 
     file_node = File(file_path, FileSystemCache())
     if file_node.path.endswith('.mp3') or file_node.path.endswith('.wav') or file_node.path.endswith('.aac'):
