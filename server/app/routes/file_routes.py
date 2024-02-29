@@ -1,8 +1,9 @@
 import os
 import uuid
 from datetime import datetime, timedelta
-from flask import Blueprint
+from flask import Blueprint, flash
 from flask import request, render_template, send_from_directory, abort, url_for, jsonify
+from flask_login import login_required
 from werkzeug.utils import secure_filename
 from ..db import db
 from ..config import UPLOADS_FOLDER
@@ -16,6 +17,7 @@ file_routes = Blueprint('file_routes', __name__)
 
 
 @file_routes.route('/upload', methods=['GET', 'POST'])
+@login_required
 def upload():
     """
     This function handles file uploads. It accepts POST requests with a file, message, expiration_hours,
@@ -38,7 +40,9 @@ def upload():
             db.session.add(new_file)
             db.session.commit()
             link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
+            flash('File uploaded successfully.', 'success')
             print(link)
+            # TODO: render splash screen here
             return jsonify({'message': 'File uploaded successfully.', 'link': link})
 
     else:
@@ -49,6 +53,7 @@ def upload():
                                main_routes=main_routes)
 
 
+# TODO: Is this being used?
 @file_routes.route('/uploaded/<unique_id>', methods=['GET'])
 def uploaded(unique_id):
     file = File.query.filter_by(unique_id=unique_id).first()

@@ -64,14 +64,14 @@ def signup():
 
         email_check = User.query.filter_by(email=email).first()  # Check if email already taken
         if email_check:
-            flash('Email already exists.')
+            flash('Email already exists.', 'warning')
             return redirect(url_for('user_routes.signup'))
 
         new_user = User(name=name, email=email)
         new_user.password = password
         db.session.add(new_user)
         db.session.commit()
-        flash('Account created successfully')
+        flash('Account created successfully', 'success')
         # return redirect(url_for('main.home'))
     our_users = User.query.order_by(User.id).all()
     return render_template('signup.html',
@@ -95,10 +95,10 @@ def login():
 
         if user and user.verify_password(password):
             login_user(user, remember=True)
-            flash("Login successful!")
+            flash("Login successful!", 'success')
             return redirect(url_for(f'user_routes.profile'))
         else:
-            flash("Incorrect credentials - Try again")
+            flash("Incorrect credentials - Try again", 'error')
 
     return render_template('login.html',
                            form=form,
@@ -111,7 +111,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash("You have been logged out")
+    flash("You have been logged out", 'success')
     return redirect(url_for('main_routes.home'))
 
 

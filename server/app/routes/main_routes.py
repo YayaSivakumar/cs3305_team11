@@ -16,7 +16,10 @@ def home():
 
 @main_routes.route('/about')
 def about():
-    pass
+    return render_template('about.html',
+                           file_routes=file_routes,
+                           user_routes=user_routes,
+                           main_routes=main_routes)
 
 
 @main_routes.route('/install')
