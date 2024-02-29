@@ -7,18 +7,15 @@
         <h1>Upload Successful</h1>
         <div>
             <p>Share this link with anyone to allow them to download your file:</p>
-            <input type="text" value="{{ file.url }}" id="fileURL" readonly>
+            <input type="text" value="{{ link }}" id="fileURL" readonly>
             <button onclick="copyURL()">Copy URL</button>
         </div>
 
-
         <div class="file-info">
-            <h2>{{ file.filename }}</h2>
-            <p><strong>number of files example 1 file</strong> - 204.1 KB - Sent 2 seconds ago</p>
-            <p><strong>Expiration date:</strong> {{ file.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
-            <p><strong>Filename:</strong> {{ file.filename }}</p>
-            <p><strong>Message:</strong> {{ file.message }}</p>
-            <p><strong>Total downloads:</strong>{{ file.download_count }}</p>
+            <h2>{{ file_info.filename }}</h2>
+            <p><strong>Expiration date:</strong> {{ file_info.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
+            <p><strong>Message:</strong> {{ file_info.message }}</p>
+            <p><strong>Total downloads:</strong>{{ file_info.download_count }}</p>
         </div>
     </div>
 
