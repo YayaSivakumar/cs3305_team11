@@ -72,7 +72,7 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
         flash('Account created successfully', 'success')
-        # return redirect(url_for('main.home'))
+        return redirect(url_for('user_routes.login'))
     our_users = User.query.order_by(User.id).all()
     return render_template('signup.html',
                            form=form,
