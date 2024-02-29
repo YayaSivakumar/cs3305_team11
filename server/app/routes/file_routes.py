@@ -7,6 +7,7 @@ from flask_login import login_required
 from werkzeug.utils import secure_filename
 from ..db import db
 from ..config import UPLOADS_FOLDER
+from flask_login import current_user
 
 from ..models.file import File
 
@@ -36,8 +37,12 @@ def upload():
             expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
             new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
 
+            # new_file.user = db.user
+            current_user.files.append(new_file)
+
             # new_file.password: str = password
             db.session.add(new_file)
+
             db.session.commit()
             link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
             flash('File uploaded successfully.', 'success')
