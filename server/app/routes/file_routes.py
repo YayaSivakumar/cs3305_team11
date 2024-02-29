@@ -1,7 +1,7 @@
 import os
 import uuid
 from datetime import datetime, timedelta
-from flask import Blueprint, flash
+from flask import Blueprint, flash, redirect
 from flask import request, render_template, send_from_directory, abort, url_for, jsonify
 from flask_login import login_required
 from werkzeug.utils import secure_filename
@@ -43,6 +43,7 @@ def upload():
             flash('File uploaded successfully.', 'success')
             print(link)
             # TODO: render splash screen here
+            redirect(url_for('file_routes.upload_success', unique_id=unique_id))
             return jsonify({'message': 'File uploaded successfully.', 'link': link})
 
     else:
@@ -54,17 +55,14 @@ def upload():
 
 
 # TODO: Is this being used?
-@file_routes.route('/uploaded/<unique_id>', methods=['GET'])
-def uploaded(unique_id):
-    file = File.query.filter_by(unique_id=unique_id).first()
-    if file:
-        return render_template('uploaded.html',
-                               file=file,
-                               user_routes=user_routes,
-                               file_routes=file_routes,
-                               main_routes=main_routes)
-    else:
-        return "File not found", 404
+@file_routes.route('/upload_success/<unique_id>')
+@login_required
+def upload_success(unique_id):
+    file_info = File.query.filter_by(unique_id=unique_id).first_or_404()
+    link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
+    return render_template('upload_success.html', link=link, file_info=file_info,
+                           file_routes=file_routes, user_routes=user_routes, main_routes=main_routes)
+
 
 
 @file_routes.route('/download/<unique_id>')
@@ -113,21 +111,3 @@ def direct_download_file(unique_id):
                                path=unique_id,
                                as_attachment=True,
                                download_name=file_record.filename)
-
-
-@file_routes.route('/upload/success/<unique_id>')
-def upload_success(unique_id):
-    file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
-    file_details = {
-        'url': url_for('file_routes.download_file_page', unique_id=unique_id, _external=True),
-        'filename': file_record.filename,
-        'message': file_record.message,
-        'expires_at': file_record.expires_at,
-        'download_link': url_for('direct_download_file', unique_id=unique_id, _external=True),
-        'download_count': file_record.download_count
-    }
-    return render_template('upload_success.html',
-                           file=file_details,
-                           user_routes=user_routes,
-                           file_routes=file_routes,
-                           main_routes=main_routes)
