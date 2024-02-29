@@ -47,9 +47,7 @@ def upload():
             link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
             flash('File uploaded successfully.', 'success')
             print(link)
-            # TODO: render splash screen here
-            redirect(url_for('file_routes.upload_success', unique_id=unique_id))
-            return jsonify({'message': 'File uploaded successfully.', 'link': link})
+            return redirect(url_for('file_routes.upload_success', unique_id=unique_id))
 
     else:
         # If it's not a POST request, just render the template without context
@@ -59,15 +57,19 @@ def upload():
                                main_routes=main_routes)
 
 
-# TODO: Is this being used?
-@file_routes.route('/upload_success/<unique_id>')
+@file_routes.route('/upload_success/<unique_id>', methods=['GET'])
 @login_required
 def upload_success(unique_id):
     file_info = File.query.filter_by(unique_id=unique_id).first_or_404()
     link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
+    file_info = {
+        'filename': file_info.filename,
+        'message': file_info.message,
+        'expires_at': file_info.expires_at,
+        'download_link': link
+    }
     return render_template('upload_success.html', link=link, file_info=file_info,
                            file_routes=file_routes, user_routes=user_routes, main_routes=main_routes)
-
 
 
 @file_routes.route('/download/<unique_id>')
