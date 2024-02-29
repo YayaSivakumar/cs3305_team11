@@ -3,7 +3,6 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-
 class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(100), nullable=False)
