@@ -1,12 +1,29 @@
 import os
-import sys
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QPushButton, QHBoxLayout, QFileDialog, QListWidgetItem, QListWidget, QMessageBox
 from PyQt5.QtCore import Qt, QEvent, QDir
 from PyQt5.QtGui import QFont, QPalette, QColor, QIcon
 from collections import defaultdict
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QFileDialog
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
+from PyQt5.QtWidgets import QComboBox, QLabel, QListWidget, QMessageBox
+
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+import plotly.graph_objects as go
+
+
+class PlotlyWidget(QWebEngineView):
+    def __init__(self, figure, parent=None):
+        super().__init__(parent)
+        self.figure = figure
+        self.setFigure(figure)
+
+    def setFigure(self, figure):
+        if figure is not None:
+            html_content = figure.to_html(full_html=False, include_plotlyjs='cdn')
+            self.setHtml(html_content)
+            # Save the HTML to a file for debugging
+            with open("debug_plotly_chart.html", "w") as f:
+                f.write(html_content)
+        else:
+            self.setHtml("")  # Clear the view if no figure is provided
 
 
 class VisualiseWindow(QWidget):
@@ -14,7 +31,7 @@ class VisualiseWindow(QWidget):
         super().__init__()
         self.window_index = window_index
         self.initUI()
-    
+
     def initUI(self):
         # Main layout
         self.layout = QVBoxLayout(self)
@@ -29,11 +46,10 @@ class VisualiseWindow(QWidget):
         subtitle_label.setFont(QFont('Arial', 16))
         subtitle_label.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
 
-        # Create a matplotlib canvas and add it to the layout but hide it for now
-        self.figure = Figure()
-        self.canvas = FigureCanvas(self.figure)
-        self.layout.addWidget(self.canvas)
-        self.canvas.hide()
+        # Instead of creating a Figure and FigureCanvas, create a PlotlyWidget
+        self.plotly_widget = PlotlyWidget(None)
+        self.layout.addWidget(self.plotly_widget)
+        self.plotly_widget.hide()
 
         # Initialize the folder_selection QComboBox
         self.folder_selection = QComboBox()
@@ -117,8 +133,8 @@ class VisualiseWindow(QWidget):
             self.visualise_folder(selected_folder)
 
     def visualise_folder(self, folder_path):
-        file_sizes = self.calculate_folder_sizes(folder_path)
-        self.visualize_sizes(file_sizes)
+        labels, parents, values = self.calculate_directory_structure(folder_path)
+        self.visualize_sizes(labels, parents, values)
 
     def calculate_folder_sizes(self, folder_path):
         file_sizes = defaultdict(int)
@@ -135,55 +151,53 @@ class VisualiseWindow(QWidget):
                     continue
         return file_sizes
 
-    def visualize_sizes(self, folder_sizes):
-        # Clear the previous figure and create a new pie chart
-        self.figure.clear()
-        ax = self.figure.add_subplot(111)
-        
-        # Sort the sizes to make the chart more orderly
-        sorted_sizes = dict(sorted(folder_sizes.items(), key=lambda item: item[1], reverse=True))
-        
-        # Data for pie chart
-        labels = sorted_sizes.keys()
-        sizes = sorted_sizes.values()
-        
-        # Make sure we have data to plot
-        if not sizes:
+    def visualize_sizes(self, labels, parents, values):
+        if not labels:
             QMessageBox.information(self, 'No Data', 'No files to visualise in the selected directory.', QMessageBox.Ok)
             return
-        
-        # Explode the largest segment
-        explode = [0.1 if i == 0 else 0 for i in range(len(labels))]
-        
-        # Plot pie chart
-        wedges, texts, autotexts = ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, explode=explode)
-        
-        # Improve readability
-        for text, autotext in zip(texts, autotexts):
-            text.set_fontsize(8)
-            autotext.set_fontsize(8)
-            autotext.set_color('white')
-        
-        # Equal aspect ratio ensures that pie is drawn as a circle.
-        ax.axis('equal')
 
-        # Add a legend if there are too many items to label on the pie chart
-        if len(labels) > 4:  # Adjust this number based on your preference
-            ax.legend(wedges, labels, title="File Types", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
-        
-        # Adjust layout to fit everything
-        self.figure.tight_layout()
-        
-        # Show the canvas and draw the chart
-        self.canvas.show()
-        self.canvas.draw()
+        fig = go.Figure(go.Sunburst(
+            labels=labels,
+            parents=parents,
+            values=values,
+            branchvalues="total",
+        ))
+        fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
+        self.plotly_widget.setFigure(fig)
+        self.plotly_widget.show()
+
+    def calculate_directory_structure(self, folder_path):
+        labels = ['Root']  # Starting with 'Root' as the base label
+        parents = ['']  # Root has no parent
+        values = [0]  # Initialize with zero; will recalculate later
+
+        for root, dirs, files in os.walk(folder_path, topdown=True):
+            for name in dirs + files:  # Iterate over directories and files together
+                current_path = os.path.join(root, name)
+                size = sum(os.path.getsize(os.path.join(dirpath, filename))
+                           for dirpath, dirnames, filenames in os.walk(current_path)
+                           for filename in filenames) if os.path.isdir(current_path) else os.path.getsize(current_path)
+                labels.append(name)
+                parent_label = 'Root' if root == folder_path else os.path.basename(root)
+                parents.append(parent_label)
+                values.append(size)
+
+        # Update the size of the root based on the sizes of its immediate children
+        root_size = sum(size for size, parent in zip(values[1:], parents[1:]) if parent == 'Root')
+        values[0] = root_size
+
+        print("Labels:", labels)
+        print("Parents:", parents)
+        print("Values:", values)
+
+        return labels, parents, values
 
 
 class FolderVisualizer(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
-        
+
     def initUI(self):
         # Set up the user interface
         layout = QVBoxLayout()
@@ -203,7 +217,7 @@ class FolderVisualizer(QWidget):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         folder_path = QFileDialog.getExistingDirectory(self, "Select Folder", options=options)
-        
+
         if folder_path:
             # Calculate folder sizes
             self.folder_sizes = self.calculate_folder_sizes(folder_path)
@@ -225,46 +239,3 @@ class FolderVisualizer(QWidget):
                     # In case a file is not found, which can happen with symlinks
                     continue
         return file_sizes
-
-    def visualize_sizes(self, folder_sizes):
-        # Clear the previous figure and create a new pie chart
-        self.figure.clear()
-        ax = self.figure.add_subplot(111)
-        
-        # Sort the sizes to make the chart more orderly
-        sorted_sizes = dict(sorted(folder_sizes.items(), key=lambda item: item[1], reverse=True))
-        
-        # Data for pie chart
-        labels = sorted_sizes.keys()
-        sizes = sorted_sizes.values()
-        
-        # Make sure we have data to plot
-        if not sizes:
-            QMessageBox.information(self, 'No Data', 'No files to visualise in the selected directory.', QMessageBox.Ok)
-            return
-        
-        # Explode the largest segment
-        explode = [0.1 if i == 0 else 0 for i in range(len(labels))]
-        
-        # Plot pie chart
-        wedges, texts, autotexts = ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, explode=explode)
-        
-        # Improve readability
-        for text, autotext in zip(texts, autotexts):
-            text.set_fontsize(8)
-            autotext.set_fontsize(8)
-            autotext.set_color('white')
-        
-        # Equal aspect ratio ensures that pie is drawn as a circle.
-        ax.axis('equal')
-
-        # Add a legend if there are too many items to label on the pie chart
-        if len(labels) > 4:  # Adjust this number based on your preference
-            ax.legend(wedges, labels, title="File Types", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
-        
-        # Adjust layout to fit everything
-        self.figure.tight_layout()
-        
-        # Show the canvas and draw the chart
-        self.canvas.show()
-        self.canvas.draw()
