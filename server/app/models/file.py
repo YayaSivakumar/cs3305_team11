@@ -11,7 +11,7 @@ class File(db.Model):
     message = db.Column(db.String(500))
     expires_at = db.Column(db.DateTime, default=datetime.utcnow)
     download_count = db.Column(db.Integer, default=0)
-    user = db.relationship('User', secondary=UploadedFiles, backref='file', lazy='dynamic')
+    # user = db.relationship('User', secondary=UploadedFiles, backref='file', lazy='dynamic')
     # hashed_password = db.Column(db.String(128))
 
     @property
