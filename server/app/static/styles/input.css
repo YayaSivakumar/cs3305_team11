@@ -1,0 +1,9 @@
+/*@media (max-width: 740px) {*/
+/*  .navbar-end .btn {*/
+/*    font-size: 0.7rem;  !important;*/
+/*  }*/
+/*}*/
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
