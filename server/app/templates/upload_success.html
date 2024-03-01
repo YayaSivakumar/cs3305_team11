@@ -1,68 +1,21 @@
-<!-- templates/upload_success.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Upload Successful</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #f0f0f0;
-            overflow: hidden;
-        }
-        .container {
-            text-align: center;
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-        }
-        h1 {
-            color: #333;
-        }
-        p {
-            color: #666;
-            margin: 10px 0;
-        }
-        button {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin-top: 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Upload Success{% endblock %}
+
+{% block content %}
     <div class="container">
         <h1>Upload Successful</h1>
         <div>
             <p>Share this link with anyone to allow them to download your file:</p>
-            <input type="text" value="{{ file.url }}" id="fileURL" readonly>
+            <input type="text" value="{{ link }}" id="fileURL" readonly>
             <button onclick="copyURL()">Copy URL</button>
         </div>
 
-
         <div class="file-info">
-            <h2>{{ file.filename }}</h2>
-            <p><strong>number of files example 1 file</strong> - 204.1 KB - Sent 2 seconds ago</p>
-            <p><strong>Expiration date:</strong> {{ file.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
-            <p><strong>Filename:</strong> {{ file.filename }}</p>
-            <p><strong>Message:</strong> {{ file.message }}</p>
-            <p><strong>Total downloads:</strong>{{ file.download_count }}</p>
+            <h2>{{ file_info.filename }}</h2>
+            <p><strong>Expiration date:</strong> {{ file_info.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
+            <p><strong>Message:</strong> {{ file_info.message }}</p>
+            <p><strong>Total downloads:</strong>{{ file_info.download_count }}</p>
         </div>
     </div>
 
@@ -94,6 +47,4 @@ function copyURL() {
 }
 </script>
 
-
-</body>
-</html>
+{% endblock %}
