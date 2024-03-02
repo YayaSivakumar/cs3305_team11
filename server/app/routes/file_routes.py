@@ -20,41 +20,45 @@ file_routes = Blueprint('file_routes', __name__)
 @file_routes.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
-    """
-    This function handles file uploads. It accepts POST requests with a file, message, expiration_hours,
-    and password fields.
-    """
     if request.method == 'POST':
         message = request.form.get('message', '')
         expiration_hours = int(request.form.get('expiration_hours', 24))
-        # password = request.form.get('password', '')
-        file = request.files['file']
-        if file:
-            filename = secure_filename(file.filename)  # Sanitize the filename, prevent path traversal attacks
-            unique_id = str(uuid.uuid4())
-            filepath = os.path.join(UPLOADS_FOLDER, unique_id)
-            file.save(filepath)
-            expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
-            new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
+        uploaded_files = request.files.getlist('file')  # Get the list of files
 
-            # new_file.user = db.user
-            current_user.files.append(new_file)
+        upload_responses = []
+        for file in uploaded_files:
+            if file:
+                filename = secure_filename(file.filename)
+                unique_id = str(uuid.uuid4())
+                filepath = os.path.join(UPLOADS_FOLDER, unique_id)
+                file.save(filepath)
+                expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
+                new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
 
-            # new_file.password: str = password
-            db.session.add(new_file)
+                current_user.files.append(new_file)
+                db.session.add(new_file)
+                db.session.commit()
 
-            db.session.commit()
-            link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
-            flash('File uploaded successfully.', 'success')
-            print(link)
-            return redirect(url_for('file_routes.upload_success', unique_id=unique_id))
+                link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
+                upload_responses.append({'filename': filename, 'link': link})
 
-    else:
-        # If it's not a POST request, just render the template without context
-        return render_template('upload.html',
-                               user_routes=user_routes,
-                               file_routes=file_routes,
-                               main_routes=main_routes)
+        if 'PyQt' in request.headers.get('User-Agent'):
+            # Return a JSON response for the PyQt application with all the upload responses
+            return jsonify({
+                'success': True,
+                'message': 'Files uploaded successfully.',
+                'files': upload_responses
+            })
+
+        flash('Files uploaded successfully.', 'success')
+        # Redirect to a page that can handle showing multiple upload successes
+        return redirect(url_for('file_routes.upload_success', unique_id=unique_id))
+
+    # For GET requests, render the upload form template
+    return render_template('upload.html',
+                           user_routes=user_routes,
+                           file_routes=file_routes,
+                           main_routes=main_routes)
 
 
 @file_routes.route('/upload_success/<unique_id>', methods=['GET'])
@@ -118,3 +122,9 @@ def direct_download_file(unique_id):
                                path=unique_id,
                                as_attachment=True,
                                download_name=file_record.filename)
+
+def generate_unique_id():
+    '''Generate a unique identifier for a file upload. This can be used to create a unique grouping of files for the multiple files download.'''
+    # Generate a random UUID
+    unique_id = uuid.uuid4()
+    return str(unique_id)
