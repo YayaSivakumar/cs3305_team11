@@ -1,0 +1,13 @@
+/* pyqt_style.css */
+body {
+    font-size: 14px;
+    color: #333;
+}
+
+.navbar, .dropdown-content {
+    display: none; /* Hide elements not needed in the app */
+}
+
+.container {
+    padding: 10px;
+}
