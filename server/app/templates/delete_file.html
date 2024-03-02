@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}File Upload App - Delete File{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-10 flex justify-center">
+    <div class="card w-96 bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title text-center">Delete Confirmation</h2>
+            <p class="text-center">Are you sure you would like to delete {{ file.filename }} from the system?</p>
+            <div class="card-actions justify-center mt-4">
+                <form method="POST">
+                    <input type="hidden" name="file_id" value="{{ file.id }}">
+                    <button type="submit" class="btn btn-error">Confirm</button>
+                </form>
+                <a href="{{ url_for('main_routes.home') }}" class="btn">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -6,12 +6,11 @@
 
 {% block content %}
 <div class="container mx-auto py-8">
-    <h2 class="text-2xl font-semibold mb-4">Upload a File</h2>
+    <h1 class="text-3xl font-semibold mb-4">Upload a File</h1>
     <form action="/upload" method="post" enctype="multipart/form-data">
         <div class="form-control mb-4">
             <label for="file" class="label label-text">Select File:</label>
-            <input type="file" id="file" name="file" class="input input-bordered">
-        </div>
+            <input type="file" id="file" name="file" class="input input-bordered py-2.5 px-3">
         <div class="form-control mb-4">
             <label for="message" class="label label-text">Message (Optional):</label>
             <textarea id="message" name="message" class="textarea textarea-bordered" rows="4"></textarea>
