@@ -14,7 +14,7 @@ icon_paths = {
                 'mp4': 'ui/images/icons/video_icon.png',
                 'pdf': 'ui/images/icons/pdf_icon.png',
                 'py': 'ui/images/icons/python_icon.png',
-                'html': 'ui/images/icons/html_icon.png',
+                'html': 'ui/images/icons/html_icon.svg',
                 'js': 'ui/images/icons/js_icon.png',
                 'java': 'ui/images/icons/java_icon.png',
                 'json': 'ui/images/icons/json_icon.png',
