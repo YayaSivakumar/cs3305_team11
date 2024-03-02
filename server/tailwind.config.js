@@ -6,9 +6,11 @@ module.exports = {
     fontSize: {
       'xs': '.625rem',
       'sm': '.75rem',
-      'base': '.75rem',
+      'base': '.875rem',
       'lg': '1rem',
       'xl': '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '1.875rem',
     },
   },
   // add daisyUI plugin
@@ -24,5 +26,16 @@ module.exports = {
     logs: true, // Shows info about daisyUI version and used config in the console when building your CSS
     themeRoot: ":root", // The element that receives theme color CSS variables
   },
+  // safelist some classes that are rendered dynamically by Jinja
+  purge: {
+    safelist: [
+        'alert-success',
+        'alert-error',
+        'alert-warning',
+        'text-success',
+        'text-error',
+        'text-warning',
+    ]
+  }
 }
 
