@@ -1,10 +1,8 @@
-
-from PyQt5.QtCore import QUrl, Qt, QSize
-from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget, \
-    QAction, QLabel
-
+from PyQt5.QtCore import QUrl, QSize
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage
+from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget, \
+    QAction
 from python.primary_windows.organise_window import OrganiseWindow
 from python.primary_windows.optimise_window import OptimiseWindow
 from python.primary_windows.visualise_window import VisualiseWindow
@@ -12,11 +10,22 @@ from python.primary_windows.file_sharing_window import FileUploader
 from python.primary_windows.search_window import SearchWindow
 import styles.system_theme
 import styles.sidebar
-
+from requests import Session
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.session = Session()  # Initialize a Session object here
+
+        web_engine_profile = QWebEngineProfile.defaultProfile()
+        web_engine_profile.setHttpUserAgent('CustomUserAgentString PyQt')
+
+        # Use this profile in your QWebEngineView
+        web_view = QWebEngineView()
+        web_view.setPage(QWebEnginePage(web_engine_profile))
+
+        self.loggedIn = False  # Initialize login status
 
         # Set the main window's title and initial size
         self.setWindowTitle("K.L.A.A.S. - Knowledge Lookup and Archive Access Service")
@@ -102,7 +111,7 @@ class MainWindow(QMainWindow):
         icon = QIcon("ui/images/icons/cloud_icon.svg")  # Replace with the path to your SVG icon
         button_4_file_sharing.setIcon(icon)
         button_4_file_sharing.setIconSize(QSize(24, 24))  # Adjust the size as needed
-        button_4_file_sharing.clicked.connect(lambda: self.show_window(self.file_sharing_window.window_index))
+        button_4_file_sharing.clicked.connect(self.checkLoginAndShow)
         self.sidebar_layout.addWidget(button_4_file_sharing)
 
         # Set the default screen to the welcome window
@@ -124,6 +133,15 @@ class MainWindow(QMainWindow):
             webView.setUrl(QUrl(url))
             self.stacked_widget.addWidget(webView)
             self.stacked_widget.setCurrentWidget(webView)
+
+    def setupWebView(self, webView):
+        webView.urlChanged.connect(self.onWebViewUrlChanged)
+
+    def onWebViewUrlChanged(self, url):
+        print("URL changed to:", url.toString())  # Add this line for debugging
+        if "http://127.0.0.1:5000/profile" in url.toString():
+            self.loggedIn = True
+            self.show_window(self.file_sharing_window.window_index)
 
     def apply_system_theme(self, dark_mode):
         if dark_mode:
@@ -186,4 +204,39 @@ class MainWindow(QMainWindow):
         self.apply_system_theme(self.dark_mode)
         self.dark_mode = not self.dark_mode
 
+    def checkLoginAndShow(self):
+        if self.isUserLoggedIn():
+            self.show_window(
+                self.file_sharing_window.window_index)  # This is the correct index for your file sharing window
+        else:
+            self.showLoginWebView()
 
+    def isUserLoggedIn(self):
+        # Placeholder for checking if the user is logged in
+        # Implement your actual login check here
+        return False
+
+    def isUserLoggedIn(self):
+        return self.loggedIn
+
+    def showLoginWebView(self):
+        loginUrl = "http://127.0.0.1:5000/login?view=pyqt"  # URL of your HTML login page
+
+        # Find an existing QWebEngineView or create a new one
+        webView = None
+        for i in range(self.stacked_widget.count()):
+            widget = self.stacked_widget.widget(i)
+            if isinstance(widget, QWebEngineView):
+                webView = widget
+                break
+
+        if webView is None:
+            webView = QWebEngineView()
+            webView.urlChanged.connect(self.onWebViewUrlChanged)  # Ensure this is connected
+            self.stacked_widget.addWidget(webView)
+
+        # Set the URL to the login page
+        webView.setUrl(QUrl(loginUrl))
+
+        # Make sure the QWebEngineView is visible
+        self.stacked_widget.setCurrentWidget(webView)
