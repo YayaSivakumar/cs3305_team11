@@ -21,13 +21,13 @@
                         <button type="submit">Submit Password</button>
                     </form>
                     {% else %}
-                    <!-- Direct download link button -->
+                {% endif %}
+                <!-- Direct download link button -->
                 <div class="card-actions">
                     <form class="btn btn-sm text-neutral" action="{{ url_for('file_routes.direct_download_file', unique_id=file.unique_id) }}" method="get">
                         <button type="submit">Download Now</button>
                     </form>
                 </div>
-                {% endif %}
             </div>
         </div>
     </div>
