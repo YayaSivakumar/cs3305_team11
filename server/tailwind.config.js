@@ -4,10 +4,11 @@ module.exports = {
   theme: {
     extend: {},
     fontSize: {
-      'xs': '.625rem',
-      'sm': '.75rem',
-      'base': '.875rem',
-      'lg': '1rem',
+      'xxs': '.625rem',
+      'xs': '.75rem',
+      'sm': '.825rem',
+      'base': '1rem',
+      'lg': '1.125rem',
       'xl': '1.25rem',
       '2xl': '1.5rem',
       '3xl': '1.875rem',
@@ -27,15 +28,13 @@ module.exports = {
     themeRoot: ":root", // The element that receives theme color CSS variables
   },
   // safelist some classes that are rendered dynamically by Jinja
-  purge: {
-    safelist: [
-        'alert-success',
-        'alert-error',
-        'alert-warning',
-        'text-success',
-        'text-error',
-        'text-warning',
-    ]
-  }
+  safelist: [
+      'alert-success',
+      'alert-error',
+      'alert-warning',
+      'text-success',
+      'text-error',
+      'text-warning',
+  ]
 }
 
