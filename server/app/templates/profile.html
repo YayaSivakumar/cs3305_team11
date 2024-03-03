@@ -9,6 +9,7 @@
 <p><span class="font-semibold">Email:</span> {{ current_user.email }}</p>
 
 <h2 class="text-xl pt-4 font-bold">Uploaded Files</h2>
+{% if user_files|length != 0 %}
     <div class="mt-6 py-1 rounded border border-r-black bg-gray-100 text-base-content"
         style="
             overflow-x: auto;
@@ -42,6 +43,11 @@
            </tbody>
        </table>
     </div>
-
+{% else %}
+    <p class="text-base font-light py-2">You have not uploaded any files yet.</p>
+    <div class="btn btn-sm">
+        <a href="{{ url_for('file_routes.upload') }}" class="text-sm py-1">Upload a file</a>
+    </div>
+{% endif %}
 
 {% endblock %}

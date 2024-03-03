@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"
-    data-theme="business">
+    data-theme="nord">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@
     <!-- Navigation Bar -->
     <nav class="navbar bg-primary">
         <div class="navbar-start">
-            <a href="{{ url_for('main_routes.home') }}" class="btn btn-ghost normal-case text-xl">File Upload App</a>
+            <a href="{{ url_for('main_routes.home') }}" class="btn btn-ghost normal-case text-xl">K.L.A.A.S</a>
         </div>
         <div class="navbar-end">
             <div class="hidden sm:flex gap-2">
@@ -47,22 +47,19 @@
     </nav>
 
     <div class="container mx-auto py-4">
-<!--        TODO: sort out the x being in the middle of screen versus the middle of the pop up div-->
         {% with messages = get_flashed_messages(with_categories=True) %}
             {% if messages %}
                 {% for category, message in messages %}
-                <div class="alert alert-{{ category }} shadow-lg mb-4">
-                    <div>
-                        <span>{{ message }}</span>
-                        <button class="btn btn-sm btn-circle absolute right-2 top-1/2 translate-y-1/2 close-alert"
-                                onclick="this.parentNode.parentNode.remove()">✕</button>
+                    <div class="alert alert-{{ category }} shadow-lg mb-4" role="alert">
+                        <h4 class="text-base font-light">{{ message }}</h4>
+                        <button class="btn btn-sm btn-circle text-{{ category }}" aria-label="Close"
+                                    onclick="this.parentNode.parentNode.remove()">✕</button>
                     </div>
-                </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
     </div>
-    <div class="container mx-auto py-4 px-4">
+    <div class="container mx-auto py-4 px-4 md:px-2">
         {% block content %}
         {% endblock %}
     </div>
