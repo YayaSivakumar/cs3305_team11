@@ -59,7 +59,7 @@ def upload():
 
 
 # TODO: Get file_user working
-@file_routes.route('/upload_success/<unique_id>', methods=['GET'])
+@file_routes.route('/upload_success/<int:unique_id>', methods=['GET'])
 @login_required
 def upload_success(unique_id):
     file_info = File.query.filter_by(unique_id=unique_id).first_or_404()
@@ -74,6 +74,42 @@ def upload_success(unique_id):
     }
     return render_template('upload_success.html', link=link, file_info=file_info,
                            file_routes=file_routes, user_routes=user_routes, main_routes=main_routes)
+
+
+@file_routes.route('/update_file/<int:unique_id>', methods=['GET', 'POST'])
+@login_required
+def update_file(unique_id):
+    file = File.query.get(unique_id)
+    if request.method == 'POST':
+        #  need to have logic here to update the file
+
+
+        flash("File updated successfully", 'success')
+        return redirect(url_for('main_routes.home'))
+    return render_template('update_file.html',
+                           file=file,
+                           user_routes=user_routes,
+                           file_routes=file_routes,
+                           main_routes=main_routes)
+
+
+@file_routes.route('/delete_file/<int:unique_id>', methods=['GET', 'POST'])
+@login_required
+def delete_file(unique_id):
+    file = File.query.get(unique_id)
+    if request.method == 'POST':
+        db.session.delete(file)  # What does this actually do?
+        #      Does this delete ref of file from user aswell? or just from the file table?
+        flash("File deleted successfully", 'success')
+        return redirect(url_for('main_routes.home'))
+    return render_template('delete_file.html',
+                           file=file,
+                           user_routes=user_routes,
+                           file_routes=file_routes,
+                           main_routes=main_routes)
+
+
+
 
 
 # TODO: Get the upload user DB stuff working

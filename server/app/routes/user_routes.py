@@ -115,33 +115,25 @@ def profile():
                            main_routes=main_routes)
 
 
-@user_routes.route('/delete_file/<int:file_id>', methods=['GET', 'POST'])
+# TODO: Delete account functionality
+@user_routes.route('/delete_account', methods=['GET', 'POST'])
 @login_required
-def delete_file(file_id):
-    file = File.query.get(file_id)
-    if request.method == 'POST':
-        db.session.delete(file)
-        flash("File deleted successfully", 'success')
-        return redirect(url_for('main_routes.home'))
-    return render_template('delete_file.html',
-                           file=file,
-                           user_routes=user_routes,
-                           file_routes=file_routes,
-                           main_routes=main_routes)
+def delete_account():
+    # user = User.query.get(current_user.id)
+    # if request.method == 'POST':
+    #     db.session.delete(user)
+    #     db.session.commit()
+    #     flash("Account deleted successfully", 'success')
+    #     return redirect(url_for('main_routes.home'))
+    # return render_template('delete_account.html',
+    #                        user_routes=user_routes,
+    #                        file_routes=file_routes,
+    #                        main_routes=main_routes)
+    pass
 
 
-@user_routes.route('/update_file/<int:file_id>', methods=['GET', 'POST'])
+# TODO: Update account functionality
+@user_routes.route('/update_account', methods=['GET', 'POST'])
 @login_required
-def update_file(file_id):
-    file = File.query.get(file_id)
-    if request.method == 'POST':
-        # file_id = request.form.get('file_id')
-        # file = File.query.get(file_id)
-        # db.session.delete(file)
-        flash("File updated successfully", 'success')
-        return redirect(url_for('main_routes.home'))
-    return render_template('update_file.html',
-                           file=file,
-                           user_routes=user_routes,
-                           file_routes=file_routes,
-                           main_routes=main_routes)
+def update_account():
+    pass
