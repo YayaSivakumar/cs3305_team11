@@ -33,9 +33,11 @@
                             <td>{{ file.expires_at.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>{{ file.download_count }}</td>
                             <td>
-                                <a href="{{ url_for('file_routes.update_file', file_id=file.id) }}"
+                                <a href="{{ url_for('file_routes.direct_download_file', unique_id=file.id) }}"
+                                   class="btn btn-sm bordered">Download</a>
+                                <a href="{{ url_for('file_routes.update_file', unique_id=file.id) }}"
                                    class="btn btn-sm btn-secondary bordered">Update</a>
-                                <a href="{{ url_for('file_routes.delete_file', file_id=file.id) }}"
+                                <a href="{{ url_for('file_routes.delete_file', unique_id=file.id) }}"
                                    class="btn btn-sm btn-error bordered">Delete</a>
                             </td>
                        </tr>
@@ -44,10 +46,11 @@
        </table>
     </div>
 {% else %}
-    <p class="text-base font-light py-2">You have not uploaded any files yet.</p>
-    <div class="btn btn-sm">
-        <a href="{{ url_for('file_routes.upload') }}" class="text-sm py-1">Upload a file</a>
-    </div>
+    <p class="text-base font-light py-1">You have not uploaded any files yet.</p>
 {% endif %}
+<h3 class="font-medium text-lg py-2"> Upload a new file: </h3>
+<div class="btn btn-md">
+    <a href="{{ url_for('file_routes.upload') }}" class="text-sm py-1">Upload a file</a>
+</div>
 
 {% endblock %}
