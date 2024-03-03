@@ -1,4 +1,4 @@
-from .files_uploaded import UploadedFiles
+# from .files_uploaded import UploadedFiles
 from ..db import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -11,6 +11,7 @@ class File(db.Model):
     message = db.Column(db.String(500))
     expires_at = db.Column(db.DateTime, default=datetime.utcnow)
     download_count = db.Column(db.Integer, default=0)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     # user = db.relationship('User', secondary=UploadedFiles, backref='file', lazy='dynamic')
     # hashed_password = db.Column(db.String(128))
 
