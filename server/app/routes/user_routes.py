@@ -1,21 +1,13 @@
 from flask import Blueprint, render_template, request, url_for, redirect, flash
-from flask_login import login_required, logout_user, login_user
+from flask_login import login_required, logout_user, login_user, current_user
 
-from werkzeug.security import check_password_hash
-# TODO: change werkzeug.security to bcrypt for File model
-
-# TODO: Users database stuff - need delete, and update aswell
-# TODO: Add user profile page, this would show all the files uploaded by the user
-#  and maybe admin dashboard for this
-#   TODO: need to make sure to keep simple, and not overcomplicate things, this is not core feature
 from ..models.user import User
+from ..models.file import File
 from ..db import db
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, EmailField
 from wtforms.validators import DataRequired, Email
-
-from ..login_manager import login_manager
 
 from . import file_routes  # Import Blueprint instance from the main application package
 from . import main_routes  # Import Blueprint instance from the main application package
@@ -49,7 +41,6 @@ class LoginForm(FlaskForm):
 
 @user_routes.route('/signup', methods=['GET', 'POST'])
 def signup():
-    # if request.method == 'POST':
     name = None
     email = None
     password = None
@@ -73,13 +64,11 @@ def signup():
         db.session.commit()
         flash('Account created successfully', 'success')
         return redirect(url_for('user_routes.login'))
-    our_users = User.query.order_by(User.id).all()
     return render_template('signup.html',
                            form=form,
                            user_routes=user_routes,
                            file_routes=file_routes,
-                           main_routes=main_routes,
-                           our_users=our_users)
+                           main_routes=main_routes)
 
 
 @user_routes.route('/login', methods=['GET', 'POST'])
@@ -115,12 +104,44 @@ def logout():
     return redirect(url_for('main_routes.home'))
 
 
-# TODO: Why is profile not working with ID??
 @user_routes.route('/profile', methods=['GET'])
 @login_required
 def profile():
+    user_files = User.query.get(current_user.id).files
     return render_template('profile.html',
+                           user_files=user_files,
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
 
+
+@user_routes.route('/delete_file/<int:file_id>', methods=['GET', 'POST'])
+@login_required
+def delete_file(file_id):
+    file = File.query.get(file_id)
+    if request.method == 'POST':
+        db.session.delete(file)
+        flash("File deleted successfully", 'success')
+        return redirect(url_for('main_routes.home'))
+    return render_template('delete_file.html',
+                           file=file,
+                           user_routes=user_routes,
+                           file_routes=file_routes,
+                           main_routes=main_routes)
+
+
+@user_routes.route('/update_file/<int:file_id>', methods=['GET', 'POST'])
+@login_required
+def update_file(file_id):
+    file = File.query.get(file_id)
+    if request.method == 'POST':
+        # file_id = request.form.get('file_id')
+        # file = File.query.get(file_id)
+        # db.session.delete(file)
+        flash("File updated successfully", 'success')
+        return redirect(url_for('main_routes.home'))
+    return render_template('update_file.html',
+                           file=file,
+                           user_routes=user_routes,
+                           file_routes=file_routes,
+                           main_routes=main_routes)
