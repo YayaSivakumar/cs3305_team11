@@ -13,7 +13,7 @@
                     {{ file.message }}</p>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Link Expires:</span>
                     {{ file.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
-
+<!--                TODO: do we want this password protection functionality to work?      -->
                 {% if file.is_password_protected %}
                     <p>This file is password protected. Please enter the password to download.</p>
                     <form action="{{ url_for('download_file', unique_id=file.unique_id) }}" method="post">
