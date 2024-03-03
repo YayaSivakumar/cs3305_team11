@@ -10,6 +10,7 @@ from ..config import UPLOADS_FOLDER
 from flask_login import current_user
 
 from ..models.file import File
+from ..models.user import User
 
 from . import user_routes  # Import Blueprint instance from the main application package
 from . import main_routes  # Import Blueprint instance from the main application package
@@ -62,28 +63,37 @@ def upload():
 def upload_success(unique_id):
     file_info = File.query.filter_by(unique_id=unique_id).first_or_404()
     link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
+    # file_user = User.query.get(unique_id).files.user
     file_info = {
         'filename': file_info.filename,
         'message': file_info.message,
         'expires_at': file_info.expires_at,
-        'download_link': link
+        'download_link': link,
+        # 'upload_user': file_user
     }
     return render_template('upload_success.html', link=link, file_info=file_info,
                            file_routes=file_routes, user_routes=user_routes, main_routes=main_routes)
 
 
-@file_routes.route('/download/<unique_id>')
+# TODO: Get the upload user DB stuff working
+@file_routes.route('/download/<unique_id>', methods=['GET'])
 def download_file_page(unique_id):
     print(unique_id)
     print(File.query.all())
     file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
+    # uploader = file_record.user  # Access the user who uploaded the file
+
     file_details = {
         'filename': file_record.filename,
         'message': file_record.message,
         'expires_at': file_record.expires_at,
         'download_link': url_for('file_routes.direct_download_file',
                                  unique_id=unique_id,
-                                 _external=True)
+                                 _external=True),
+        # 'upload_user': {
+        #     'name': uploader.name,
+        #     'email': uploader.email
+        # }
     }
 
     return render_template('download.html',
@@ -92,8 +102,8 @@ def download_file_page(unique_id):
                            file_routes=file_routes,
                            main_routes=main_routes)
 
-
-@file_routes.route('/download/file/<unique_id>')
+# TODO: Get this working again
+@file_routes.route('/download/file/<unique_id>', methods=['GET'])
 def direct_download_file(unique_id):
     # Fetch the file record using the unique ID from the database
     file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
