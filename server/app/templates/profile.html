@@ -10,7 +10,7 @@
 
 <h2 class="text-xl pt-4 font-bold">Uploaded Files</h2>
 {% if user_files|length != 0 %}
-    <div class="mt-6 py-1 rounded border border-r-black bg-gray-100 text-base-content"
+    <div class="mt-6 py-2 rounded border border-r-black bg-gray-100 text-base-content"
         style="
             overflow-x: auto;
             overflow-y: hidden;
@@ -20,23 +20,23 @@
            <thead>
                <tr>
                    <th>Filename</th>
-                   <th>Unique ID</th>
                    <th>Message</th>
                    <th>Expires At</th>
                    <th>Downloads</th>
                </tr>
            </thead>
-           <tbody>
+           <tbody class="font-light">
                    {% for file in user_files %}
                        <tr>
                             <td>{{ file.filename }}</td>
-                            <td>{{ file.unique_id }}</td>
                             <td>{{ file.message }}</td>
                             <td>{{ file.expires_at.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>{{ file.download_count }}</td>
-                            <td class="">
-                                <a href="{{ url_for('user_routes.update_file', file_id=file.id) }}" class="btn btn-sm btn-secondary bordered">Update</a>
-                                <a href="{{ url_for('user_routes.delete_file', file_id=file.id) }}" class="btn btn-sm btn-error">Delete</a>
+                            <td>
+                                <a href="{{ url_for('file_routes.update_file', file_id=file.id) }}"
+                                   class="btn btn-sm btn-secondary bordered">Update</a>
+                                <a href="{{ url_for('file_routes.delete_file', file_id=file.id) }}"
+                                   class="btn btn-sm btn-error bordered">Delete</a>
                             </td>
                        </tr>
                    {% endfor %}
