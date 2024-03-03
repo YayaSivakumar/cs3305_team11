@@ -10,6 +10,8 @@ python-dotenv~=1.0.1
 flask_sqlalchemy
 flask-login
 flask-wtf
+wtforms
+flask-migrate
 email-validator
 bcrypt
 apscheduler~=3.10.4
@@ -19,4 +21,3 @@ werkzeug~=3.0.1
 pandas~=2.2.0
 mutagen~=1.47.0
 pdf2doi~=1.5
-wtforms~=3.1.2
