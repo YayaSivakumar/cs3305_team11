@@ -32,7 +32,7 @@ The Desktop Client is the heart of FEOS, implemented using PyQt5 to provide a cr
 The data used in this project is from the following sources:
 
 - Data source 1: Local filesystem metadata
-- Data source 2: User input for file organization preferences
+- Data source 2: User input and file operations
 - Data source 3: Cloud storage API for file sharing capabilities
 ```
 
@@ -40,7 +40,7 @@ The data used in this project is from the following sources:
 
 The file system node structure defines two main classes that represent the file system hierarchy:
 
-1. **Directory Node:** Represents a directory in the file system. It contains a list of child nodes, which can be either files or subdirectories. The root node is the top-level directory in the file system. It contains a list of child nodes, which can be either files or subdirectories and in turn, is the head of the file system node structure.
+1. **Directory Node:** Represents a directory in the file system. It contains a list of child nodes, which can be either files or subdirectories. The root node is the top-level directory in the file system. It contains a list of child nodes, which can be either files or subdirectories. The head of the file system node structure is the root node. It is used to represent the entire file system hierarchy.
 2. **File Node:** Represents a file in the file system. It contains metadata such as file size, creation date, and file type. It also contains a reference to the parent directory node. The file node is a leaf node in the file system node structure. 
 
 ### File System Cache
@@ -74,7 +74,7 @@ As external users access the link, the server authenticates the request and serv
 The project provided many opportunities to learn new skills and techniques. The following are some of the lessons learned:
 
 - **Data Structures:** The importance of choosing the right data structures for efficient file system representation and manipulation. This included the use of tree structures to represent the file system hierarchy and caching to improve performance.
-- **Modular Design:** The importance of modular design and separation of concerns in software development. This allowed for easier testing, maintenance, and extensibility.
+- **Modular Design:** The importance of modular design and separation of concerns in software development. This allowed for easier testing, maintenance, and extensibility. 
 - **RESTful APIs:** The benefits of using RESTful APIs for communication between different components of a system. This allowed for a clean and consistent interface between the Desktop Client and the Flask Web Server.
 - **File System Operations:** The intricacies of file system operations and the challenges of managing file metadata. This included handling file paths, file permissions, and file metadata.
 - **Web Server Security:** The importance of implementing security measures in web servers to protect against unauthorized access and abuse. This included token-based authentication, HTTPS, and rate-limiting.
@@ -94,6 +94,9 @@ The project has been successful in achieving this goal and has provided a valuab
 The group would like to thank the module lecturer for their support and guidance throughout the project. 
 
 ## References
-If any ?
+- PyQt5 Documentation: https://www.riverbankcomputing.com/static/Docs/PyQt5/
+- Flask Documentation: https://flask.palletsprojects.com/en/2.0.x/
+- Python os Module Documentation: https://docs.python.org/3/library/os.html
+- Python shutil Module Documentation: https://docs.python.org/3/library/shutil.html
 
-This is the conclusion to the project report.
+In conclusion, the project has been a valuable learning experience and has provided a solid foundation for future work in the area of file management and sharing systems. The team has worked well together and has produced a high-quality product that meets the objectives set out at the beginning of the project. The team looks forward to further developing and refining the system in the future.
