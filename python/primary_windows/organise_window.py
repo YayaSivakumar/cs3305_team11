@@ -27,12 +27,13 @@ class OrganiseWindow(QWidget):
 
         # Initialize the model for the ColumnView
         self.model = CustomFileSystemModel()
-        self.model.setRootPath(QDir.rootPath())
+        self.model.setRootPath(QDir.currentPath())
         self.model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)
 
         # Set up the ColumnView
         self.column_view = QColumnView()
         self.column_view.setModel(self.model)
+        # only show paths in cache
         self.column_view.setRootIndex(self.model.index(os.environ.get("SCAN_PATH")))
 
         # Create a QVBoxLayout for the description label, organize button, and dragDropLabel
