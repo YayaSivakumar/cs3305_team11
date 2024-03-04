@@ -82,14 +82,16 @@ class FileSystemCache:
             pickle.dump(self, pickle_file)
 
     def load_from_file(self):
-        try:
-            with open('cache/system_model_cache.pkl', 'rb') as pickle_file:
-                loaded: FileSystemCache = pickle.load(pickle_file)
-                self.body = loaded.body
-                self.keyword_index = loaded.keyword_index
-            return True
-        except:
-            return False
+        print("loading cache from file")
+        # try:
+        #     with open('cache/system_model_cache.pkl', 'rb') as pickle_file:
+        #         loaded: FileSystemCache = pickle.load(pickle_file)
+        #         self.body = loaded.body
+        #         self.keyword_index = loaded.keyword_index
+        #     return True
+        # except:
+        #     return False
+        return False
 
     @staticmethod
     def extract_keywords(node: FileSystemNode):

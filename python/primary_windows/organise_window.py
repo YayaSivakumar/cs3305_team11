@@ -9,8 +9,9 @@ from python.model.FileSystemNodeModel import File, Directory
 
 
 class OrganiseWindow(QWidget):
-    def __init__(self, window_index: int):
+    def __init__(self, window_index: int, fileSystemModel):
         super().__init__()
+        self.fileSystemModel = fileSystemModel
         self.organised = []
         self.window_index = window_index
         # Create main layout

@@ -15,6 +15,7 @@ def main():
 
 
 def init_main_window(model):
+    print(model)
     main_window: MainWindow = MainWindow(model)
     main_window.show()
 

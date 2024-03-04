@@ -27,8 +27,9 @@ class PlotlyWidget(QWebEngineView):
 
 
 class VisualiseWindow(QWidget):
-    def __init__(self, window_index):
+    def __init__(self, window_index, fileSystemModel):
         super().__init__()
+        self.fileSystemModel = fileSystemModel
         self.window_index = window_index
         self.initUI()
 

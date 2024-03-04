@@ -94,8 +94,9 @@ class FileUploader(QWidget):
     The signal passes the URL of the uploaded file.'''
     uploadFinished = pyqtSignal(str)  # Signal to indicate upload is finished and pass URL
 
-    def __init__(self, window_index):
+    def __init__(self, window_index, fileSystemModel):
         super().__init__()
+        self.fileSystemModel = fileSystemModel
         self.window_index = window_index
         self.filePath = ''  # Initialize filePath
         self.folderPath = ''  # Initialize folderPath as well

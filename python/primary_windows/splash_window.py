@@ -30,6 +30,7 @@ class SplashWindow(QWidget):
             "Desktop": os.path.expanduser('~/Desktop'),
             "Documents": os.path.expanduser('~/Documents'),
         }
+        print(user_paths)
         for name, path in user_paths.items():
             self.folderSelection.addItem(name, path)
         layout.addWidget(self.folderSelection)
