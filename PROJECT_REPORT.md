@@ -9,9 +9,9 @@ Our application, File Explorer, Organiser and Sharing (FEOS), is designed to str
 
 The objectives of the project are as follows:
 
-1. Objective 1
-2. Objective 2
-3. Objective 3
+1. To develop a unified platform that simplifies file management through automatic sorting, in-depth organization, and scheduling features.
+2. To enable efficient file sharing capabilities through a cloud-based system, allowing users to share files with external parties securely.
+3. To implement advanced file optimization techniques such as compression and deduplication, thereby enhancing storage efficiency and organization.
 
 ## Architecture
 
@@ -28,17 +28,24 @@ The Desktop Client is the heart of FEOS, implemented using PyQt5 to provide a cr
 
 ## File System Node / Model Structure
 
-
-### File System Node Structure
-The file system node structure is as follows:
-
 ```plaintext
 The data used in this project is from the following sources:
 
-- [Data source 1](https://www.example.com)
-- [Data source 2](https://www.example.com)
-- [Data source 3](https://www.example.com)
+- Data source 1: Local filesystem metadata
+- Data source 2: User input for file organization preferences
+- Data source 3: Cloud storage API for file sharing capabilities
 ```
+
+### File System Node Structure
+
+The file system node structure defines two main classes that represent the file system hierarchy:
+
+1. **Directory Node:** Represents a directory in the file system. It contains a list of child nodes, which can be either files or subdirectories. The root node is the top-level directory in the file system. It contains a list of child nodes, which can be either files or subdirectories and in turn, is the head of the file system node structure.
+2. **File Node:** Represents a file in the file system. It contains metadata such as file size, creation date, and file type. It also contains a reference to the parent directory node. The file node is a leaf node in the file system node structure. 
+
+### File System Cache
+
+The file system cache is the data structure that stores the file system node structure by using the root node. The structure is stored in a pickle (.pkl) file to maintain the state of the head FileSystemNode object in memory. It is used to improve performance by reducing the number of file system accesses and to provide a consistent view of the file system across different parts of the application. The body of the cache is implemented as a dictionary that maps file paths to file system nodes. The cache is updated whenever the file system is modified, ensuring that it remains synchronized with the underlying file system. 
 
 ## Flask Web Server
 
@@ -66,6 +73,12 @@ As external users access the link, the server authenticates the request and serv
 ## Lessons Learned
 The project provided many opportunities to learn new skills and techniques. The following are some of the lessons learned:
 
+- **Data Structures:** The importance of choosing the right data structures for efficient file system representation and manipulation. This included the use of tree structures to represent the file system hierarchy and caching to improve performance.
+- **Modular Design:** The importance of modular design and separation of concerns in software development. This allowed for easier testing, maintenance, and extensibility.
+- **RESTful APIs:** The benefits of using RESTful APIs for communication between different components of a system. This allowed for a clean and consistent interface between the Desktop Client and the Flask Web Server.
+- **File System Operations:** The intricacies of file system operations and the challenges of managing file metadata. This included handling file paths, file permissions, and file metadata.
+- **Web Server Security:** The importance of implementing security measures in web servers to protect against unauthorized access and abuse. This included token-based authentication, HTTPS, and rate-limiting.
+
 ## Future Work
 The project has provided a solid foundation for future work. The following are some of the areas that could be explored in future work:
 - Greater integration with other systems
@@ -78,7 +91,7 @@ FEOS design philosophy centers on creating a seamless file management and sharin
 The project has been successful in achieving this goal and has provided a valuable resource for users.
 
 ## Acknowledgements
-The group would like to thank the module lecturer for their support and guidance throughout the project.
+The group would like to thank the module lecturer for their support and guidance throughout the project. 
 
 ## References
 If any ?
