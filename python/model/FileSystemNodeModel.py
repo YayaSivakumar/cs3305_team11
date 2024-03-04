@@ -16,6 +16,7 @@ class FileSystemNode:
         self.cache = cache
         self.parent = None
         self.children = []
+        self.size = None
 
     def find_node(self, name: str):
         """Recursively find a node by name."""
@@ -45,12 +46,18 @@ class FileSystemNode:
         """Return the name of the file or directory."""
         return self.name
 
-    def size(self):
+    def get_size(self):
         """Return the size of the file in bytes."""
-        try:
-            return os.path.getsize(self.path)
-        except FileNotFoundError:
-            return 0
+        if self.size is None:
+            try:
+                self.size = os.path.getsize(self.path)
+            except FileNotFoundError:
+                self.size = 0
+        return self.size
+        # try:
+        #     return os.path.getsize(self.path)
+        # except FileNotFoundError:
+        #     return 0
 
     def creation_date(self):
         """Return the creation date of the file."""
