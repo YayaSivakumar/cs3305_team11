@@ -48,6 +48,7 @@ def upload():
             link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
             flash('File uploaded successfully.', 'success')
             print(link)
+            print("Unique ID: ", unique_id)
             return redirect(url_for('file_routes.upload_success', unique_id=unique_id))
 
     else:
@@ -59,7 +60,7 @@ def upload():
 
 
 # TODO: Get file_user working
-@file_routes.route('/upload_success/<int:unique_id>', methods=['GET'])
+@file_routes.route('/upload_success/<unique_id>', methods=['GET'])
 @login_required
 def upload_success(unique_id):
     file_info = File.query.filter_by(unique_id=unique_id).first_or_404()
@@ -76,13 +77,12 @@ def upload_success(unique_id):
                            file_routes=file_routes, user_routes=user_routes, main_routes=main_routes)
 
 
-@file_routes.route('/update_file/<int:unique_id>', methods=['GET', 'POST'])
+@file_routes.route('/update_file/<unique_id>', methods=['GET', 'POST'])
 @login_required
 def update_file(unique_id):
     file = File.query.get(unique_id)
     if request.method == 'POST':
         #  need to have logic here to update the file
-
 
         flash("File updated successfully", 'success')
         return redirect(url_for('main_routes.home'))
@@ -93,7 +93,7 @@ def update_file(unique_id):
                            main_routes=main_routes)
 
 
-@file_routes.route('/delete_file/<int:unique_id>', methods=['GET', 'POST'])
+@file_routes.route('/delete_file/<unique_id>', methods=['GET', 'POST'])
 @login_required
 def delete_file(unique_id):
     file = File.query.get(unique_id)
@@ -107,9 +107,6 @@ def delete_file(unique_id):
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
-
-
-
 
 
 # TODO: Get the upload user DB stuff working
@@ -139,12 +136,14 @@ def download_file_page(unique_id):
                            file_routes=file_routes,
                            main_routes=main_routes)
 
-# TODO: Get this working again
+
 @file_routes.route('/download/file/<unique_id>', methods=['GET'])
 def direct_download_file(unique_id):
     # Fetch the file record using the unique ID from the database
+    print("Making file record")
+    print("Unique ID: ", unique_id)
     file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
-
+    print("File record made")
     # Check if the file has expired
     if datetime.utcnow() > file_record.expires_at:
         abort(410)  # 410 Gone indicates that the resource is no longer available and will not be available again.
