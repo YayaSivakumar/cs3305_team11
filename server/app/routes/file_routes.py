@@ -9,6 +9,10 @@ from ..db import db
 from ..config import UPLOADS_FOLDER
 from flask_login import current_user
 
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, PasswordField, EmailField
+from wtforms.validators import DataRequired
+
 from ..models.file import File
 from ..models.user import User
 
@@ -16,6 +20,19 @@ from . import user_routes  # Import Blueprint instance from the main application
 from . import main_routes  # Import Blueprint instance from the main application package
 
 file_routes = Blueprint('file_routes', __name__)
+
+
+class UploadForm(FlaskForm):
+    """
+    File upload form
+    """
+    message = StringField("Enter message: ")
+    expiration_hours = StringField("Enter expiration hours: ",
+                                   validators=[DataRequired()])
+    file = StringField("Choose file: ",
+                       validators=[DataRequired()])
+    password = PasswordField("Enter password: ")
+    submit = SubmitField("Submit")
 
 
 @file_routes.route('/upload', methods=['GET', 'POST'])
