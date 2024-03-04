@@ -23,6 +23,7 @@
                    <th>Message</th>
                    <th>Expires At</th>
                    <th>Downloads</th>
+                   <th>Unique ID</th>
                </tr>
            </thead>
            <tbody class="font-light">
@@ -32,12 +33,13 @@
                             <td>{{ file.message }}</td>
                             <td>{{ file.expires_at.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>{{ file.download_count }}</td>
+                            <td>{{ file.unique_id }}</td>
                             <td>
-                                <a href="{{ url_for('file_routes.direct_download_file', unique_id=file.id) }}"
+                                <a href="{{ url_for('file_routes.direct_download_file', unique_id=file.unique_id) }}"
                                    class="btn btn-sm bordered">Download</a>
-                                <a href="{{ url_for('file_routes.update_file', unique_id=file.id) }}"
+                                <a href="{{ url_for('file_routes.update_file', unique_id=file.unique_id) }}"
                                    class="btn btn-sm btn-secondary bordered">Update</a>
-                                <a href="{{ url_for('file_routes.delete_file', unique_id=file.id) }}"
+                                <a href="{{ url_for('file_routes.delete_file', unique_id=file.unique_id) }}"
                                    class="btn btn-sm btn-error bordered">Delete</a>
                             </td>
                        </tr>
