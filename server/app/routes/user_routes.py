@@ -41,9 +41,6 @@ class LoginForm(FlaskForm):
 
 @user_routes.route('/signup', methods=['GET', 'POST'])
 def signup():
-    name = None
-    email = None
-    password = None
     form = SignUpForm()
     if form.validate_on_submit():
         name = form.name.data
