@@ -7,10 +7,15 @@
         <h1 class="text-3xl font-semibold">Download File</h1>
         <div class="card w-96 bg-accent shadow-xl mx-auto my-8">
             <div class="card-body">
+                <div class="card-title">
+                    <h3>Fresh File from {{ file.upload_user.name }}! </h3>
+                </div>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Filename:</span>
                     {{ file.filename }}</p>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Message:</span>
                     {{ file.message }}</p>
+                <p class="text-base font-light"><span class="font-semibold text-lg">Sender:</span>
+                    {{ file.upload_user.email }}</p>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Link Expires:</span>
                     {{ file.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
 <!--                TODO: do we want this password protection functionality to work?      -->

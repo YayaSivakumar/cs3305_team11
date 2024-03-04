@@ -65,13 +65,14 @@ def upload():
 def upload_success(unique_id):
     file_info = File.query.filter_by(unique_id=unique_id).first_or_404()
     link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
-    # file_user = User.query.get(unique_id).files.user
+    file_user_id = file_info.user_id
+    file_user_details = User.query.get(file_user_id)
     file_info = {
         'filename': file_info.filename,
         'message': file_info.message,
         'expires_at': file_info.expires_at,
         'download_link': link,
-        # 'upload_user': file_user
+        'upload_user': file_user_details
     }
     return render_template('upload_success.html', link=link, file_info=file_info,
                            file_routes=file_routes, user_routes=user_routes, main_routes=main_routes)
@@ -80,14 +81,19 @@ def upload_success(unique_id):
 @file_routes.route('/update_file/<unique_id>', methods=['GET', 'POST'])
 @login_required
 def update_file(unique_id):
-    file = File.query.get(unique_id)
+    file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
     if request.method == 'POST':
-        #  need to have logic here to update the file
+        message = request.form.get('message', '')
+        expiration_hours = int(request.form.get('expiration_hours', 24))
+
+        file_record.message = message
+        file_record.expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
+        db.session.commit()
 
         flash("File updated successfully", 'success')
-        return redirect(url_for('main_routes.home'))
+        return redirect(url_for('user_routes.profile'))
     return render_template('update_file.html',
-                           file=file,
+                           file=file_record,
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
@@ -96,14 +102,16 @@ def update_file(unique_id):
 @file_routes.route('/delete_file/<unique_id>', methods=['GET', 'POST'])
 @login_required
 def delete_file(unique_id):
-    file = File.query.get(unique_id)
+    file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
+    print(f"File: {file_record.filename}")
     if request.method == 'POST':
-        db.session.delete(file)  # What does this actually do?
-        #      Does this delete ref of file from user aswell? or just from the file table?
+        db.session.delete(file_record)
+        db.session.commit()
+
         flash("File deleted successfully", 'success')
         return redirect(url_for('main_routes.home'))
     return render_template('delete_file.html',
-                           file=file,
+                           file=file_record,
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
@@ -112,10 +120,9 @@ def delete_file(unique_id):
 # TODO: Get the upload user DB stuff working
 @file_routes.route('/download/<unique_id>', methods=['GET'])
 def download_file_page(unique_id):
-    print(unique_id)
-    print(File.query.all())
     file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
-    # uploader = file_record.user  # Access the user who uploaded the file
+    file_user_id = file_record.user_id
+    file_user_details = User.query.get(file_user_id)
 
     file_details = {
         'filename': file_record.filename,
@@ -124,10 +131,7 @@ def download_file_page(unique_id):
         'download_link': url_for('file_routes.direct_download_file',
                                  unique_id=unique_id,
                                  _external=True),
-        # 'upload_user': {
-        #     'name': uploader.name,
-        #     'email': uploader.email
-        # }
+        'upload_user': file_user_details
     }
 
     return render_template('download.html',

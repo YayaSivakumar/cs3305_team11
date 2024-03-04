@@ -15,6 +15,8 @@
                 </div>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Filename:</span>
                     {{ file_info.filename }}</p>
+                <p class="text-base font-light"><span class="font-semibold text-lg">Sender Email:</span>
+                    {{ file_info.upload_user.email }}</p>
                 <p class="text-base"><span class="font-semibold text-lg">Expiration date:</span>
                     {{ file_info.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
                 <p class="text-base"><span class="font-semibold text-lg">Message:</span> {{ file_info.message }}</p>
