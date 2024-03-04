@@ -1,5 +1,6 @@
 from PyQt5.QtCore import Qt, QDir
-from PyQt5.QtWidgets import QWidget, QDirModel, QColumnView, QHBoxLayout, QPushButton, QMessageBox, QVBoxLayout, QVBoxLayout, QLabel, QTreeView
+from PyQt5.QtWidgets import QCheckBox, QDirModel, QColumnView, QHBoxLayout, QPushButton, QMessageBox, QVBoxLayout, \
+    QVBoxLayout, QLabel, QTreeView, QWidget
 from python.modules.organise_by_type import organise_by_type_func
 from python.modules.revert_changes import revert_changes
 from python.ui.drag_drop import *
@@ -22,25 +23,30 @@ class OrganiseWindow(QWidget):
 
         # Create a description label
         description_label = QLabel(
-            "Description: Drag and drop files to the area below or select files from the column view to organize them into folders based on their file types.")
+            "Description: Drag and drop files to the area below or select files from the column view to organize them "
+            "into folders based on their file types.")
         description_label.setWordWrap(True)  # Allow text to wrap to the next line
         description_label.setAlignment(Qt.AlignTop)  # Align the text to the top
 
         # Initialize the model for the ColumnView
         self.model = CustomFileSystemModel()
-        self.model.setRootPath(QDir.currentPath())
+        self.model.setRootPath(self.fileSystemModel.path)
         self.model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)
 
         # Set up the ColumnView
         self.column_view = QColumnView()
         self.column_view.setModel(self.model)
         # only show paths in cache
-        self.column_view.setRootIndex(self.model.index(os.environ.get("SCAN_PATH")))
+        self.column_view.setRootIndex(self.model.index(self.fileSystemModel.path))
 
         # Create a QVBoxLayout for the description label, organize button, and dragDropLabel
         right_layout = QVBoxLayout()
         right_layout.addWidget(description_label)  # Add the description label to the layout
         right_layout.addWidget(self.dragDropLabel)
+
+        # Add a checkbox for all files
+        self.allCheckbox = QCheckBox('All files', self)
+        right_layout.addWidget(self.allCheckbox)
 
         # Add a button to trigger file organization
         self.organizeButton = QPushButton("Organize Files")
@@ -65,31 +71,33 @@ class OrganiseWindow(QWidget):
 
     def onOrganizeClicked(self):
         paths_to_organize = []
+        allSelected = self.allCheckbox.isChecked()
 
         # Check if there are files dropped in drag-and-drop area
         if self.dragDropLabel.droppedFiles:
-            paths_to_organize.extend(self.dragDropLabel.droppedFiles)
+            print(f"FILES PRESENT IN DROPBOX:\n{self.dragDropLabel.droppedFiles}")
+            paths_to_organize = self.dragDropLabel.droppedFiles
+            paths_to_organize = [x.rstrip('/') for x in paths_to_organize]
+            print(f"Paths to organise:\n{paths_to_organize}")
 
         # Check if there is a selection in the tree view
         elif self.column_view.currentIndex().isValid():
             tree_view_path = self.model.filePath(self.column_view.currentIndex())
             if tree_view_path:
                 paths_to_organize.append(tree_view_path)
+        elif allSelected:
+            paths_to_organize = [self.fileSystemModel.path]
 
         # If there are paths to organize, either from drag-and-drop or tree view
         if paths_to_organize:
             # load cache
-            cache = FileSystemCache()
-
-            if not cache.load_from_file():
-                QMessageBox.information(self, 'No cache found',
-                                        'Please scan a folder before attempting to organize files.',
-                                        QMessageBox.Ok)
-                return
+            cache = self.fileSystemModel.cache
 
             # clear the previous list of organized items
             self.organised.clear()
-            message = f"Do you want to organize the following items?\n\n" + "\n".join(paths_to_organize)
+            message = f"Do you want to organize the following items?\n\n" + "\n".join(paths_to_organize) \
+                if len(paths_to_organize) < 10 else f"Do you want to organize the following items?\n\n [Many selected]"
+
             reply = QMessageBox.question(self, 'Organize Confirmation', message, QMessageBox.Yes | QMessageBox.No,
                                          QMessageBox.No)
 

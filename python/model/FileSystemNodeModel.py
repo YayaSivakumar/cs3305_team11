@@ -85,23 +85,49 @@ class FileSystemNode:
         """Check if the file is hidden."""
         return self.name.startswith('.')
 
-    def move(self, new_path: str):
-        """Move the node to a new location."""
-        try:
-            shutil.move(self.path, new_path)
-            # update paths
-            self.revert_path = self.path
-            self.path = new_path
-            # update data structure
-            self.parent.remove_child(self)
-            self.parent = self.cache[os.path.dirname(new_path)]
-            self.parent.add_child(self)
-            # update cache
-            self.cache.remove(self.revert_path)
-            self.cache.update(new_path, self)
-        except Exception as e:
-            print(f"Error moving Obj: {e}")
+    # def move(self, new_path: str):
+    #     """Move the node to a new location."""
+    #     try:
+    #         shutil.move(self.path, new_path)
+    #         # update paths
+    #         self.revert_path = self.path
+    #         self.path = new_path
+    #         # update data structure
+    #         self.parent.remove_child(self)
+    #         self.parent = self.cache[os.path.dirname(new_path)]
+    #         self.parent.add_child(self)
+    #         # update cache
+    #         self.cache.remove(self.revert_path)
+    #         self.cache.update(new_path, self)
+    #     except Exception as e:
+    #         print(f"Error moving Obj: {e}")
 
+    def move(self, dst: str):
+        try:
+            # Try using shutil.move first
+            shutil.move(self.path, dst)
+            self._move_update_metadata(dst)
+        except Exception as e:
+            print(f"shutil.move failed: {e}")
+            # If shutil.move fails, manually copy and then delete
+            try:
+                shutil.copy2(self.path, dst)  # copy2 preserves metadata
+                os.remove(self.path)
+                self._move_update_metadata(dst)
+            except Exception as e:
+                print(f"Manual copy and delete failed: {e}")
+
+    def _move_update_metadata(self, new_path):
+        # update paths
+        self.revert_path = self.path
+        self.path = new_path
+        # update data structure
+        self.parent.remove_child(self)
+        self.parent = self.cache[os.path.dirname(new_path)]
+        self.parent.add_child(self)
+        # update cache
+        self.cache.remove(self.revert_path)
+        self.cache.update(new_path, self)
     def to_json(self):
         return {
             'path': self.path,
