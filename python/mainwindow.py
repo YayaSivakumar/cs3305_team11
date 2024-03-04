@@ -12,10 +12,11 @@ import styles.system_theme
 import styles.sidebar
 from requests import Session
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
 
+class MainWindow(QMainWindow):
+    def __init__(self, fileSystemModel):
+        super().__init__()
+        self.fileSystemModel = fileSystemModel
         self.session = Session()  # Initialize a Session object here
 
         web_engine_profile = QWebEngineProfile.defaultProfile()
