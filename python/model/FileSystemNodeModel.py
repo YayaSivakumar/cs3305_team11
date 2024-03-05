@@ -18,7 +18,7 @@ class FileSystemNode:
         self.cache = cache
         self.parent = None
         self.children = []
-        self.size = None
+        self.size = os.path.getsize(self.path)
 
     def find_node(self, name: str):
         """Recursively find a node by name."""
