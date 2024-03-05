@@ -51,11 +51,11 @@ class SearchBar(QLineEdit):
 
 
 class SearchWindow(QWidget):
-    def __init__(self, window_index: int):
+    def __init__(self, window_index: int, fileSystemModel):
         super().__init__()
-        self.all_possible_results = None
+        self.fileSystemModel = fileSystemModel
+        self.all_possible_results = [node for node in fileSystemModel.cache.body.values()]
         self._window_index = window_index
-        self.fileSystemModel = None
         self.initUI()
 
     def initUI(self):
@@ -87,10 +87,6 @@ class SearchWindow(QWidget):
         self.stackedLayout.setCurrentWidget(self.placeholderWidget)
 
         layout.addLayout(self.stackedLayout)
-
-        self.scanButton = QPushButton("Start Scan", self)
-        self.scanButton.clicked.connect(self.on_start_scan)  # Connect button click to handler
-        layout.addWidget(self.scanButton)  # Add the scan button to the layout
 
         self.setLayout(layout)
 
@@ -166,33 +162,6 @@ class SearchWindow(QWidget):
         else:
             # Show the placeholder when there is no text
             self.stackedLayout.setCurrentWidget(self.placeholderWidget)
-
-    def on_start_scan(self):
-        print("Scan started! (on separate thread)")
-        threading.Thread(target=self.scan_file_system, args=(os.environ.get("SCAN_PATH"),)).start()
-
-    def scan_file_system(self, root_path: str):
-        print("SCAN PATH: ", root_path)
-        FSCache = FileSystemCache()
-
-        # if there is cache
-        if FSCache.load_from_file():
-            # create fileSystemModel from cache
-            print('loading from cache')
-            self.fileSystemModel = FSCache[root_path]
-
-        else:
-            # create model from scan path
-            print('no cache found, scanning')
-            if os.path.isdir(root_path):
-                self.fileSystemModel = Directory(root_path, FSCache)
-            else:
-                raise Exception("Path given to scan was not a directory.")
-
-        # update search results
-        self.all_possible_results = [node for node in FSCache.body.values()]
-
-        print("Scan Finished")
 
     @property
     def window_index(self):

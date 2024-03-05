@@ -12,10 +12,11 @@ import styles.system_theme
 import styles.sidebar
 from requests import Session
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
 
+class MainWindow(QMainWindow):
+    def __init__(self, fileSystemModel):
+        super().__init__()
+        self.fileSystemModel = fileSystemModel
         self.session = Session()  # Initialize a Session object here
 
         web_engine_profile = QWebEngineProfile.defaultProfile()
@@ -49,11 +50,11 @@ class MainWindow(QMainWindow):
         self.sidebar_layout = QVBoxLayout(self.sidebar)
 
         # Create the different screens
-        self.search_window = SearchWindow(0)
-        self.organise_window = OrganiseWindow(1)
-        self.optimise_window = OptimiseWindow(2)
-        self.visualise_window = VisualiseWindow(3)
-        self.file_sharing_window = FileUploader(4)
+        self.search_window = SearchWindow(0, self.fileSystemModel)
+        self.organise_window = OrganiseWindow(1, self.fileSystemModel)
+        self.optimise_window = OptimiseWindow(2, self.fileSystemModel)
+        self.visualise_window = VisualiseWindow(3, self.fileSystemModel)
+        self.file_sharing_window = FileUploader(4, self.fileSystemModel)
 
         # Add the sidebar to the main layout
         self.main_layout.addWidget(self.sidebar, 2)  # 2/10 of the space for the sidebar

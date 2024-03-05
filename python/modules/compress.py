@@ -4,7 +4,7 @@ import os
 from python.model.FileSystemNodeModel import File, Directory
 
 
-def compress(file_node: File):
+def compress(file_node: File|Directory):
     """Compression based on type of file."""
 
     if file_node.path.endswith('.mp3') or file_node.path.endswith('.wav') or file_node.path.endswith('.aac'):

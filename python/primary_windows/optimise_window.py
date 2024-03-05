@@ -13,8 +13,9 @@ from python.modules.deduplicate import deduplicate
 
 class OptimiseWindow(QWidget):
 
-    def __init__(self, window_index: int):
+    def __init__(self, window_index: int, fileSystemModel):
         super().__init__()
+        self.fileSystemModel = fileSystemModel
         self.organised = []
         self.window_index = window_index
         self.duplicate_files = []
@@ -27,7 +28,8 @@ class OptimiseWindow(QWidget):
 
         # Create a description label
         description_label = QLabel(
-            "Description: Drag and drop files to the area below or select files from the column view to scan for duplicate files and compress large files. Click the 'Optimise Files' button to start the process.")
+            "Description: Drag and drop files to the area below or select files from the column view to scan for "
+            "duplicate files and compress large files. Click the 'Optimise Files' button to start the process.")
         description_label.setWordWrap(True)  # Allow text to wrap to the next line
         description_label.setAlignment(Qt.AlignTop)  # Align the text to the top
 
