@@ -207,7 +207,6 @@ class FileUploader(QWidget):
             self.displaySelectedFiles()
             self.selectedFileLabel.setText(f'Selected Folder: {self.folderPath}')
 
-
         elif self.filePaths:
             self.displaySelectedFiles()
             self.selectedFileLabel.setText(f'Selected Files: {len(self.filePaths)} files')
@@ -225,7 +224,7 @@ class FileUploader(QWidget):
         '''Upload the file(s) and share them. Also, emit the uploadFinished signal.'''
         self.progressBar.setValue(0)  # Reset progress bar
         if self.filePaths:  # This now handles both files and folders
-            url = 'http://127.0.0.1:5000/upload'  # URL of the Flask app's upload endpoint
+            url = 'http://127.0.0.1:5000/upload_dan'  # URL of the Flask app's upload endpoint
             message = self.messageInput.text()  # Extract the message from the input field
             persistence = self.persistenceComboBox.currentText()  # Extract the selected persistence option
             persistence_hours = {'24 hours': 24, '3-Days': 72, '7-Days': 168}.get(persistence, 24)
@@ -282,12 +281,9 @@ class FileUploader(QWidget):
         self.copyButton.setEnabled(False)  # Disable the Copy to Clipboard button
 
     def updateProgressBarStyle(self, value):
-
         colour = "#32CD32"  # Green
-
         # Calculate the gradient transition based on current progress value
         progress_percentage = value / 100
-
         self.progressBar.setStyleSheet(f"""
             QProgressBar {{
                 border: 2px solid grey;
@@ -317,7 +313,6 @@ class FileUploader(QWidget):
             print(f"extension: {extension}")
             # Return the icon path based on the file extension
             return icon_paths.get(extension, 'ui/images/icons/default_icon.svg')
-
 
     @property
     def window_index(self):
