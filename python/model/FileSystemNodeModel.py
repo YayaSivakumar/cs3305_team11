@@ -10,7 +10,7 @@ from PyQt5.QtCore import QRunnable, QThreadPool
 class FileSystemNode:
     """Represents a file or directory in the file system."""
 
-    def __init__(self, path: str, cache: FileSystemCache, parent):
+    def __init__(self, path: str, cache: FileSystemCache, parent, size = None):
         self.path = path
         self.name = None
         self.revert_path = path
@@ -18,7 +18,7 @@ class FileSystemNode:
         self.cache = cache
         self.parent = parent if parent else None
         self.children = []
-        self.size = None
+        self.size = size
 
     def find_node(self, name: str):
         """Recursively find a node by name."""
@@ -188,8 +188,8 @@ class FileSystemNode:
 
 
 class File(FileSystemNode):
-    def __init__(self, path: str, cache: FileSystemCache, name, parent):
-        super().__init__(path, cache, parent)
+    def __init__(self, path: str, cache: FileSystemCache, name, parent, size=None):
+        super().__init__(path, cache, parent, size)
         self.name = name  # give file a name
 
     def __str__(self) -> str:
@@ -204,26 +204,35 @@ class File(FileSystemNode):
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
 
-    def __init__(self, path: str, cacheObj: FileSystemCache, name, parent):
-        super().__init__(path, cacheObj, parent=parent)
+    def __init__(self, path: str, cacheObj: FileSystemCache, name, parent, size):
+        super().__init__(path, cacheObj, parent, size)
         self.name = name
         self._populate()  # Populate the directory with its children
         cacheObj.save_to_file()
 
     def _populate(self):
-        """Populate the directory with its children."""
+        """Populate the directory with its children and calculate directory size."""
+        total_size = 0
         try:
             with os.scandir(self.path) as entries:
                 for entry in entries:
                     if entry.is_dir():
-                        if '.' in entry.path:
+                        # Skip hidden directories or any specific directories you don't want to include
+                        if entry.name.startswith('.'):
                             continue
                         child = Directory(entry.path, self.cache, name=entry.name, parent=self)
                     else:
-                        child = File(entry.path, self.cache, name=entry.name, parent=self)
+                        # Calculate file size and update total size for the directory
+                        file_size = entry.stat().st_size
+                        total_size += file_size
+                        child = File(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
                         self.cache.update(child.path, child)
                     self.add_child(child)
+
+            # After iterating through all entries, set the directory's size
+            self.size = total_size
             self.cache.update(self.path, self)
+
         except FileNotFoundError:
             print(f"Directory not found: {self.path}")
 
