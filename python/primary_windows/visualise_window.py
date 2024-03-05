@@ -1,9 +1,9 @@
 import os
-from PyQt5.QtCore import Qt, QEvent, QDir
-from PyQt5.QtGui import QFont, QPalette, QColor, QIcon
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
 from collections import defaultdict
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QFileDialog
-from PyQt5.QtWidgets import QComboBox, QLabel, QListWidget, QMessageBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton
+from PyQt5.QtWidgets import QLabel, QListWidget, QMessageBox
 
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 import plotly.graph_objects as go
@@ -52,28 +52,6 @@ class VisualiseWindow(QWidget):
         self.layout.addWidget(self.plotly_widget)
         self.plotly_widget.hide()
 
-        # Initialize the folder_selection QComboBox
-        self.folder_selection = QComboBox()
-        self.folder_selection.setFont(QFont('Arial', 16))
-        self.folder_selection.addItem("Your Home folder")  # Placeholder for the home folder
-        self.folder_selection.addItem("Choose Folder...")  # Option to select a folder
-        self.folder_selection.activated.connect(
-            self.on_folder_select)  # Connect to the slot/function when an item is activated
-
-        # Create a scan button
-        scan_button = QPushButton("Explore")
-        scan_button.setFont(QFont('Arial', 16))
-        scan_button.setFixedSize(200, 50)  # Fixed size for the button
-        scan_button.clicked.connect(self.on_scan)  # Connect to the slot/function
-
-        # Add widgets to the layout
-        self.layout.addWidget(title_label)
-        self.layout.addWidget(subtitle_label)
-        self.layout.addStretch()  # Add some space before the dropdown
-        self.layout.addWidget(self.folder_selection)
-        self.layout.addStretch()  # Add some space before the button
-        self.layout.addWidget(scan_button, alignment=Qt.AlignCenter)  # Center the button horizontally
-
         # Create the list widget to display folder contents
         self.folder_contents = QListWidget()
         self.folder_contents.setFont(QFont('Arial', 12))
@@ -104,34 +82,19 @@ class VisualiseWindow(QWidget):
     def window_index(self, value):
         self._window_index = value
 
-    # Define the on_folder_select method
-    def on_folder_select(self):
-        selected_text = self.folder_selection.currentText()
-        if selected_text == "Choose Folder...":
-            self.select_folder()
-        elif selected_text == "Your Home folder":
-            self.folder_selection.setCurrentIndex(self.folder_selection.findText(os.path.expanduser('~')))
+    def setFileSystemModel(self, fileSystemModel):
+        self.fileSystemModel = fileSystemModel
+        self.updateVisualization()  # Update the visualization whenever the model is set
 
-    def select_folder(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        folder_path = QFileDialog.getExistingDirectory(self, "Select Folder", "", options=options)
-        if folder_path:
-            # If a folder was selected, add it to the dropdown and select it
-            self.folder_selection.addItem(folder_path)
-            self.folder_selection.setCurrentIndex(self.folder_selection.findText(folder_path))
-            # Trigger the visualization of the selected folder
-            self.visualise_folder(folder_path)
+    def updateVisualization(self):
+        # Here, we assume that your fileSystemModel object has a method that returns
+        # the folder path. You will need to replace 'getFolderPath' with the actual method name.
+        folder_path = self.fileSystemModel.path
 
-    def on_scan(self):
-        selected_folder = self.folder_selection.currentText()
-        if selected_folder == "Choose Folder...":
-            self.select_folder()
-        elif selected_folder == "Your Home folder":
-            home_folder_path = os.path.expanduser('~')
-            self.visualise_folder(home_folder_path)
-        else:
-            self.visualise_folder(selected_folder)
+        # Now, use 'folder_path' to calculate the directory structure and visualize it
+        labels, parents, values = self.calculate_directory_structure(folder_path)
+        self.visualize_sizes(labels, parents, values)
+
 
     def visualise_folder(self, folder_path):
         labels, parents, values = self.calculate_directory_structure(folder_path)
@@ -164,35 +127,38 @@ class VisualiseWindow(QWidget):
             branchvalues="total",
         ))
         fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
-        self.plotly_widget.setFigure(fig)
-        self.plotly_widget.show()
 
+        self.plotly_widget.setFigure(fig)  # Update the figure in the PlotlyWidget
+        self.plotly_widget.show()  # Make sure the widget is shown
+
+    def updateVisualization(self):
+        # Now, use 'folder_path' from the fileSystemModel to calculate the directory structure and visualize it
+        if hasattr(self.fileSystemModel, 'path'):
+            folder_path = self.fileSystemModel.path
+            labels, parents, values = self.calculate_directory_structure(folder_path)
+            self.visualize_sizes(labels, parents, values)
+        else:
+            print("FileSystemModel does not have 'path' attribute.")
+
+    # Updated method to accept folder_path
     def calculate_directory_structure(self, folder_path):
-        labels = ['Root']  # Starting with 'Root' as the base label
-        parents = ['']  # Root has no parent
-        values = [0]  # Initialize with zero; will recalculate later
+        labels = ['Root']
+        parents = ['']
+        values = [0]
 
-        for root, dirs, files in os.walk(folder_path, topdown=True):
-            for name in dirs + files:  # Iterate over directories and files together
-                current_path = os.path.join(root, name)
-                size = sum(os.path.getsize(os.path.join(dirpath, filename))
-                           for dirpath, dirnames, filenames in os.walk(current_path)
-                           for filename in filenames) if os.path.isdir(current_path) else os.path.getsize(current_path)
-                labels.append(name)
-                parent_label = 'Root' if root == folder_path else os.path.basename(root)
-                parents.append(parent_label)
-                values.append(size)
+        # Here, traverse your FileSystemNodeModel to get the structure
+        # This part needs to be implemented based on how FileSystemNodeModel works
+        # The following is just an illustrative placeholder
+        for node in self.fileSystemModel.cache.values():
+            labels.append(node.name)
+            parents.append(node.parent.name if node.parent else 'Root')
+            values.append(node.size)
 
-        # Update the size of the root based on the sizes of its immediate children
-        root_size = sum(size for size, parent in zip(values[1:], parents[1:]) if parent == 'Root')
+        # Recalculate the root size based on children
+        root_size = sum(values[1:])
         values[0] = root_size
 
-        print("Labels:", labels)
-        print("Parents:", parents)
-        print("Values:", values)
-
         return labels, parents, values
-
 
 class FolderVisualizer(QWidget):
     def __init__(self):
@@ -203,27 +169,11 @@ class FolderVisualizer(QWidget):
         # Set up the user interface
         layout = QVBoxLayout()
 
-        # Button to select folder
-        self.btn_select_folder = QPushButton('Select Folder', self)
-        self.btn_select_folder.clicked.connect(self.select_folder)
-
         # Add button to layout
         layout.addWidget(self.btn_select_folder)
 
         # Set the layout on the application's window
         self.setLayout(layout)
-
-    def select_folder(self):
-        # Open QFileDialog to select a folder
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        folder_path = QFileDialog.getExistingDirectory(self, "Select Folder", options=options)
-
-        if folder_path:
-            # Calculate folder sizes
-            self.folder_sizes = self.calculate_folder_sizes(folder_path)
-            # Visualize the sizes with a pie chart
-            self.visualize_sizes()
 
     def calculate_folder_sizes(self, folder_path):
         file_sizes = defaultdict(int)
