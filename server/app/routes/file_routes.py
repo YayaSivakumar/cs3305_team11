@@ -5,6 +5,7 @@ from flask import Blueprint, flash, redirect
 from flask import request, render_template, send_from_directory, abort, url_for, jsonify
 from flask_login import login_required
 from werkzeug.utils import secure_filename
+from werkzeug.datastructures import FileStorage
 from ..db import db
 from ..config import UPLOADS_FOLDER
 from flask_login import current_user
@@ -12,6 +13,8 @@ from flask_login import current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, TextAreaField, SelectField, FileField, MultipleFileField
 from wtforms.validators import DataRequired
+
+from python.modules.compress import compress
 
 from ..models.file import File
 from ..models.user import User
@@ -29,6 +32,7 @@ class UploadForm(FlaskForm):
     """
     # TODO: Add an optional field to add a name
     message = TextAreaField("Enter message: ")
+    file_name = StringField("Enter file name: ")
     expiration_hours = SelectField("Enter expiration hours: ",
                                    choices=[('24 Hours', '24'), ('3 Days', '72'), ('7 Days', '168')],
                                    default='24 Hours',
@@ -64,31 +68,37 @@ def upload():
             password = form.password.data
             form.password.data = ''
             expiration_hours = form.expiration_hours.data
+            filename = form.file_name.data
+            form.file_name.data = ''
+            # List of filenames could be used to represent multiple files on download page
+            #     Maybe optional toggle in upload form?
             files_filenames = []
             for uploaded_file in form.file.data:
                 if uploaded_file:
                     filename = secure_filename(uploaded_file.filename)
-                    # TODO: do unique ID's tie to file and to uploads?
-                    unique_id = str(uuid.uuid4())
-                    filepath = os.path.join(UPLOADS_FOLDER, unique_id)
-                    uploaded_file.save(filepath)  # What does this do?
                     files_filenames.append(filename)
-                #     TODO: do uploads for multiple files:  upload ID etc.
-                    expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
-                # Zip the files together, and store as a File object
+            #         should we compress files pre upload aswell?
+            unique_id = str(uuid.uuid4())
+            expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
+            if not filename:
+                filename = f"{current_user.name}_file_upload{unique_id[:6]}"
+            filepath = os.path.join(UPLOADS_FOLDER, unique_id)
+            if len(files_filenames) > 1:
+                # ZIP FILES HERE
+                compressed_file = compress_dir(files, filename)
+                werkzeug_file = FileStorage()
+            #     if compressed_file has
+            # else:
+                uploaded_file.save(filepath)
 
-                    # TODO: need Upload object here?
-                new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
-
-                new_file.password = password
-                current_user.files.append(new_file)
-                db.session.add(new_file)
-                db.session.commit()
-                link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
-                flash('File uploaded successfully.', 'success')
-                print(link)
-                print("Unique ID: ", unique_id)
-                return redirect(url_for('file_routes.upload_success', unique_id=unique_id))
+            new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
+            new_file.password = password
+            current_user.files.append(new_file)
+            db.session.add(new_file)
+            db.session.commit()
+            link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
+            flash('File uploaded successfully.', 'success')
+            return redirect(url_for('file_routes.upload_success', unique_id=unique_id))
     else:
         # If it's not a POST request, just render the template without context
         return render_template('upload.html',
