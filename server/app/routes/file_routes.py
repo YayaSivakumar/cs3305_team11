@@ -75,47 +75,49 @@ def upload():
             unique_id = str(uuid.uuid4())
             expires_at = datetime.utcnow() + timedelta(hours=int(expiration_hours))
             filepath = os.path.join(UPLOADS_FOLDER, unique_id)
+            if uploaded_files:
+                if len(uploaded_files) > 1:
+                    print("Why is this being hit????")
+                # for uploaded_file in uploaded_files:
+                #     if uploaded_file:
+                #         print(f"Uploaded file: {uploaded_file}, Type: {type(uploaded_file)}")
+                #         filename = secure_filename(uploaded_file.filename)
+                #         files_filenames.append(filename)
+                #         files.append(uploaded_file)
+                #         uploaded_file.save(filepath)
+                    # ZIP FILES HERE
+                    if not filename:
+                        filename = f"{current_user.name}_file_upload{unique_id[:6]}"
+                    compressed_file = compress_dir(files, filename)
 
-            if len(uploaded_files) > 1:
-                print("Why is this being hit????")
-            # for uploaded_file in uploaded_files:
-            #     if uploaded_file:
-            #         print(f"Uploaded file: {uploaded_file}, Type: {type(uploaded_file)}")
-            #         filename = secure_filename(uploaded_file.filename)
-            #         files_filenames.append(filename)
-            #         files.append(uploaded_file)
-            #         uploaded_file.save(filepath)
-                # ZIP FILES HERE
-                if not filename:
-                    filename = f"{current_user.name}_file_upload{unique_id[:6]}"
-                compressed_file = compress_dir(files, filename)
+                    # compress_dir returns the filepath to the compressed file
+                    with open(compressed_file, 'rb') as file:
+                        werkzeug_file = FileStorage(
+                            stream=file,
+                            filename=filename,
+                            content_type='application/zip',
+                        )
+                        werkzeug_file.save(filepath)
+                else:
+                    print(f"Uploaded files: {uploaded_files}, Type: {type(uploaded_files)}")
+                    file = uploaded_files[0]
+                    if file:
+                        if filename:
+                            filename = secure_filename(filename)
+                        else:
+                            filename = secure_filename(file.filename)
+                        file.save(filepath)
+                new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
+                if password:
+                    new_file.password = password
 
-                # compress_dir returns the filepath to the compressed file
-                with open(compressed_file, 'rb') as file:
-                    werkzeug_file = FileStorage(
-                        stream=file,
-                        filename=filename,
-                        content_type='application/zip',
-                    )
-                    werkzeug_file.save(filepath)
-            else:
-                print(f"Uploaded files: {uploaded_files}, Type: {type(uploaded_files)}")
-                file = uploaded_files[0]
-                if file:
-                    if filename:
-                        filename = secure_filename(filename)
-                    else:
-                        filename = secure_filename(file.filename)
-                    file.save(filepath)
-            new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
-            if password:
-                new_file.password = password
-
-            current_user.files.append(new_file)
-            db.session.add(new_file)
-            db.session.commit()
-            flash('File uploaded successfully.', 'success')
-            return redirect(url_for('file_routes.upload_success', unique_id=unique_id))
+                current_user.files.append(new_file)
+                db.session.add(new_file)
+                db.session.commit()
+                flash('File uploaded successfully.', 'success')
+                return redirect(url_for('file_routes.upload_success', unique_id=unique_id))
+            flash('File not uploaded correctly', 'error')
+            return redirect(url_for('main_routes.home'))
     else:
         # If it's not a POST request, just render the template without context
         return render_template('upload.html',
