@@ -1,4 +1,4 @@
-import sys
+import sys, time
 from PyQt5.QtWidgets import QApplication
 from python.mainwindow import MainWindow
 from python.primary_windows.splash_window import SplashWindow
@@ -8,7 +8,10 @@ def main():
     """Main application event loop. This script initializes and displays the main window.
     It's responsible for setting up the QApplication and starting the event loop."""
     app = QApplication(sys.argv)
+    start = time.perf_counter()
     splash = SplashWindow()
+    end = time.perf_counter()
+    print(f"TIME TAKEN: {end-start}s")
     splash.fileSystemModelReady.connect(init_main_window)
     splash.show()
     sys.exit(app.exec_())

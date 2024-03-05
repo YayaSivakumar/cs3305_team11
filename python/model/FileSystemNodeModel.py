@@ -4,6 +4,8 @@ from datetime import datetime
 import shutil
 import hashlib
 
+from PyQt5.QtCore import QRunnable, QThreadPool
+
 
 class FileSystemNode:
     """Represents a file or directory in the file system."""
@@ -222,6 +224,17 @@ class Directory(FileSystemNode):
         except FileNotFoundError:
             print(f"Directory not found: {self.path}")
 
+    def _multithread_populate(self):
+        thread_pool = QThreadPool.globalInstance()
+        try:
+            for item in os.listdir(self.path):
+                full_path = os.path.join(self.path, item)
+                # Create a new ScanTask for each item in the directory
+                task = ScanTask(full_path, self.cache)
+                thread_pool.start(task)
+        except FileNotFoundError:
+            print(f"Directory not found: {self.path}")
+
     def add_child(self, child: object):
         """Add a child file or directory."""
         self.children.append(child)
@@ -257,6 +270,28 @@ class Directory(FileSystemNode):
                 matching_files.extend(child.find_files_by_extension(extension))
 
         return matching_files
+
+
+class ScanTask(QRunnable):
+    def __init__(self, path, cache):
+        super(ScanTask, self).__init__()
+        self.path = path
+        self.cache = cache
+
+    def run(self):
+        if os.path.isdir(self.path):
+            for item in os.listdir(self.path):
+                full_path = os.path.join(self.path, item)
+                if os.path.isdir(full_path):
+                    if '.' in item:  # Skip hidden or specific directories
+                        continue
+                    child = Directory(full_path, self.cache)
+                else:
+                    child = File(full_path, self.cache)
+                self.cache.update(child.path, child)  # Update the cache
+        else:
+            child = File(self.path, self.cache)
+            self.cache.update(child.path, child)  # Update the cache
 
 
 if __name__ == '__main__':
