@@ -121,7 +121,7 @@ class OrganiseWindow(QWidget):
                 self.dragDropLabel.droppedFiles.clear()
 
                 # Enable the revert button
-                self.revertButton.setEnabled(True)
+                self.revertButton.setDisabled(False)
 
         else:
             QMessageBox.information(self, 'No Selection', 'Please select a file or folder from the tree view or drag and drop files.', QMessageBox.Ok)
