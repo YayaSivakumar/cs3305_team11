@@ -12,8 +12,7 @@ class File(db.Model):
     expires_at = db.Column(db.DateTime, default=datetime.utcnow)
     download_count = db.Column(db.Integer, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    # user = db.relationship('User', secondary=UploadedFiles, backref='file', lazy='dynamic')
-    # hashed_password = db.Column(db.String(128))
+    hashed_password = db.Column(db.String(128))
 
     @property
     def password(self):  # This is a getter method for the password property

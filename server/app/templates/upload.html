@@ -5,39 +5,31 @@
 {% block title %}File Upload App - Upload{% endblock %}
 
 {% block content %}
-<div class="container mx-auto py-8">
+<div class="container mx-auto my-4 max-w-96">
     <h1 class="text-3xl font-semibold mb-4">Upload a File</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
+    <form action="/upload" method="post" class="w-full max-w-md">
+        {{ form.hidden_tag() }}
+<!--todo: finish migrating to flask forms -->
         <div class="form-control mb-4">
-            <label for="file" class="label label-text">Select File:</label>
-            <input type="file" id="file" name="file" class="input input-bordered py-2.5 px-3">
+          {{ form.file.label(class="label label-text text-base font-medium") }}
+          {{ form.file(class="input input-bordered py-2.5 px-3") }}
         </div>
         <div class="form-control mb-4">
-            <label for="message" class="label label-text text-base font-medium">Message (Optional):</label>
-            <textarea id="message" name="message" class="textarea textarea-bordered text-sm" rows="4"></textarea>
+          {{ form.message.label(class="label label-text text-base font-medium") }}
+          {{ form.message(class="textarea textarea-bordered text-sm", rows="4") }}
+        </div>
+        <div class="form-control w-full max-w-xs">
+            {{ form.password.label(class="label label-text text-base font-medium") }}
+            {{ form.password(class="input input-bordered rounded-md") }}
         </div>
         <div class="form-control mb-4">
-            <label for="password" class="label label-text text-base font-medium">Message (Optional):</label>
-            <textarea id="password" name="message" class="textarea textarea-bordered text-sm" rows="4"></textarea>
-        </div>
-        <div class="form-control mb-4">
-            <label for="expiration_hours" class="label label-text text-base font-medium">Expiration Hours:</label>
-            <select id="expiration_hours" name="expiration_hours" class="select select-bordered text-sm">
-              <option value="24" selected>24 Hours</option>
-              <option value="72">3 Days</option>
-              <option value="168">7 Days</option>
-            </select>
+            <div class="form-control mb-4">
+              {{ form.expiration_hours.label(class="label label-text text-base font-medium") }}
+              {{ form.expiration_hours(class="select select-bordered text-sm") }}
+            </div>
         </div>
         <button type="submit" class="btn btn-primary rounded-md">Upload</button>
     </form>
-</div>
-
-<!--TODO: Investigate whether this works    -->
-<div id="toast" class="fixed bottom-0 right-0 m-6 alert alert-info shadow-lg hidden">
-    <div>
-        <span>File uploaded successfully. Shareable link:</span>
-        <a id="link" href="#" class="font-semibold">Click here</a>
-    </div>
 </div>
 
 {% endblock %}

@@ -10,7 +10,7 @@ from ..config import UPLOADS_FOLDER
 from flask_login import current_user
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, EmailField
+from wtforms import StringField, SubmitField, PasswordField, TextAreaField, SelectField, FileField, MultipleFileField
 from wtforms.validators import DataRequired
 
 from ..models.file import File
@@ -22,16 +22,30 @@ from . import main_routes  # Import Blueprint instance from the main application
 file_routes = Blueprint('file_routes', __name__)
 
 
+# TODO: Make a Forms folder and move all forms there
 class UploadForm(FlaskForm):
     """
     File upload form
     """
+    # TODO: Add an optional field to add a name
+    message = TextAreaField("Enter message: ")
+    expiration_hours = SelectField("Enter expiration hours: ",
+                                   choices=[('24 Hours', '24'), ('3 Days', '72'), ('7 Days', '168')],
+                                   default='24 Hours',
+                                   validators=[DataRequired()])
+    file = MultipleFileField("Choose file: ",
+                             validators=[DataRequired()])
+    password = PasswordField("Enter password: ")
+    submit = SubmitField("Submit")
+
+
+class UpdateForm(FlaskForm):
+    """
+    File update form
+    """
     message = StringField("Enter message: ")
     expiration_hours = StringField("Enter expiration hours: ",
                                    validators=[DataRequired()])
-    file = StringField("Choose file: ",
-                       validators=[DataRequired()])
-    password = PasswordField("Enter password: ")
     submit = SubmitField("Submit")
 
 
@@ -42,41 +56,48 @@ def upload():
     This function handles file uploads. It accepts POST requests with a file, message, expiration_hours,
     and password fields.
     """
+    form = UploadForm()
     if request.method == 'POST':
-        message = request.form.get('message', '')
-        expiration_hours = int(request.form.get('expiration_hours', 24))
-        # password = request.form.get('password', '')
-        file = request.files['file']
-        if file:
-            filename = secure_filename(file.filename)  # Sanitize the filename, prevent path traversal attacks
-            unique_id = str(uuid.uuid4())
-            filepath = os.path.join(UPLOADS_FOLDER, unique_id)
-            file.save(filepath)
-            expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
-            new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
+        if form.validate_on_submit():
+            message = form.message.data
+            form.message.data = ''
+            password = form.password.data
+            form.password.data = ''
+            expiration_hours = form.expiration_hours.data
+            files_filenames = []
+            for uploaded_file in form.file.data:
+                if uploaded_file:
+                    filename = secure_filename(uploaded_file.filename)
+                    # TODO: do unique ID's tie to file and to uploads?
+                    unique_id = str(uuid.uuid4())
+                    filepath = os.path.join(UPLOADS_FOLDER, unique_id)
+                    uploaded_file.save(filepath)  # What does this do?
+                    files_filenames.append(filename)
+                #     TODO: do uploads for multiple files:  upload ID etc.
+                    expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
+                # Zip the files together, and store as a File object
 
-            # new_file.user = db.user
-            current_user.files.append(new_file)
+                    # TODO: need Upload object here?
+                new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
 
-            # new_file.password: str = password
-            db.session.add(new_file)
-
-            db.session.commit()
-            link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
-            flash('File uploaded successfully.', 'success')
-            print(link)
-            print("Unique ID: ", unique_id)
-            return redirect(url_for('file_routes.upload_success', unique_id=unique_id))
-
+                new_file.password = password
+                current_user.files.append(new_file)
+                db.session.add(new_file)
+                db.session.commit()
+                link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
+                flash('File uploaded successfully.', 'success')
+                print(link)
+                print("Unique ID: ", unique_id)
+                return redirect(url_for('file_routes.upload_success', unique_id=unique_id))
     else:
         # If it's not a POST request, just render the template without context
         return render_template('upload.html',
+                               form=form,
                                user_routes=user_routes,
                                file_routes=file_routes,
                                main_routes=main_routes)
 
 
-# TODO: Get file_user working
 @file_routes.route('/upload_success/<unique_id>', methods=['GET'])
 @login_required
 def upload_success(unique_id):
@@ -91,8 +112,12 @@ def upload_success(unique_id):
         'download_link': link,
         'upload_user': file_user_details
     }
-    return render_template('upload_success.html', link=link, file_info=file_info,
-                           file_routes=file_routes, user_routes=user_routes, main_routes=main_routes)
+    return render_template('upload_success.html',
+                           link=link,
+                           file_info=file_info,
+                           file_routes=file_routes,
+                           user_routes=user_routes,
+                           main_routes=main_routes)
 
 
 @file_routes.route('/update_file/<unique_id>', methods=['GET', 'POST'])
@@ -134,7 +159,6 @@ def delete_file(unique_id):
                            main_routes=main_routes)
 
 
-# TODO: Get the upload user DB stuff working
 @file_routes.route('/download/<unique_id>', methods=['GET'])
 def download_file_page(unique_id):
     file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
