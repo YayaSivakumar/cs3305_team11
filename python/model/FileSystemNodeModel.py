@@ -172,12 +172,14 @@ class FileSystemNode:
             print(f"An error occurred: {e}")
             return None
 
-    def search(self, searh_term: str):
+    def search(self, search_term: str):
         """Search for nodes including search_term in cache"""
-        if searh_term in self.cache.keyword_index:
-            result_list = list(self.cache.keyword_index[searh_term])
+        if search_term in self.cache.keyword_index:
+            print("Keyword found")
+            result_list = list(self.cache.keyword_index[search_term])
             return result_list
         # no matches found
+        print("Keyword not found")
         return []
 
     def isinstance(self, obj_type: object):
@@ -186,9 +188,9 @@ class FileSystemNode:
 
 
 class File(FileSystemNode):
-    def __init__(self, path: str, cache: FileSystemCache):
+    def __init__(self, path: str, cache: FileSystemCache, name):
         super().__init__(path, cache)
-        self.name = os.path.basename(path)  # give file a name
+        self.name = name  # give file a name
 
     def __str__(self) -> str:
         return self.name
@@ -202,9 +204,9 @@ class File(FileSystemNode):
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
 
-    def __init__(self, path: str, cacheObj: FileSystemCache):
+    def __init__(self, path: str, cacheObj: FileSystemCache, name):
         super().__init__(path, cacheObj)
-        self.name = os.path.basename(path.rstrip(os.sep))
+        self.name = name
         self._populate()  # Populate the directory with its children
         cacheObj.save_to_file()
 
@@ -216,9 +218,10 @@ class Directory(FileSystemNode):
                     if entry.is_dir():
                         if '.' in entry.path:
                             continue
-                        child = Directory(entry.path, self.cache)
+                        child = Directory(entry.path, self.cache, name=entry.name)
                     else:
-                        child = File(entry.path, self.cache)
+                        child = File(entry.path, self.cache, name=entry.name)
+                        self.cache.update(child.path, child)
                     self.add_child(child)
             self.cache.update(self.path, self)
         except FileNotFoundError:
@@ -294,34 +297,4 @@ class ScanTask(QRunnable):
 
 
 if __name__ == '__main__':
-    '''
-    from dotenv import load_dotenv
-
-    cache = FileSystemCache()
-
-    load_dotenv()
-
-    env_path: str = os.getenv('ROOT_PATH')
-    if env_path:
-        print('Running on path as given in .env file')
-        root_directory = Directory(env_path, cache)
-        cache.save_to_file()
-    else:
-        print("DOCUMENTS_PATH environment variable is not set.")
-        root_path = '/add/a/path/here'  # Change to your target directory
-        root_directory = Directory(root_path, cache)
-    root_directory.print_tree()
-
-    print("Attempting to load cache from pkl")
-    cache = FileSystemCache()
-    print("Before load:")
-    print(cache)
-    cache.load_from_file()
-    print("After load:")
-    print(cache)
-
-    print("Testing find node by name")
-    search = root_directory.find_node_from_cache('/Users/jackmoloney/Downloads/Jordan B. Peterson - 12 Rules for '
-                                                 'Life_ An Antidote to Chaos-Random House Canada (2018).epub')
-    print(search, type(search))
-'''
+    pass
