@@ -73,24 +73,36 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         email = form.email.data
-        form.email.data = ''
         password = form.password.data
-        form.password.data = ''
 
         user = User.query.filter_by(email=email).first()
 
         if user and user.verify_password(password):
             login_user(user, remember=True)
-            flash("Login successful!", 'success')
-            return redirect(url_for(f'user_routes.profile'))
+            if 'PyQt' in request.headers.get('User-Agent'):
+                # For PyQt application, send a JSON response indicating login was successful
+                return jsonify({
+                    'success': True,
+                    'message': "Login successful!",
+                    'redirect': url_for('user_routes.profile', _external=True)  # Provide the URL for PyQt to navigate
+                })
+            else:
+                # For web browsers, redirect to the profile page
+                flash("Login successful!", 'success')
+                return redirect(url_for('user_routes.profile'))
         else:
             flash("Incorrect credentials - Try again", 'error')
 
-    return render_template('login.html',
-                           form=form,
-                           user_routes=user_routes,
-                           file_routes=file_routes,
-                           main_routes=main_routes)
+    if 'PyQt' in request.headers.get('User-Agent'):
+        # For PyQt application, optionally render a specific template or return JSON indicating to show the login page
+        return jsonify({
+            'success': False,
+            'message': "Show login page",
+            'redirect': url_for('user_routes.login_pyqt_template', _external=True)  # Assuming there's a route for PyQt login template
+        })
+    else:
+        # For web browsers, render the standard login template
+        return render_template('login.html', form=form, user_routes=user_routes, file_routes=file_routes, main_routes=main_routes)
 
 
 @user_routes.route('/logout')

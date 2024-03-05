@@ -174,20 +174,33 @@ def upload_success(unique_id):
     link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
     file_user_id = file_info.user_id
     file_user_details = User.query.get(file_user_id)
-    file_info = {
+    file_info_data = {
         'filename': file_info.filename,
         'message': file_info.message,
-        'expires_at': file_info.expires_at,
+        'expires_at': file_info.expires_at.strftime("%Y-%m-%d %H:%M:%S"),  # Format datetime for JSON serialization
         'download_link': link,
-        'upload_user': file_user_details
+        'upload_user': {
+            'username': file_user_details.username,  # Assuming 'username' attribute exists
+            # Add other relevant user details here
+        }
     }
-    return render_template('upload_success.html',
-                           link=link,
-                           file_info=file_info,
-                           file_routes=file_routes,
-                           user_routes=user_routes,
-                           main_routes=main_routes)
 
+    # Check if the request came from the PyQt application
+    if 'PyQt' in request.headers.get('User-Agent'):
+        # Return a JSON response for the PyQt application
+        return jsonify({
+            'success': True,
+            'message': 'File uploaded successfully.',
+            'file_info': file_info_data
+        })
+    else:
+        # Render the web UI template for other clients
+        return render_template('upload_success.html',
+                               link=link,
+                               file_info=file_info_data,
+                               file_routes=file_routes,
+                               user_routes=user_routes,
+                               main_routes=main_routes)
 
 @file_routes.route('/update_file/<unique_id>', methods=['GET', 'POST'])
 @login_required
@@ -278,3 +291,34 @@ def direct_download_file(unique_id):
                                path=unique_id,
                                as_attachment=True,
                                download_name=file_record.filename)
+
+
+@file_routes.route('/upload_file_endpoint', methods=['POST', 'GET'])
+def handle_upload():
+    # Handle GET request by simply rendering the template
+    if request.method == 'GET':
+        return render_template('filepond.html')
+
+    # Handle POST request for file upload
+    if request.method == 'POST':
+        # Using .get() method to avoid BadRequestKeyError if 'filepond' key is missing
+        file_obj = request.files.get('filepond')
+
+        if file_obj:
+            # Process the file
+            filename = secure_filename(file_obj.filename)
+            save_path = os.path.join(UPLOADS_FOLDER, filename)
+            file_obj.save(save_path)
+
+            # Optionally, return JSON response for success
+            if 'PyQt' in request.headers.get('User-Agent'):
+                return jsonify({'success': True, 'message': 'File uploaded successfully'}), 200
+
+            # For web clients, you might want to redirect or render a success template
+            return render_template('upload_success.html', filename=filename), 200
+        else:
+            # Handle the case where 'filepond' key does not exist or no file was attached
+            error_message = 'No file was uploaded.'
+            if 'PyQt' in request.headers.get('User-Agent'):
+                return jsonify({'success': False, 'message': error_message}), 400
+            return render_template('filepond.html', error=error_message), 400
