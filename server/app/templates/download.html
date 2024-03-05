@@ -3,24 +3,40 @@
 {% block title %}File Upload App - Download{% endblock %}
 
 {% block content %}
-    <div class="container">
-        <h1>Download File</h1>
-        <p><strong>Filename:</strong> {{ file.filename }}</p>
-        <p><strong>Message:</strong> {{ file.message }}</p>
-        <p><strong>Link Expires:</strong> {{ file.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
-
-        {% if file.is_password_protected %}
-        <p>This file is password protected. Please enter the password to download.</p>
-        <form action="{{ url_for('download_file', unique_id=file.unique_id) }}" method="post">
-            <input type="password" name="password" placeholder="Enter password" required>
-            <button type="submit">Submit Password</button>
-        </form>
-        {% else %}
-        <!-- Direct download link button -->
-        <form action="{{ file.download_link }}" method="get">
-            <button type="submit">Download Now</button>
-        </form>
-    {% endif %}
+    <div class="container mx-auto my-8 max-w-80">
+        <h1 class="text-3xl font-semibold py-2">Download File</h1>
+        <div class="card w-96 bg-accent shadow-xl">
+            <div class="card-body">
+                <div class="card-title">
+                    <h3>Fresh File from {{ file.upload_user.name }}! </h3>
+                </div>
+                <p class="text-base font-light"><span class="font-semibold text-lg">Filename:</span>
+                    {{ file.filename }}</p>
+                <p class="text-base font-light"><span class="font-semibold text-lg">Message:</span>
+                    {{ file.message }}</p>
+                <p class="text-base font-light"><span class="font-semibold text-lg">Sender:</span>
+                    {{ file.upload_user.email }}</p>
+                <p class="text-base font-light"><span class="font-semibold text-lg">Link Expires:</span>
+                    {{ file.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
+<!--                TODO: do we want this password protection functionality to work?      -->
+                {% if file.is_password_protected %}
+                    <p>This file is password protected. Please enter the password to download.</p>
+                    <form action="{{ url_for('download_file', unique_id=file.unique_id) }}" method="post">
+                        <input type="password" name="password" placeholder="Enter password" required>
+                        <button type="submit">Submit Password</button>
+                    </form>
+                    {% else %}
+                {% endif %}
+                <!-- Direct download link button -->
+                <div class="card-actions">
+                    <form class="btn btn-sm text-neutral" action="{{ url_for('file_routes.direct_download_file', unique_id=file.unique_id) }}" method="get">
+                        <button type="submit">Download Now</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
 {% endblock %}
+<!--        <p>Upload user: {{ file.upload_user.name }}</p>-->
+<!--        <p>Upload email: {{ file.upload_user.email }}</p>-->

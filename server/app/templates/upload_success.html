@@ -3,23 +3,34 @@
 {% block title %}Upload Success{% endblock %}
 
 {% block content %}
-    <div class="container">
-        <h1>Upload Successful</h1>
-        <div>
-            <p>Share this link with anyone to allow them to download your file:</p>
-            <input type="text" value="{{ link }}" id="fileURL" readonly>
-            <button onclick="copyURL()">Copy URL</button>
-        </div>
-
-        <div class="file-info">
-            <h2>{{ file_info.filename }}</h2>
-            <p><strong>Expiration date:</strong> {{ file_info.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
-            <p><strong>Message:</strong> {{ file_info.message }}</p>
-            <p><strong>Total downloads:</strong>{{ file_info.download_count }}</p>
+    <div class="container mx-auto my-8 max-w-80">
+        <h1 class="text-3xl font-semibold py-2">Upload Successful!</h1>
+        <div class="card w-96 bg-accent shadow-xl">
+            <div class="card-body">
+                <p class="text-base">Share this link with anyone to allow them to download your file:</p>
+                <label for="fileURL" class="font-semibold text-base">Download Link</label>
+                <input type="text" value="{{ link }}" id="fileURL" class="size-full rounded p-1 text-sm" readonly>
+                <div class="card-actions">
+                    <button onclick="copyURL()" class="btn btn-sm text-neutral">Copy URL</button>
+                </div>
+                <p class="text-base font-light"><span class="font-semibold text-lg">Filename:</span>
+                    {{ file_info.filename }}</p>
+                <p class="text-base font-light"><span class="font-semibold text-lg">Sender Email:</span>
+                    {{ file_info.upload_user.email }}</p>
+                <p class="text-base"><span class="font-semibold text-lg">Expiration date:</span>
+                    {{ file_info.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
+                <p class="text-base"><span class="font-semibold text-lg">Message:</span> {{ file_info.message }}</p>
+                {% if file_info.download_count %}
+                    <p class="text-base"><span class="font-semibold text-lg">Number of downloads:</span>
+                        {{ file_info.download_count }}</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 
  <script>
+
+<!--     TODO: Fix deprecated function -->
 function copyURL() {
     var copyText = document.getElementById("fileURL");
     // Focus before selecting
