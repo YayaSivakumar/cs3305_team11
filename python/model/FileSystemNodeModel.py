@@ -278,6 +278,12 @@ class Directory(FileSystemNode):
 
         return matching_files
 
+    def calculate_folder_size(self) -> list[FileSystemNode]:
+        for child in self.children:
+            child.get_size()
+        return self.children
+
+
 
 class ScanTask(QRunnable):
     def __init__(self, entry:os.DirEntry, cache, add_child_callback):
