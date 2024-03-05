@@ -29,5 +29,6 @@ def delete_empty_directories(dir_node: Directory):
             child.delete()
 
 
+
 if __name__ == "__main__":
     pass
