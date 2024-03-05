@@ -29,6 +29,7 @@ class SplashWindow(QWidget):
             "Downloads": os.path.expanduser('~')+'/Downloads',
             "Desktop": os.path.expanduser('~')+'/Desktop',
             "Documents": os.path.expanduser('~')+'/Documents',
+            "Home Folder": os.path.expanduser('~')
         }
         print(user_paths)
         for name, path in user_paths.items():
@@ -49,6 +50,7 @@ class SplashWindow(QWidget):
         # attempt to load from cache
         if not FSCache.load_from_file() or selected_path not in FSCache.body:
             print('no cache found, scanning')
+
             self.scanThread = ScanThread(selected_path, FSCache)
             self.scanThread.scanComplete.connect(self.handle_scan_complete)
             self.scanThread.start()

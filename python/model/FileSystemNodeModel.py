@@ -4,6 +4,8 @@ from datetime import datetime
 import shutil
 import hashlib
 
+from PyQt5.QtCore import QRunnable, QThreadPool
+
 
 class FileSystemNode:
     """Represents a file or directory in the file system."""
@@ -128,6 +130,7 @@ class FileSystemNode:
         # update cache
         self.cache.remove(self.revert_path)
         self.cache.update(new_path, self)
+
     def to_json(self):
         return {
             'path': self.path,
@@ -181,6 +184,7 @@ class FileSystemNode:
         """Check if the node is an instance of the given type."""
         return isinstance(self.__class__, obj_type)
 
+
 class File(FileSystemNode):
     def __init__(self, path: str, cache: FileSystemCache):
         super().__init__(path, cache)
@@ -207,18 +211,31 @@ class Directory(FileSystemNode):
     def _populate(self):
         """Populate the directory with its children."""
         try:
-            for item in os.listdir(self.path):
-                full_path = os.path.join(self.path, item)
-                if os.path.isdir(full_path):
-                    if '.' in item:
-                        # do not recurse through .info directories for lib files
-                        continue
-                    child = Directory(full_path, self.cache)
-                else:
-                    child = File(full_path, self.cache)
-                    self.cache.update(child.path, child)
-                self.add_child(child)
+            with os.scandir(self.path) as entries:
+                for entry in entries:
+                    if entry.is_dir():
+                        if '.' in entry.path:
+                            continue
+                        child = Directory(entry.path, self.cache)
+                    else:
+                        child = File(entry.path, self.cache)
+                    self.add_child(child)
             self.cache.update(self.path, self)
+        except FileNotFoundError:
+            print(f"Directory not found: {self.path}")
+
+    def _multithread_populate(self):
+        thread_pool = QThreadPool.globalInstance()
+
+        # define callback function to add children from threads
+        def add_child(child):
+            self.children.append(child)
+
+        try:
+            with os.scandir(self.path) as entries:
+                for entry in entries:
+                    task = ScanTask(entry, self.cache, add_child)
+                    thread_pool.start(task)
         except FileNotFoundError:
             print(f"Directory not found: {self.path}")
 
@@ -252,11 +269,28 @@ class Directory(FileSystemNode):
         for child in self.children:  # Iterate over the children
             if isinstance(child, File) and child.extension() == extension:
                 matching_files.append(child)
-                print(f"Found file: {child.name()}")  # Print the file path
+                print(f"Found file: {child.name}")  # Print the file path
             elif isinstance(child, Directory):
                 matching_files.extend(child.find_files_by_extension(extension))
 
         return matching_files
+
+
+class ScanTask(QRunnable):
+    def __init__(self, entry:os.DirEntry, cache, add_child_callback):
+        super().__init__()
+        self.entry = entry
+        self.cache = cache
+        self.add_child_callback = add_child_callback
+
+    def run(self):
+        if self.entry.is_dir():
+            child = Directory(self.entry.path, self.cache)
+        else:
+            child = File(self.entry.path, self.cache)
+
+        self.cache.update(child.path, child)
+        self.add_child_callback(child)
 
 
 if __name__ == '__main__':
