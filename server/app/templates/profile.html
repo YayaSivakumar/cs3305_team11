@@ -36,6 +36,13 @@
                             <td>
                                 <a href="{{ url_for('file_routes.direct_download_file', unique_id=file.unique_id) }}"
                                    class="btn btn-sm bordered">Download</a>
+                                <button
+                                   class="btn btn-sm bordered"
+                                   data-link="{{ url_for('file_routes.direct_download_file', unique_id=file.unique_id, _external=True) }}"
+                                   onclick="copyLinkToClipboard(this)"
+                                >
+                                    Copy <i class="fa-regular fa-copy"></i>
+                                </button>
                                 <a href="{{ url_for('file_routes.update_file', unique_id=file.unique_id) }}"
                                    class="btn btn-sm btn-secondary bordered">Update</a>
                                 <a href="{{ url_for('file_routes.delete_file', unique_id=file.unique_id) }}"
