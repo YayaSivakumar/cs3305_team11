@@ -71,6 +71,9 @@ class MainWindow(QMainWindow):
         # Add the stacked widget to the main layout
         self.main_layout.addWidget(self.stacked_widget, 8)  # Adjusting space for main content
 
+        # Now, set the FileSystemNodeModel instance to the visualise window
+        self.visualise_window.setFileSystemModel(self.fileSystemModel)
+
 
         # Add the stacked widget to the main layout
         self.file_sharing_window.uploadFinished.connect(self.showWebView)
