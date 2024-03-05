@@ -86,9 +86,16 @@ def upload():
             if len(files_filenames) > 1:
                 # ZIP FILES HERE
                 compressed_file = compress_dir(files, filename)
-                werkzeug_file = FileStorage()
+                # compress_dir returns the filepath to the compressed file
+                with open(compressed_file, 'rb') as file:
+                    werkzeug_file = FileStorage(
+                        stream=file,
+                        filename=filename,
+                        content_type='application/zip',
+                    )
+
             #     if compressed_file has
-            # else:
+            else:
                 uploaded_file.save(filepath)
 
             new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
