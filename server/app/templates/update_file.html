@@ -3,13 +3,12 @@
 {% block title %}File Upload App - Update File{% endblock %}
 
 {% block content %}
-<div class="container mx-auto my-8 max-w-96">
+<div class="container mx-auto max-w-96">
     <h1 class="text-3xl font-semibold mb-4">Update file:  <span class="font-normal">{{ file.filename }}</span></h1>
     <form action="/update_file/{{ file.unique_id }}" method="post" enctype="multipart/form-data">
         <div class="form-control mb-4">
             <label for="message" class="label label-text text-base font-medium">Edit Message:</label>
-            <textarea id="message" name="message" class="textarea textarea-bordered text-sm" rows="4">
-                {{ file.message }}
+            <textarea id="message" name="message" class="textarea textarea-bordered text-sm" rows="2">{{ file.message }}
             </textarea>
         </div>
         <div class="form-control mb-4">

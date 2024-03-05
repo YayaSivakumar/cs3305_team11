@@ -3,10 +3,9 @@
 {% block title %}File Upload App - Profile{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-semibold mb-4">{{ current_user.name }}'s Profile</h1>
+<h1 class="text-3xl font-semibold mb-4"><i class="px-3 fa-solid fa-user"></i>{{ current_user.name }}'s Profile</h1>
 
-<p><span class="font-semibold">Name:</span> {{ current_user.name }}</p>
-<p><span class="font-semibold">Email:</span> {{ current_user.email }}</p>
+<p class="text-lg font-light"><i class="px-2 fa-solid fa-envelope"></i><span class="font-semibold">Email:</span> {{ current_user.email }}</p>
 
 <h2 class="text-xl pt-4 font-bold">Uploaded Files</h2>
 {% if user_files|length != 0 %}
@@ -50,7 +49,7 @@
 {% else %}
     <p class="text-base font-light py-1">You have not uploaded any files yet.</p>
 {% endif %}
-<h3 class="font-medium text-lg py-2"> Upload a new file: </h3>
+<h3 class="font-semibold text-lg py-2"> Upload a new file: </h3>
 <div class="btn btn-md">
     <a href="{{ url_for('file_routes.upload') }}" class="text-sm py-1">Upload a file</a>
 </div>
