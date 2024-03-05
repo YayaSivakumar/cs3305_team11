@@ -205,7 +205,7 @@ class Directory(FileSystemNode):
     def __init__(self, path: str, cacheObj: FileSystemCache):
         super().__init__(path, cacheObj)
         self.name = os.path.basename(path.rstrip(os.sep))
-        self._multithread_populate()  # Populate the directory with its children
+        self._populate()  # Populate the directory with its children
         cacheObj.save_to_file()
 
     def _populate(self):
