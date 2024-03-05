@@ -14,6 +14,8 @@
                     {{ file.filename }}</p>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Message:</span>
                     {{ file.message }}</p>
+                <p class="text-base font-light"><span class="font-semibold text-lg">Message:</span>
+                        {{ file.message }}</p>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Sender:</span>
                     {{ file.upload_user.email }}</p>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Link Expires:</span>
@@ -29,7 +31,8 @@
                 {% endif %}
                 <!-- Direct download link button -->
                 <div class="card-actions">
-                    <form class="btn btn-sm text-neutral" action="{{ url_for('file_routes.direct_download_file', unique_id=file.unique_id) }}" method="get">
+                    <form class="btn btn-sm text-neutral" action="{{
+                            url_for('file_routes.direct_download_file', unique_id=file.unique_id) }}" method="get">
                         <button type="submit">Download Now</button>
                     </form>
                 </div>

@@ -30,15 +30,12 @@ class UploadForm(FlaskForm):
     """
     File upload form
     """
-    # TODO: Add an optional field to add a name
     message = TextAreaField("Enter message: ")
     file_name = StringField("Enter file name: ")
     expiration_hours = SelectField("Enter expiration hours: ",
-                                   choices=[('24 Hours', '24'), ('3 Days', '72'), ('7 Days', '168')],
-                                   default='24 Hours',
+                                   choices=[('24', '24 Hours'), ('72', '3 Days'), ('168', '7 Days')],
+                                   default=(),
                                    validators=[DataRequired()])
-    file = MultipleFileField("Choose file: ",
-                             validators=[DataRequired()])
     password = PasswordField("Enter password: ")
     submit = SubmitField("Submit")
 
@@ -62,6 +59,7 @@ def upload():
     """
     form = UploadForm()
     if request.method == 'POST':
+        uploaded_files = request.files.getlist('file')
         if form.validate_on_submit():
             message = form.message.data
             form.message.data = ''
@@ -74,21 +72,24 @@ def upload():
             #     Maybe optional toggle in upload form?
             files_filenames = []
             files = []
-            for uploaded_file in form.file.data:
-                if uploaded_file:
-                    print(f"Uploaded file: {uploaded_file}, Type: {type(uploaded_file)}")
-                    filename = secure_filename(uploaded_file.filename)
-                    files_filenames.append(filename)
-                    files.append(uploaded_file)
-            #         should we compress files pre upload aswell?
             unique_id = str(uuid.uuid4())
-            expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
-            if not filename:
-                filename = f"{current_user.name}_file_upload{unique_id[:6]}"
+            expires_at = datetime.utcnow() + timedelta(hours=int(expiration_hours))
             filepath = os.path.join(UPLOADS_FOLDER, unique_id)
-            if len(files_filenames) > 1:
+
+            if len(uploaded_files) > 1:
+                print("Why is this being hit????")
+            # for uploaded_file in uploaded_files:
+            #     if uploaded_file:
+            #         print(f"Uploaded file: {uploaded_file}, Type: {type(uploaded_file)}")
+            #         filename = secure_filename(uploaded_file.filename)
+            #         files_filenames.append(filename)
+            #         files.append(uploaded_file)
+            #         uploaded_file.save(filepath)
                 # ZIP FILES HERE
+                if not filename:
+                    filename = f"{current_user.name}_file_upload{unique_id[:6]}"
                 compressed_file = compress_dir(files, filename)
+
                 # compress_dir returns the filepath to the compressed file
                 with open(compressed_file, 'rb') as file:
                     werkzeug_file = FileStorage(
@@ -97,16 +98,22 @@ def upload():
                         content_type='application/zip',
                     )
                     werkzeug_file.save(filepath)
-            #     if compressed_file has
-            # else:
-            #     uploaded_file.save(filepath)
-
+            else:
+                print(f"Uploaded files: {uploaded_files}, Type: {type(uploaded_files)}")
+                file = uploaded_files[0]
+                if file:
+                    if filename:
+                        filename = secure_filename(filename)
+                    else:
+                        filename = secure_filename(file.filename)
+                    file.save(filepath)
             new_file = File(filename=filename, unique_id=unique_id, message=message, expires_at=expires_at)
-            new_file.password = password
+            if password:
+                new_file.password = password
+
             current_user.files.append(new_file)
             db.session.add(new_file)
             db.session.commit()
-            link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
             flash('File uploaded successfully.', 'success')
             return redirect(url_for('file_routes.upload_success', unique_id=unique_id))
     else:
@@ -238,6 +245,7 @@ def download_file_page(unique_id):
         'filename': file_record.filename,
         'message': file_record.message,
         'expires_at': file_record.expires_at,
+        'unique_id': unique_id,
         'download_link': url_for('file_routes.direct_download_file',
                                  unique_id=unique_id,
                                  _external=True),
@@ -254,14 +262,13 @@ def download_file_page(unique_id):
 @file_routes.route('/download/file/<unique_id>', methods=['GET'])
 def direct_download_file(unique_id):
     # Fetch the file record using the unique ID from the database
-    print("Making file record")
-    print("Unique ID: ", unique_id)
+    # print("Making file record")
+    # print("Unique ID: ", unique_id)
     file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
-    print("File record made")
+    # print("File record made")
     # Check if the file has expired
     if datetime.utcnow() > file_record.expires_at:
         abort(410)  # 410 Gone indicates that the resource is no longer available and will not be available again.
-
     # Build the filepath using the UPLOAD_FOLDER setting and the unique file identifier
     filepath = os.path.join(UPLOADS_FOLDER, unique_id)
 
