@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, flash, jsonify
 
 from . import user_routes  # Import Blueprint instance from the main application package
 from . import file_routes  # Import Blueprint instance from the main application package
@@ -22,9 +22,9 @@ def about():
                            main_routes=main_routes)
 
 
-@main_routes.route('/install')
-def install_package():
-    '''
-    install python package
-    '''
-    pass
+@main_routes.route('/trigger_flash', methods=['POST'])
+def trigger_flash():
+    data = request.get_json()
+    print(f'DATA: {data}')
+    flash(data['message'], data['category'])
+    return jsonify({'status': 'success'})

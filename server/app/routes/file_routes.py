@@ -280,7 +280,7 @@ def direct_download_file(unique_id):
     # Increment the download_count by 1
     file_record.download_count += 1
     db.session.commit()
-
+    flash('File downloaded successfully', 'success')
     # Serve the file for download, using the original filename for the download
     return send_from_directory(directory=UPLOADS_FOLDER,
                                path=unique_id,
