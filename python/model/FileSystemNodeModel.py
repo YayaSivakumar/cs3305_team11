@@ -10,13 +10,13 @@ from PyQt5.QtCore import QRunnable, QThreadPool
 class FileSystemNode:
     """Represents a file or directory in the file system."""
 
-    def __init__(self, path: str, cache: FileSystemCache):
+    def __init__(self, path: str, cache: FileSystemCache, parent):
         self.path = path
         self.name = None
         self.revert_path = path
         self.cache_timestamp = None
         self.cache = cache
-        self.parent = None
+        self.parent = parent if parent else None
         self.children = []
         self.size = None
 
@@ -188,8 +188,8 @@ class FileSystemNode:
 
 
 class File(FileSystemNode):
-    def __init__(self, path: str, cache: FileSystemCache, name):
-        super().__init__(path, cache)
+    def __init__(self, path: str, cache: FileSystemCache, name, parent):
+        super().__init__(path, cache, parent)
         self.name = name  # give file a name
 
     def __str__(self) -> str:
@@ -204,8 +204,8 @@ class File(FileSystemNode):
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
 
-    def __init__(self, path: str, cacheObj: FileSystemCache, name):
-        super().__init__(path, cacheObj)
+    def __init__(self, path: str, cacheObj: FileSystemCache, name, parent):
+        super().__init__(path, cacheObj, parent=parent)
         self.name = name
         self._populate()  # Populate the directory with its children
         cacheObj.save_to_file()
@@ -218,9 +218,9 @@ class Directory(FileSystemNode):
                     if entry.is_dir():
                         if '.' in entry.path:
                             continue
-                        child = Directory(entry.path, self.cache, name=entry.name)
+                        child = Directory(entry.path, self.cache, name=entry.name, parent=self)
                     else:
-                        child = File(entry.path, self.cache, name=entry.name)
+                        child = File(entry.path, self.cache, name=entry.name, parent=self)
                         self.cache.update(child.path, child)
                     self.add_child(child)
             self.cache.update(self.path, self)

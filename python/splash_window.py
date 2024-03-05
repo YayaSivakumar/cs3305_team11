@@ -75,7 +75,7 @@ class ScanThread(QThread):
 
     def run(self):
         if os.path.isdir(self.path):
-            fileSystemModel = Directory(self.path, self.cache, name=os.path.dirname(self.path))
+            fileSystemModel = Directory(self.path, self.cache, name=os.path.dirname(self.path), parent=None)
             self.scanComplete.emit(fileSystemModel)  # Emit the model after scanning
         else:
             self.scanComplete.emit(None)  # Emit None or handle error appropriately
