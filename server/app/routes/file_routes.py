@@ -77,14 +77,12 @@ def upload():
             filepath = os.path.join(UPLOADS_FOLDER, unique_id)
             if uploaded_files:
                 if len(uploaded_files) > 1:
-                    print("Why is this being hit????")
-                # for uploaded_file in uploaded_files:
-                #     if uploaded_file:
-                #         print(f"Uploaded file: {uploaded_file}, Type: {type(uploaded_file)}")
-                #         filename = secure_filename(uploaded_file.filename)
-                #         files_filenames.append(filename)
-                #         files.append(uploaded_file)
-                #         uploaded_file.save(filepath)
+                    for uploaded_file in uploaded_files:
+                        if uploaded_file:
+                            print(f"Uploaded file: {uploaded_file}, Type: {type(uploaded_file)}")
+                            files_filenames.append(filename)
+                            files.append(uploaded_file)
+                            # uploaded_file.save(filepath)
                     # ZIP FILES HERE
                     if not filename:
                         filename = f"{current_user.name}_file_upload{unique_id[:6]}"
@@ -98,6 +96,7 @@ def upload():
                             content_type='application/zip',
                         )
                         werkzeug_file.save(filepath)
+
                 else:
                     print(f"Uploaded files: {uploaded_files}, Type: {type(uploaded_files)}")
                     file = uploaded_files[0]

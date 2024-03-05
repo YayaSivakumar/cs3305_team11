@@ -14,15 +14,15 @@
         {{ form.hidden_tag() }}
         <div class="form-control mb-4">
             <label for="file" class="label label-text">Select File:</label>
-{#            <input type="file" id="file" name="file" class="input input-bordered">#}
-            <input type="file"
-                   id="file"
-                    class="filepond"
-                    name="filepond"
-                    multiple
-                    data-allow-reorder="true"
-                    data-max-file-size="3MB"
-                    data-max-files="3">
+            <input type="file" id="file" name="file" class="input input-bordered" multiple>
+{#            <input type="file"#}
+{#                   id="file"#}
+{#                    class="filepond"#}
+{#                    name="filepond"#}
+{#                    multiple#}
+{#                    data-allow-reorder="true"#}
+{#                    data-max-file-size="3MB"#}
+{#                    data-max-files="3">#}
         </div>
         <div class="form-control mb-4">
           {{ form.message.label(class="label label-text text-base font-medium") }}
