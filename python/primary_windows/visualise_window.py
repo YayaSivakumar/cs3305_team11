@@ -95,23 +95,8 @@ class VisualiseWindow(QWidget):
         folder_path = self.fileSystemModel.path
 
         # Now, use 'folder_path' to calculate the directory structure and visualize it
-        labels, parents, values = self.calculate_directory_structure(folder_path)
+        labels, parents, values = self.calculate_directory_structure()
         self.visualize_sizes(labels, parents, values)
-
-    def calculate_folder_sizes(self, folder_path):
-        file_sizes = defaultdict(int)
-        for root, dirs, files in os.walk(folder_path):
-            for file in files:
-                try:
-                    filepath = os.path.join(root, file)
-                    file_size = os.path.getsize(filepath)
-                    _, file_extension = os.path.splitext(file)
-                    if file_extension == '':
-                        file_extension = 'No Extension'
-                    file_sizes[file_extension] += file_size
-                except FileNotFoundError:
-                    continue
-        return file_sizes
 
     def visualize_sizes(self, labels, parents, values):
         if not labels:
@@ -126,8 +111,10 @@ class VisualiseWindow(QWidget):
         ))
         fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
 
-        self.plotly_widget.setFigure(fig) # Update the figure in the PlotlyWidget
-        self.plotly_widget.show()  # Make sure the widget is shown
+        # Debugging: Print to ensure we're passing data
+        print(f"Labels: {labels}, Parents: {parents}, Values: {values}")
+
+        self.plotly_widget.setFigure(fig)  # Update the figure in the PlotlyWidget
 
     # Updated method to accept folder_path
     def calculate_directory_structure(self):
@@ -142,19 +129,19 @@ class VisualiseWindow(QWidget):
         nodes = self.fileSystemModel.calculate_folder_size()
         other_size = 0
         for node in nodes:
-            if type(node) != python.model.FileSystemNodeModel.Directory:
-                other_size += node.size
-            else:
-                labels.append(node.name)
-                parents.append(node.parent.name if node.parent else 'Root')
-                values.append(node.size)
+            labels.append(node.name)
+            parents.append(node.parent.path if node.parent else 'Root')
+            values.append(node.size)
         labels.append('Other')
         values.append(other_size)
         parents.append('Root')
         # Recalculate the root size based on children
         root_size = sum(values[1:])
         values[0] = root_size
-
+        print("calculate_directory_structure complete")
+        print(f"LABELS: {labels}")
+        print(f"PARENTS: {parents}")
+        print(f"VALUES: {values}")
         return labels, parents, values
 
     def visualise_folder(self):

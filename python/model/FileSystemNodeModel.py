@@ -56,10 +56,6 @@ class FileSystemNode:
             except FileNotFoundError:
                 self.size = 0
         return self.size
-        # try:
-        #     return os.path.getsize(self.path)
-        # except FileNotFoundError:
-        #     return 0
 
     def creation_date(self):
         """Return the creation date of the file."""
@@ -86,23 +82,6 @@ class FileSystemNode:
     def is_invisible(self):
         """Check if the file is hidden."""
         return self.name.startswith('.')
-
-    # def move(self, new_path: str):
-    #     """Move the node to a new location."""
-    #     try:
-    #         shutil.move(self.path, new_path)
-    #         # update paths
-    #         self.revert_path = self.path
-    #         self.path = new_path
-    #         # update data structure
-    #         self.parent.remove_child(self)
-    #         self.parent = self.cache[os.path.dirname(new_path)]
-    #         self.parent.add_child(self)
-    #         # update cache
-    #         self.cache.remove(self.revert_path)
-    #         self.cache.update(new_path, self)
-    #     except Exception as e:
-    #         print(f"Error moving Obj: {e}")
 
     def move(self, dst: str):
         try:
@@ -186,6 +165,9 @@ class FileSystemNode:
         """Check if the node is an instance of the given type."""
         return isinstance(self.__class__, obj_type)
 
+    def __str__(self):
+        return self.name
+
 
 class File(FileSystemNode):
     def __init__(self, path: str, cache: FileSystemCache, name, parent, size=None):
@@ -204,8 +186,8 @@ class File(FileSystemNode):
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
 
-    def __init__(self, path: str, cacheObj: FileSystemCache, name, parent, size):
-        super().__init__(path, cacheObj, parent, size)
+    def __init__(self, path: str, cacheObj: FileSystemCache, name, parent):
+        super().__init__(path, cacheObj, parent, size=None)
         self.name = name
         self._populate()  # Populate the directory with its children
         cacheObj.save_to_file()
@@ -213,19 +195,23 @@ class Directory(FileSystemNode):
     def _populate(self):
         """Populate the directory with its children and calculate directory size."""
         total_size = 0
+        print(f"Populating directory {self.path}\nParent: {self.parent}")
         try:
             with os.scandir(self.path) as entries:
                 for entry in entries:
+                    print(f"Found entry: {entry.path}")
                     if entry.is_dir():
                         # Skip hidden directories or any specific directories you don't want to include
                         if entry.name.startswith('.'):
                             continue
                         child = Directory(entry.path, self.cache, name=entry.name, parent=self)
+                        print(f"Created Directory: {child.path} with parent: {child.parent.path}")
                     else:
                         # Calculate file size and update total size for the directory
                         file_size = entry.stat().st_size
                         total_size += file_size
                         child = File(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
+                        print(f"Created File: {child.path} with parent: {child.parent.path}")
                         self.cache.update(child.path, child)
                     self.add_child(child)
 
