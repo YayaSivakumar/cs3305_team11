@@ -11,8 +11,8 @@
         {{ form.hidden_tag() }}
 <!--todo: finish migrating to flask forms -->
         <div class="form-control mb-4">
-          {{ form.file.label(class="label label-text text-base font-medium") }}
-          {{ form.file(class="input input-bordered py-2.5 px-3") }}
+            <label for="file" class="label label-text">Select File:</label>
+            <input type="file" id="file" name="file" class="input input-bordered">
         </div>
         <div class="form-control mb-4">
           {{ form.message.label(class="label label-text text-base font-medium") }}
