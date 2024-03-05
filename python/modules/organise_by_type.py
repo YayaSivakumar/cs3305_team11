@@ -29,7 +29,7 @@ def organise_by_type_func(dir_node: Directory) -> None:
             if not found:
                 # create directory
                 os.makedirs(dir_node.path + '/' + filetype)
-                new_dir = Directory(dir_node.path + '/' + filetype, dir_node.cache)
+                new_dir = Directory(dir_node.path + '/' + filetype, dir_node.cache, filetype)
                 # update attributes
                 dir_node.add_child(new_dir)
 

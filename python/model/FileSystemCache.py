@@ -111,6 +111,9 @@ class FileSystemCache:
 
         return node_keywords
 
+    def values(self):
+        return self.body.values()
+
     def __str__(self):
         ret = ""
         ret += str(self.body) + '\n\n\n'
