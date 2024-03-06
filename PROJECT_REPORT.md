@@ -16,7 +16,12 @@ The objectives of the project are as follows:
   
 ## Architecture  
   
-The architecture of K.L.A.A.S is modular, consisting of three primary components: the Desktop Client, the Flask Web Server(including the Expiry Service), and the WebUI client. The modular architecture of K.L.A.A.S not only ensures a separation of concerns for better manageability and scalability but also allows for the continuous development and enhancement of individual components without disrupting the entire system. This structure supports the evolution of K.L.A.A.S, enabling the incorporation of new features and technologies to meet the changing needs of users
+The architecture of K.L.A.A.S is modular, consisting of three primary components: the Desktop Client, the Flask Web Server(including the Expiry Service), and the WebUI client. The modular architecture of K.L.A.A.S not only ensures a separation of concerns for better manageability and scalability but also allows for the continuous development and enhancement of individual components without disrupting the entire system. This structure supports the evolution of K.L.A.A.S, enabling the incorporation of new features and technologies to meet the changing needs of users.
+
+### Project structure:
+![Project structure](REPORT RESOURCES/Structure.png)
+
+
 ## Desktop Client  
   
 The Desktop Client serves as the user's primary interface with K.L.A.A.S, designed for direct interaction with the file system on their computer. Built using PyQt5, it ensures a responsive and visually appealing graphical user interface that operates smoothly across different operating systems. This client enables users to perform a myriad of tasks such as searching for files, organising them into folders, optimising storage through compression and deduplication, and preparing files for sharing. This design emphasises ease of use, aiming to make complex file management tasks accessible to users with varying levels of technical proficiency. It is composed of several key elements:  
