@@ -20,15 +20,15 @@ from PIL.ExifTags import TAGS
 class FileSystemNode:
     """Represents a file or directory in the file system."""
 
-    def __init__(self, path: str, cache: FileSystemCache):
+    def __init__(self, path: str, cache: FileSystemCache, parent, size = None):
         self.path = path
         self.name = None
         self.revert_path = path
         self.cache_timestamp = None
         self.cache = cache
-        self.parent = None
+        self.parent = parent if parent else None
         self.children = []
-        self.size = os.path.getsize(self.path)
+        self.size = size
 
     def find_node(self, name: str):
         """Recursively find a node by name."""
@@ -66,10 +66,6 @@ class FileSystemNode:
             except FileNotFoundError:
                 self.size = 0
         return self.size
-        # try:
-        #     return os.path.getsize(self.path)
-        # except FileNotFoundError:
-        #     return 0
 
     def creation_date(self):
         """Return the creation date of the file."""
@@ -96,23 +92,6 @@ class FileSystemNode:
     def is_invisible(self):
         """Check if the file is hidden."""
         return self.name.startswith('.')
-
-    # def move(self, new_path: str):
-    #     """Move the node to a new location."""
-    #     try:
-    #         shutil.move(self.path, new_path)
-    #         # update paths
-    #         self.revert_path = self.path
-    #         self.path = new_path
-    #         # update data structure
-    #         self.parent.remove_child(self)
-    #         self.parent = self.cache[os.path.dirname(new_path)]
-    #         self.parent.add_child(self)
-    #         # update cache
-    #         self.cache.remove(self.revert_path)
-    #         self.cache.update(new_path, self)
-    #     except Exception as e:
-    #         print(f"Error moving Obj: {e}")
 
     def move(self, dst: str):
         try:
@@ -196,10 +175,13 @@ class FileSystemNode:
         """Check if the node is an instance of the given type."""
         return isinstance(self.__class__, obj_type)
 
+    def __str__(self):
+        return self.name
+
 
 class File(FileSystemNode):
-    def __init__(self, path: str, cache: FileSystemCache, name):
-        super().__init__(path, cache)
+    def __init__(self, path: str, cache: FileSystemCache, name, parent, size=None):
+        super().__init__(path, cache, parent, size)
         self.name = name  # give file a name
 
     def __str__(self) -> str:
@@ -214,31 +196,44 @@ class File(FileSystemNode):
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
 
-    def __init__(self, path: str, cacheObj: FileSystemCache, name):
-        super().__init__(path, cacheObj)
+    def __init__(self, path: str, cacheObj: FileSystemCache, name, parent):
+        super().__init__(path, cacheObj, parent, size=None)
         self.name = name
         self._populate()  # Populate the directory with its children
         cacheObj.save_to_file()
 
     def _populate(self):
-        """Populate the directory with its children."""
+        """Populate the directory with its children and calculate directory size."""
+        total_size = 0
+        print(f"Populating directory {self.path}\nParent: {self.parent}")
         try:
             with os.scandir(self.path) as entries:
                 for entry in entries:
+                    print(f"Found entry: {entry.path}")
                     if entry.is_dir():
-                        if '.' in entry.path:
+                        # Skip hidden directories or any specific directories you don't want to include
+                        if entry.name.startswith('.'):
                             continue
-                        child = Directory(entry.path, self.cache, name=entry.name)
+                        child = Directory(entry.path, self.cache, name=entry.name, parent=self)
+                        print(f"Created Directory: {child.path} with parent: {child.parent.path}")
                     else:
+                        # Calculate file size and update total size for the directory
+                        file_size = entry.stat().st_size
+                        total_size += file_size
+                        print(f"Created File: {child.path} with parent: {child.parent.path}")
                         if entry.path.endswith(".wav") or entry.path.endswith(".aac") or entry.path.endswith(".mp3"):
-                            child = Music(entry.path, self.cache, name=entry.name)
+                            child = Music(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
                         if entry.path.endswith(".jpeg") or entry.path.endswith(".jpg") or entry.path.endswith(".HEIC"):
-                            child = Image(entry.path, self.cache, name=entry.name)
+                            child = Image(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
                         else:
-                            child = File(entry.path, self.cache, name=entry.name)
+                            child = File(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
                         self.cache.update(child.path, child)
                     self.add_child(child)
+
+            # After iterating through all entries, set the directory's size
+            self.size = total_size
             self.cache.update(self.path, self)
+
         except FileNotFoundError:
             print(f"Directory not found: {self.path}")
 
@@ -293,6 +288,12 @@ class Directory(FileSystemNode):
 
         return matching_files
 
+    def calculate_folder_size(self) -> list[FileSystemNode]:
+        for child in self.children:
+            child.get_size()
+        return self.children
+
+
 
 class ScanTask(QRunnable):
     def __init__(self, entry:os.DirEntry, cache, add_child_callback):
@@ -313,8 +314,8 @@ class ScanTask(QRunnable):
 
 class Image(File):
 
-    def __init__(self, path: str, cache, name):
-        super().__init__(path, cache, name)
+    def __init__(self, path: str, cache, name, parent, size=None):
+        super().__init__(path, cache, name, parent, size)
         self._width = None
         self._height = None
         self._coords = None
@@ -500,8 +501,8 @@ class Music(File):
     year: str: year (default: None)
     """
 
-    def __init__(self, path: str, cache, name):
-        super().__init__(path, cache, name)  # Call the constructor of the parent class
+    def __init__(self, path: str, cache, name, parent, size=None):
+        super().__init__(path, cache, name, parent, size)  # Call the constructor of the parent class
         self._artist = None  # Initialize artist attribute
         self._track_name = None  # Initialize track name attribute
         self._album = None # Initialize album attribute
