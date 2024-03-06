@@ -413,7 +413,7 @@ class Image(File):
         latitude, longitude = self.coords
 
         # Load the countries data
-        countries = pd.read_csv('../../country-coord.csv')
+        countries = pd.read_csv('../../resources/country-coord.csv')
 
         # Apply the Haversine formula to each country's coordinates
         countries['Distance'] = countries.apply(
