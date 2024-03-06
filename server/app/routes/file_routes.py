@@ -78,13 +78,13 @@ def upload():
             if uploaded_files:
                 if len(uploaded_files) > 1:
                     print("Why is this being hit????")
-                # for uploaded_file in uploaded_files:
-                #     if uploaded_file:
-                #         print(f"Uploaded file: {uploaded_file}, Type: {type(uploaded_file)}")
-                #         filename = secure_filename(uploaded_file.filename)
-                #         files_filenames.append(filename)
-                #         files.append(uploaded_file)
-                #         uploaded_file.save(filepath)
+                for uploaded_file in uploaded_files:
+                    if uploaded_file:
+                        print(f"Uploaded file: {uploaded_file}, Type: {type(uploaded_file)}")
+                        filename = secure_filename(uploaded_file.filename)
+                        files_filenames.append(filename)
+                        files.append(uploaded_file)
+                        uploaded_file.save(filepath)
                     # ZIP FILES HERE
                     if not filename:
                         filename = f"{current_user.name}_file_upload{unique_id[:6]}"
