@@ -114,6 +114,9 @@ class FileSystemCache:
     def values(self):
         return self.body.values()
 
+    def keys(self):
+        return self.body.keys()
+
     def __str__(self):
         ret = ""
         ret += str(self.body) + '\n\n\n'
