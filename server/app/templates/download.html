@@ -8,22 +8,20 @@
         <div class="card w-96 bg-accent shadow-xl">
             <div class="card-body">
                 <div class="card-title">
-                    <h3>Fresh File from {{ file.upload_user.name }}! </h3>
+                    <h3>Fresh File from {{ upload.upload_user.name }}! </h3>
                 </div>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Filename:</span>
-                    {{ file.filename }}</p>
+                    {{ upload.filename }}</p>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Message:</span>
-                    {{ file.message }}</p>
-                <p class="text-base font-light"><span class="font-semibold text-lg">Message:</span>
-                        {{ file.message }}</p>
+                    {{ upload.message }}</p>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Sender:</span>
-                    {{ file.upload_user.email }}</p>
+                    {{ upload.upload_user.email }}</p>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Link Expires:</span>
-                    {{ file.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
+                    {{ upload.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
 <!--                TODO: do we want this password protection functionality to work?      -->
-                {% if file.is_password_protected %}
+                {% if upload.is_password_protected %}
                     <p>This file is password protected. Please enter the password to download.</p>
-                    <form action="{{ url_for('download_file', unique_id=file.unique_id) }}" method="post">
+                    <form action="{{ url_for('download_file', unique_id=upload.unique_id) }}" method="post">
                         <input type="password" name="password" placeholder="Enter password" required>
                         <button type="submit">Submit Password</button>
                     </form>
@@ -32,7 +30,7 @@
                 <!-- Direct download link button -->
                 <div class="card-actions">
                     <form class="btn btn-sm text-neutral" action="{{
-                            url_for('file_routes.direct_download_file', unique_id=file.unique_id) }}" method="get">
+                            url_for('file_routes.direct_download_file', unique_id=upload.unique_id) }}" method="get">
                         <button type="submit">Download Now</button>
                     </form>
                 </div>

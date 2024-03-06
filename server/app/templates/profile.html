@@ -7,7 +7,6 @@
 
 <p><span class="font-semibold">Name:</span> {{ current_user.name }}</p>
 <p><span class="font-semibold">Email:</span> {{ current_user.email }}</p>
-<p>{{ user_uploads[0].files[0].filename }}</p>
 
 <h2 class="text-xl pt-4 font-bold">Uploaded Files</h2>
 {% if user_uploads|length != 0 %}

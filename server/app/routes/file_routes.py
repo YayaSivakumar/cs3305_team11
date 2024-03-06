@@ -22,6 +22,8 @@ from ..models.user import User
 from . import user_routes  # Import Blueprint instance from the main application package
 from . import main_routes  # Import Blueprint instance from the main application package
 
+import zipfile
+
 file_routes = Blueprint('file_routes', __name__)
 
 
@@ -44,6 +46,7 @@ class UpdateForm(FlaskForm):
     """
     File update form
     """
+    upload_name = StringField("Enter upload name: ")
     message = StringField("Enter message: ")
     expiration_hours = StringField("Enter expiration hours: ",
                                    validators=[DataRequired()])
@@ -67,8 +70,13 @@ def upload():
             upload_name = form.upload_name.data
             form.upload_name.data = ''
             upload_unique_id = str(uuid.uuid4())
+            expires_at = datetime.utcnow() + timedelta(hours=int(expiration_hours))
             # Create a new Upload instance
-            upload_obj = Upload(user_id=current_user.id, unique_id=upload_unique_id, upload_name=upload_name, message=message)
+            upload_obj = Upload(user_id=current_user.id,
+                                unique_id=upload_unique_id,
+                                upload_name=upload_name,
+                                expires_at=expires_at,
+                                message=message)
             print('Upload object created')
             db.session.add(upload_obj)
             db.session.commit()
@@ -285,52 +293,74 @@ def delete_file(unique_id):
 # TODO: update to fit upload model
 @file_routes.route('/download/<unique_id>', methods=['GET'])
 def download_file_page(unique_id):
-    file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
-    file_user_id = file_record.user_id
-    file_user_details = User.query.get(file_user_id)
+    upload_record = Upload.query.filter_by(unique_id=unique_id).first_or_404()
+    upload_user_id = upload_record.user_id
+    upload_user_details = User.query.get(upload_user_id)
 
-    file_details = {
-        'filename': file_record.filename,
-        'message': file_record.message,
-        'expires_at': file_record.expires_at,
+    upload_details = {
+        'filename': upload_record.upload_name,
+        'message': upload_record.message,
+        'expires_at': upload_record.expires_at,
         'unique_id': unique_id,
         'download_link': url_for('file_routes.direct_download_file',
                                  unique_id=unique_id,
                                  _external=True),
-        'upload_user': file_user_details
+        'upload_user': upload_user_details
     }
 
     return render_template('download.html',
-                           file=file_details,
+                           upload=upload_details,
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
 
 
-# TODO: update to fit upload model
 @file_routes.route('/download/file/<unique_id>', methods=['GET'])
 def direct_download_file(unique_id):
-    # Fetch the file record using the unique ID from the database
-    # print("Making file record")
-    # print("Unique ID: ", unique_id)
-    file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
-    # print("File record made")
-    # Check if the file has expired
-    if datetime.utcnow() > file_record.expires_at:
-        abort(410)  # 410 Gone indicates that the resource is no longer available and will not be available again.
-    # Build the filepath using the UPLOAD_FOLDER setting and the unique file identifier
-    filepath = os.path.join(UPLOADS_FOLDER, unique_id)
+    """
+    unique_id is the upload's unique ID
 
-    # Check if the file exists in the filesystem
-    if not os.path.isfile(filepath):
-        abort(404)  # 404 Not Found if the file does not exist on the server
+    """
+    upload_record = Upload.query.filter_by(unique_id=unique_id).first_or_404()
+    print(f'Upload record: {upload_record}')
+    if datetime.utcnow() > upload_record.expires_at:
+        abort(410)
+    if upload_record.upload_name:
+        upload_name = secure_filename(upload_record.upload_name)
 
-    # Increment the download_count by 1
-    file_record.download_count += 1
-    db.session.commit()
+    else:
+        upload_name = f"{current_user.name}_file_upload_{unique_id[:6]}"
 
-    # Serve the file for download, using the original filename for the download
-    return send_from_directory(directory=UPLOADS_FOLDER,
-                               path=unique_id,
-                               as_attachment=True,
-                               download_name=file_record.filename)
+    if len(upload_record.files) > 1:
+        # Create a zip archive containing all files in the upload
+        zip_filepath = os.path.join(UPLOADS_FOLDER, f"{unique_id}.zip")
+        with zipfile.ZipFile(zip_filepath, 'w') as zipf:
+            for file in upload_record.files:
+                file_path = os.path.join(UPLOADS_FOLDER, file.unique_id)
+                zipf.write(file_path, arcname=file.filename)
+
+        # Increment the download_count of the upload by 1
+        upload_record.download_count += 1
+        db.session.commit()
+
+        # Serve the zip file for download
+        return send_from_directory(directory=UPLOADS_FOLDER,
+                                   path=f"{unique_id}.zip",
+                                   as_attachment=True,
+                                   download_name=f"{upload_name}.zip")
+    else:
+        # Serve the single file for download
+        file_record = upload_record.files[0]
+        filepath = os.path.join(UPLOADS_FOLDER, file_record.unique_id)
+        if not os.path.isfile(filepath):
+            abort(404)
+
+        # Increment the download_count of the upload by 1
+        upload_record.download_count += 1
+        db.session.commit()
+
+        return send_from_directory(directory=UPLOADS_FOLDER,
+                                   path=file_record.unique_id,
+                                   as_attachment=True,
+                                   download_name=file_record.filename)
+
