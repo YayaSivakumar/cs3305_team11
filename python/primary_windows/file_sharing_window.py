@@ -146,6 +146,7 @@ class FileUploader(QWidget):
         self.copyButton = QPushButton('Copy Link for sharing')
         self.copyButton.clicked.connect(self.copyLinkToClipboard)
         self.layout.addWidget(self.copyButton)
+        self.copyButton.hide()
         self.copyButton.setEnabled(False)  # Initially disable the Copy to Clipboard button
 
         # Finally, set the layout for the widget
@@ -246,6 +247,8 @@ class FileUploader(QWidget):
         self.selectedFileLabel.setText(f'File uploaded successfully. <a href="{self.shareable_link}">Click here</a> to access the file.')
         self.selectedFileLabel.setOpenExternalLinks(True)
         self.copyButton.setEnabled(True)  # Enable the Copy to Clipboard button after link is available
+        # Show the copy button
+        self.copyButton.show()
         # Handle upload finished, extract URL, and emit signal
         unique_id = self.shareable_link.split('/')[-1]
         print(f"unique_id: {unique_id}")
