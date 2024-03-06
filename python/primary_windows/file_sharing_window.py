@@ -242,19 +242,24 @@ class FileUploader(QWidget):
     def onUploadFinished(self, response_data):
         '''Handle the upload finished and extract the URL. Also, emit the uploadFinished signal.'''
         # Handle the upload finished and extract the URL
-        self.shareable_link = response_data['link']
-        print(f"shareable_link: {self.shareable_link}")
-        self.selectedFileLabel.setText(f'File uploaded successfully. <a href="{self.shareable_link}">Click here</a> to access the file.')
-        self.selectedFileLabel.setOpenExternalLinks(True)
-        self.copyButton.setEnabled(True)  # Enable the Copy to Clipboard button after link is available
-        # Show the copy button
-        self.copyButton.show()
-        # Handle upload finished, extract URL, and emit signal
-        unique_id = self.shareable_link.split('/')[-1]
-        print(f"unique_id: {unique_id}")
-        success_url = f"http://127.0.0.1:5000/upload_success/{unique_id}"
-        self.uploadFinished.emit(success_url)
-        self.progressBar.setValue(0)  # Reset or hide progress bar
+        if response_data['success']:
+            self.shareable_link = response_data['files'][0]['link']
+            self.uploadFinished.emit(self.shareable_link)
+            print(f"shareable_link: {self.shareable_link}")
+            self.selectedFileLabel.setText(f'File uploaded successfully. <a href="{self.shareable_link}">Click here</a> to access the file.')
+            self.selectedFileLabel.setOpenExternalLinks(True)
+            self.copyButton.setEnabled(True)  # Enable the Copy to Clipboard button after link is available
+            # Show the copy button
+            self.copyButton.show()
+            # Handle upload finished, extract URL, and emit signal
+            unique_id = self.shareable_link.split('/')[-1]
+            print(f"unique_id: {unique_id}")
+            success_url = f"http://127.0.0.1:5000/upload_success/{unique_id}"
+            self.uploadFinished.emit(success_url)
+            self.progressBar.setValue(0)  # Reset or hide progress bar
+        else:
+            self.selectedFileLabel.setText('Failed to upload file.')
+            self.progressBar.setValue(0)
 
 
     def onUploadError(self, exception):

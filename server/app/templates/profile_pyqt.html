@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Disables scroll */
+            height: 100vh; /* 100% of the viewport height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif; /* Sets the font for the whole page */
+            background-color: rgb(245, 245, 245); /* Sets the background color */
+
+        }
+        /* Additional styles can go here */
+    </style>
+</head>
+<body>
+
+<h1 class="text-3xl font-semibold mb-4">{{ current_user.name }}'s Profile</h1>
+
+<p><span class="font-semibold">Name:</span> {{ current_user.name }}</p>
+<p><span class="font-semibold">Email:</span> {{ current_user.email }}</p>
+
+<h2 class="text-xl pt-4 font-bold">Uploaded Files</h2>
+{% if user_files|length != 0 %}
+    <div class="mt-6 py-2 rounded border border-r-black bg-gray-100 text-base-content"
+        style="
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+        ">
+       <table class="table table-compact w-full">
+           <thead>
+               <tr>
+                   <th>Filename</th>
+                   <th>Message</th>
+                   <th>Expires At</th>
+                   <th>Downloads</th>
+                   <th>Unique ID</th>
+               </tr>
+           </thead>
+           <tbody class="font-light">
+                   {% for file in user_files %}
+                       <tr>
+                            <td>{{ file.filename }}</td>
+                            <td>{{ file.message }}</td>
+                            <td>{{ file.expires_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ file.download_count }}</td>
+                            <td>{{ file.unique_id }}</td>
+                            <td>
+                                <a href="{{ url_for('file_routes.direct_download_file', unique_id=file.unique_id) }}"
+                                   class="btn btn-sm bordered">Download</a>
+                                <a href="{{ url_for('file_routes.update_file', unique_id=file.unique_id) }}"
+                                   class="btn btn-sm btn-secondary bordered">Update</a>
+                                <a href="{{ url_for('file_routes.delete_file', unique_id=file.unique_id) }}"
+                                   class="btn btn-sm btn-error bordered">Delete</a>
+                            </td>
+                       </tr>
+                   {% endfor %}
+           </tbody>
+       </table>
+    </div>
+{% else %}
+    <p class="text-base font-light py-1">You have not uploaded any files yet.</p>
+{% endif %}
+<h3 class="font-medium text-lg py-2"> Upload a new file: </h3>
+<div class="btn btn-md">
+    <a href="{{ url_for('file_routes.upload') }}" class="text-sm py-1">Upload a file</a>
+</div>
+</body>
+</html>
+```

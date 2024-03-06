@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QComboBox
 from PyQt5.QtCore import Qt, pyqtSignal, QThread
+from PyQt5.QtGui import QFont
 from python.model.FileSystemCache import FileSystemCache
 from python.model.FileSystemNodeModel import *
 import os
@@ -23,6 +24,12 @@ class SplashWindow(QWidget):
         heading.setAlignment(Qt.AlignCenter)
         layout.addWidget(heading)
 
+        # Subheading
+        subheading = QLabel("Please select a folder to scan")
+        subheading.setAlignment(Qt.AlignCenter)
+        layout.addWidget(subheading)
+
+
         # Dropdown (Combo Box) for folder selection
         self.folderSelection = QComboBox(self)
         user_paths = {
@@ -38,11 +45,52 @@ class SplashWindow(QWidget):
 
         # Scan button
         scan_btn = QPushButton("Scan")
+        # Change scan button font size and color
+        scan_btn.setFont(QFont("Arial", 50))
+
         scan_btn.clicked.connect(self.on_scan_clicked)
         layout.addWidget(scan_btn)
 
         self.setLayout(layout)
         self.setWindowTitle("K.L.A.A.S. - Knowledge Lookup and Access System")
+
+        # Set the main window style
+        self.setStyleSheet("""
+            QPushButton {
+                background-color: #2D2D30;
+                color: white;
+                border-radius: 5px;
+                padding: 10px 20px;
+                font-size: 16px;
+                margin: 10px;
+            }
+            QPushButton:hover {
+                background-color: #3E3E40;
+            }
+            QPushButton:pressed {
+                background-color: #4E4E50;
+            }
+            QComboBox {
+                padding: 5px;
+                margin: 10px;
+            }
+        """)
+
+        # Update the layout margins and spacing
+        layout.setSpacing(10)
+        layout.setContentsMargins(20, 20, 20, 20)
+
+        # Align the heading in the center and give it a different color
+        heading.setStyleSheet("color: #5E5E60;")
+        heading.setAlignment(Qt.AlignCenter)
+
+        # Make the combo box larger and easier to read
+        self.folderSelection.setStyleSheet("QComboBox { combobox-popup: 0; }") # Remove the border
+        self.folderSelection.setMaxVisibleItems(5)  # To make sure all items are easy to see
+        self.folderSelection.setMinimumWidth(200)
+
+        # Make the scan button stand out more
+        scan_btn.setStyleSheet("QPushButton { min-width: 80px; min-height: 40px; }")
 
     def on_scan_clicked(self):
         selected_path = self.folderSelection.currentData()  # Get the selected path

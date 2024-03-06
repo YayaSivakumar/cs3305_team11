@@ -71,10 +71,6 @@ class MainWindow(QMainWindow):
         # Add the stacked widget to the main layout
         self.main_layout.addWidget(self.stacked_widget, 8)  # Adjusting space for main content
 
-        # Now, set the FileSystemNodeModel instance to the visualise window
-        self.visualise_window.setFileSystemModel(self.fileSystemModel)
-
-
         # Add the stacked widget to the main layout
         self.file_sharing_window.uploadFinished.connect(self.showWebView)
 
@@ -145,7 +141,7 @@ class MainWindow(QMainWindow):
         print("URL changed to:", url.toString())  # Add this line for debugging
         if "http://127.0.0.1:5000/profile" in url.toString():
             self.loggedIn = True
-            self.show_window(self.file_sharing_window.window_index)
+            # self.show_window(self.file_sharing_window.window_index)
 
     def apply_system_theme(self, dark_mode):
         if dark_mode:

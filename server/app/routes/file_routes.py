@@ -153,7 +153,7 @@ def upload_dan():
             return jsonify({
                 'success': True,
                 'message': 'Files uploaded successfully.',
-                'files': upload_responses
+                'unique_id': unique_id,
             })
 
         flash('Files uploaded successfully.', 'success')

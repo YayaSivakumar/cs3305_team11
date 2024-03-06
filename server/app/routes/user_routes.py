@@ -59,9 +59,18 @@ def signup():
         new_user.password = password
         db.session.add(new_user)
         db.session.commit()
+
+
+
         flash('Account created successfully', 'success')
         return redirect(url_for('user_routes.login'))
-    return render_template('signup.html',
+
+    if 'PyQt' in request.headers.get('User-Agent'):
+        # For PyQt application, optionally render a specific template or return JSON indicating to show the signup page
+        return render_template('signup_pyqt.html', form=form)
+
+    else:
+        return render_template('signup.html',
                            form=form,
                            user_routes=user_routes,
                            file_routes=file_routes,
@@ -81,11 +90,7 @@ def login():
             login_user(user, remember=True)
             if 'PyQt' in request.headers.get('User-Agent'):
                 # For PyQt application, send a JSON response indicating login was successful
-                return jsonify({
-                    'success': True,
-                    'message': "Login successful!",
-                    'redirect': url_for('user_routes.profile', _external=True)  # Provide the URL for PyQt to navigate
-                })
+                return redirect(url_for('user_routes.profile'))
             else:
                 # For web browsers, redirect to the profile page
                 flash("Login successful!", 'success')
@@ -95,11 +100,8 @@ def login():
 
     if 'PyQt' in request.headers.get('User-Agent'):
         # For PyQt application, optionally render a specific template or return JSON indicating to show the login page
-        return jsonify({
-            'success': False,
-            'message': "Show login page",
-            'redirect': url_for('user_routes.login_pyqt_template', _external=True)  # Assuming there's a route for PyQt login template
-        })
+        return render_template('login_pyqt.html', form=form, user_routes=user_routes, file_routes=file_routes, main_routes=main_routes)
+
     else:
         # For web browsers, render the standard login template
         return render_template('login.html', form=form, user_routes=user_routes, file_routes=file_routes, main_routes=main_routes)
@@ -117,7 +119,11 @@ def logout():
 @login_required
 def profile():
     user_files = User.query.get(current_user.id).files
-    return render_template('profile.html',
+    if 'PyQt' in request.headers.get('User-Agent'):
+        # For PyQt application, send a JSON response indicating login was successful
+        return render_template('profile_pyqt.html', user_files=user_files, user_routes=user_routes, file_routes=file_routes, main_routes=main_routes)
+    else:
+        return render_template('profile.html',
                            user_files=user_files,
                            user_routes=user_routes,
                            file_routes=file_routes,
