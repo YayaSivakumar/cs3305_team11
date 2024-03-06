@@ -5,17 +5,8 @@ import os
 
 def organise_by_type_func(dir_node: Directory):
 
-    print('sorting')
     _organise_by_type_func(dir_node)
 
-    sort_music(dir_node)
-
-
-def sort_music(dir_node: Directory):
-    if dir_node.path + '/Music' in dir_node.cache.keys():
-        music_folder_node = dir_node.cache[dir_node.path + '/Music']
-        for file in music_folder_node.children[:]:
-            file.organize_music()
 
 def _organise_by_type_func(dir_node: Directory) -> None:
     """
@@ -76,9 +67,3 @@ def determine_filetype(file_node: File) -> str:
             return category
 
     return 'Misc'
-
-
-if __name__ == '__main__':
-    '''cache = FileSystemCache()
-    node_dir = Directory('/home/evelynchelsea/test music', cache, 'test music')
-    print(organise_by_type_func(node_dir))'''

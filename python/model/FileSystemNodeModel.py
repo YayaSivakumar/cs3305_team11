@@ -16,8 +16,6 @@ import subprocess
 import PIL.Image
 from PIL.ExifTags import TAGS
 
-from python.model.FileSystemCache import FileSystemCache
-
 
 class FileSystemNode:
     """Represents a file or directory in the file system."""
@@ -234,6 +232,8 @@ class Directory(FileSystemNode):
                     else:
                         if entry.path.endswith(".wav") or entry.path.endswith(".aac") or entry.path.endswith(".mp3"):
                             child = Music(entry.path, self.cache, name=entry.name)
+                        if entry.path.endswith(".jpeg") or entry.path.endswith(".jpg") or entry.path.endswith(".HEIC"):
+                            child = Image(entry.path, self.cache, name=entry.name)
                         else:
                             child = File(entry.path, self.cache, name=entry.name)
                         self.cache.update(child.path, child)
@@ -313,8 +313,8 @@ class ScanTask(QRunnable):
 
 class Image(File):
 
-    def __init__(self, path: str, cache):
-        super().__init__(path, cache)
+    def __init__(self, path: str, cache, name):
+        super().__init__(path, cache, name)
         self._width = None
         self._height = None
         self._coords = None
@@ -427,6 +427,7 @@ class Image(File):
             return nearest_country['Country']
         else:
             return "No country found for these coordinates."
+
 
     @staticmethod
     def dms_to_decimal(degrees, minutes, seconds, direction):
