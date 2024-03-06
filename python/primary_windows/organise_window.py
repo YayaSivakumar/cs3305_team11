@@ -1,11 +1,10 @@
 from PyQt5.QtCore import Qt, QDir
 from PyQt5.QtWidgets import QCheckBox, QDirModel, QColumnView, QHBoxLayout, QPushButton, QMessageBox, QVBoxLayout, \
     QVBoxLayout, QLabel, QTreeView, QWidget
-from python.modules.organise_by_type import organise_by_type_func
+from python.modules.organise import organise
 from python.modules.revert_changes import revert_changes
 from python.ui.drag_drop import *
 from python.ui.custom_file_system_model import *
-from python.model.FileSystemCache import FileSystemCache
 from python.model.FileSystemNodeModel import File, Directory
 
 
@@ -114,7 +113,7 @@ class OrganiseWindow(QWidget):
                                                 QMessageBox.Ok)
                         return
 
-                    organise_by_type_func(node)
+                    organise(node)
                     self.organised.append(node)
 
                 # Optionally clear the drag-and-drop list after processing

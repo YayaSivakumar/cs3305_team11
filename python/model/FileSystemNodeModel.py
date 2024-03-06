@@ -6,19 +6,29 @@ import hashlib
 
 from PyQt5.QtCore import QRunnable, QThreadPool
 
+# music imports
+from mutagen.easyid3 import EasyID3  # Importing EasyID3 from mutagen for reading ID3 tags
+
+# image imports
+import numpy as np
+import pandas as pd
+import subprocess
+import PIL.Image
+from PIL.ExifTags import TAGS
+
 
 class FileSystemNode:
     """Represents a file or directory in the file system."""
 
-    def __init__(self, path: str, cache: FileSystemCache):
+    def __init__(self, path: str, cache: FileSystemCache, parent, size = None):
         self.path = path
         self.name = None
         self.revert_path = path
         self.cache_timestamp = None
         self.cache = cache
-        self.parent = None
+        self.parent = parent if parent else None
         self.children = []
-        self.size = os.path.getsize(self.path)
+        self.size = size
 
     def find_node(self, name: str):
         """Recursively find a node by name."""
@@ -56,10 +66,6 @@ class FileSystemNode:
             except FileNotFoundError:
                 self.size = 0
         return self.size
-        # try:
-        #     return os.path.getsize(self.path)
-        # except FileNotFoundError:
-        #     return 0
 
     def creation_date(self):
         """Return the creation date of the file."""
@@ -86,23 +92,6 @@ class FileSystemNode:
     def is_invisible(self):
         """Check if the file is hidden."""
         return self.name.startswith('.')
-
-    # def move(self, new_path: str):
-    #     """Move the node to a new location."""
-    #     try:
-    #         shutil.move(self.path, new_path)
-    #         # update paths
-    #         self.revert_path = self.path
-    #         self.path = new_path
-    #         # update data structure
-    #         self.parent.remove_child(self)
-    #         self.parent = self.cache[os.path.dirname(new_path)]
-    #         self.parent.add_child(self)
-    #         # update cache
-    #         self.cache.remove(self.revert_path)
-    #         self.cache.update(new_path, self)
-    #     except Exception as e:
-    #         print(f"Error moving Obj: {e}")
 
     def move(self, dst: str):
         try:
@@ -173,23 +162,32 @@ class FileSystemNode:
             return None
 
     def search(self, search_term: str):
-        """Search for nodes including search_term in cache"""
-        if search_term in self.cache.keyword_index:
-            print("Keyword found")
-            result_list = list(self.cache.keyword_index[search_term])
+        """Search for nodes including search_term as a substring in cache"""
+        search_term = search_term.lower()  # Ensure case-insensitive comparison
+        result_list = []
+
+        for keyword, nodes in self.cache.keyword_index.items():
+            if search_term in keyword:
+                print(f"Keyword found: {keyword}")
+                result_list.extend(nodes)  # Add all nodes associated with the found keyword
+
+        if result_list:
             return result_list
-        # no matches found
-        print("Keyword not found")
-        return []
+        else:
+            print("Keyword not found")
+            return []
 
     def isinstance(self, obj_type: object):
         """Check if the node is an instance of the given type."""
         return isinstance(self.__class__, obj_type)
 
+    def __str__(self):
+        return self.name
+
 
 class File(FileSystemNode):
-    def __init__(self, path: str, cache: FileSystemCache, name):
-        super().__init__(path, cache)
+    def __init__(self, path: str, cache: FileSystemCache, name, parent, size=None):
+        super().__init__(path, cache, parent, size)
         self.name = name  # give file a name
 
     def __str__(self) -> str:
@@ -204,26 +202,44 @@ class File(FileSystemNode):
 class Directory(FileSystemNode):
     """Represents a directory in the file system."""
 
-    def __init__(self, path: str, cacheObj: FileSystemCache, name):
-        super().__init__(path, cacheObj)
+    def __init__(self, path: str, cacheObj: FileSystemCache, name, parent):
+        super().__init__(path, cacheObj, parent, size=None)
         self.name = name
         self._populate()  # Populate the directory with its children
         cacheObj.save_to_file()
 
     def _populate(self):
-        """Populate the directory with its children."""
+        """Populate the directory with its children and calculate directory size."""
+        total_size = 0
+        print(f"Populating directory {self.path}\nParent: {self.parent}")
         try:
             with os.scandir(self.path) as entries:
                 for entry in entries:
+                    print(f"Found entry: {entry.path}")
                     if entry.is_dir():
-                        if '.' in entry.path:
+                        # Skip hidden directories or any specific directories you don't want to include
+                        if entry.name.startswith('.'):
                             continue
-                        child = Directory(entry.path, self.cache, name=entry.name)
+                        child = Directory(entry.path, self.cache, name=entry.name, parent=self)
+                        print(f"Created Directory: {child.path} with parent: {child.parent.path}")
                     else:
-                        child = File(entry.path, self.cache, name=entry.name)
+                        # Calculate file size and update total size for the directory
+                        file_size = entry.stat().st_size
+                        total_size += file_size
+                        if entry.path.endswith(".wav") or entry.path.endswith(".aac") or entry.path.endswith(".mp3"):
+                            child = Music(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
+                        if entry.path.endswith(".jpeg") or entry.path.endswith(".jpg") or entry.path.endswith(".HEIC"):
+                            child = Image(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
+                        else:
+                            child = File(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
+                        print(f"Created File: {child.path} with parent: {child.parent.path}")
                         self.cache.update(child.path, child)
                     self.add_child(child)
+
+            # After iterating through all entries, set the directory's size
+            self.size = total_size
             self.cache.update(self.path, self)
+
         except FileNotFoundError:
             print(f"Directory not found: {self.path}")
 
@@ -278,6 +294,12 @@ class Directory(FileSystemNode):
 
         return matching_files
 
+    def calculate_folder_size(self) -> list[FileSystemNode]:
+        for child in self.children:
+            child.get_size()
+        return self.children
+
+
 
 class ScanTask(QRunnable):
     def __init__(self, entry:os.DirEntry, cache, add_child_callback):
@@ -296,5 +318,289 @@ class ScanTask(QRunnable):
         self.add_child_callback(child)
 
 
-if __name__ == '__main__':
-    pass
+class Image(File):
+
+    def __init__(self, path: str, cache, name, parent, size=None):
+        super().__init__(path, cache, name, parent, size)
+        self._width = None
+        self._height = None
+        self._coords = None
+        self._location = None
+        self._populate_image_metadata()
+
+    @property
+    def width(self):
+        """Return the width of the image."""
+        return self._width
+
+    @width.setter
+    def width(self, value: int):
+        self._width = value
+
+    @property
+    def height(self):
+        """Return the height of the image."""
+        return self._height
+
+    @height.setter
+    def height(self, value: int):
+        self._height = value
+
+    @property
+    def coords(self):
+        """Return the location of the image."""
+        return self._coords
+
+    @coords.setter
+    def coords(self, value: tuple):
+        self._coords = value
+
+    @property
+    def location(self):
+        """Return the location of the image."""
+        return self._location
+
+    @location.setter
+    def location(self, value: tuple):
+        self._location = value
+
+    def _populate_image_metadata(self):
+        """
+        Populate the image metadata.
+        """
+        if self.extension() == '.HEIC':
+            self.heic_to_pillow_format()
+
+        self._populate_jpeg_metadata()
+
+    def _populate_jpeg_metadata(self):
+        try:
+            image = PIL.Image.open(self.path)
+
+            # Attempt to extract EXIF data
+            exif_data = {}
+            if hasattr(image, '_getexif'):  # Check if the image has EXIF data
+                exif_info = image._getexif()
+                if exif_info is not None:
+                    for tag, value in exif_info.items():
+                        decoded = TAGS.get(tag, tag)
+                        exif_data[decoded] = value
+
+            self.width = exif_data['ExifImageWidth'] if 'ExifImageWidth' in exif_data else image.width
+            self.height = exif_data['ExifImageHeight'] if 'ExifImageHeight' in exif_data else image.height
+            self.coords = self.convert_gps_data(exif_data['GPSInfo']) if 'GPSInfo' in exif_data else None
+            self.location = self.get_location_by_country() if self.coords else None
+        except Exception as e:
+            print(f"Failed to extract metadata from {self.path}. Error: {e}")
+
+    def heic_to_pillow_format(self):
+        """
+        Creates jpeg version of HEIC file in order to extract metadata using pillow library
+
+        params:
+        - heic_path: Path to the HEIC file.
+        """
+        try:
+            subprocess.run(['heif-convert', self.path, self.path.split('.')[0]+'.jpeg'], check=True)
+            self.path = self.path.split('.')[0]+'.jpeg'
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to convert {self.path} to JPEG. Error: {e}")
+
+    def get_location_by_country(self):
+        """
+        Get the location of the image by country using proximity logic.
+
+        Parameters:
+        - latitude: The latitude of the image.
+        - longitude: The longitude of the image.
+
+        Returns:
+        The country of the image.
+        """
+        latitude, longitude = self.coords
+
+        # Load the countries data
+        countries = pd.read_csv('../../resources/country-coord.csv')
+
+        # Apply the Haversine formula to each country's coordinates
+        countries['Distance'] = countries.apply(
+            lambda row: Image.haversine(latitude, longitude, row['Latitude (average)'],
+                                                 row['Longitude (average)']), axis=1)
+
+        # Find the country with the minimum distance to the given coordinates
+        nearest_country = countries.loc[countries['Distance'].idxmin()]
+
+        if not nearest_country.empty:
+            return nearest_country['Country']
+        else:
+            return "No country found for these coordinates."
+
+
+    @staticmethod
+    def dms_to_decimal(degrees, minutes, seconds, direction):
+        """
+        Converts degrees, minutes, and seconds to decimal degrees.
+
+        Parameters:
+        - degrees, minutes, seconds: The parts of the DMS value.
+        - direction: The compass direction ('N', 'S', 'E', 'W').
+
+        Returns:
+        The decimal degree representation.
+        """
+        decimal = degrees + (minutes / 60.0) + (seconds / 3600.0)
+        if direction in ['S', 'W']:
+            decimal = -decimal
+        return decimal
+
+    @staticmethod
+    def convert_gps_data(gps_data: dict) -> tuple:
+        """
+        Converts GPS data from EXIF format to readable latitude and longitude.
+
+        Parameters:
+        - gps_data: A dictionary containing GPS data in EXIF format.
+
+        Returns:
+        A tuple containing (latitude, longitude) in decimal degrees.
+        """
+        latitude_dms = gps_data.get(2)
+        latitude_direction = gps_data.get(1)
+        longitude_dms = gps_data.get(4)
+        longitude_direction = gps_data.get(3)
+
+        if latitude_dms and latitude_direction and longitude_dms and longitude_direction:
+            latitude = Image.dms_to_decimal(latitude_dms[0], latitude_dms[1], latitude_dms[2], latitude_direction)
+            longitude = Image.dms_to_decimal(longitude_dms[0], longitude_dms[1], longitude_dms[2], longitude_direction)
+            return latitude, longitude
+        else:
+            return None
+
+    @staticmethod
+    def haversine(lat1, lon1, lat2, lon2):
+        """
+        Calculate the great circle distance in kilometers between two points
+        on the earth (specified in decimal degrees).
+        """
+        # Convert decimal degrees to radians
+        lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
+
+        # Haversine formula
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
+        c = 2 * np.arcsin(np.sqrt(a))
+        r = 6371  # Radius of earth in kilometers
+        return c * r
+
+
+class Music(File):
+    """
+    Constructor for the Music class
+
+    @params
+    path: str: absolute path of the music file
+    cache: object: cache object
+    artist: str: artist name (default: None)
+    track_name: str: track name (default: None)
+    album: str: album name (default: None)
+    year: str: year (default: None)
+    """
+
+    def __init__(self, path: str, cache, name, parent, size=None):
+        super().__init__(path, cache, name, parent, size)  # Call the constructor of the parent class
+        self._artist = None  # Initialize artist attribute
+        self._track_name = None  # Initialize track name attribute
+        self._album = None # Initialize album attribute
+        self._year = None  # Initialize year attribute
+        self.get_music_data()
+
+    def __repr__(self):
+        """Representation of a Music object"""
+        return f"MusicFile(path={self.path}, artist={self.artist}, track_name={self.track_name}, album={self.album}, year={self.year})"
+
+    # Property getters and setters for artist, track_name, album, and year attributes
+
+    @property
+    def artist(self) -> str:
+        """The artist of the music file."""
+        return self._artist
+
+    @artist.setter
+    def artist(self, a: str) -> None:
+        self._artist = a
+
+    @property
+    def track_name(self) -> str:
+        """The name of the track."""
+        return self._track_name
+
+    @track_name.setter
+    def track_name(self, t: str) -> None:
+        self._track_name = t
+
+    @property
+    def album(self) -> str:
+        """The album of the music file."""
+        return self._album
+
+    @album.setter
+    def album(self, al: str) -> None:
+        self._album = al
+
+    @property
+    def year(self) -> int:
+        """The year of the music file."""
+        return self._year
+
+    @year.setter
+    def year(self, y: str) -> None:
+        self._year = y
+
+    def get_music_data(self) -> None:
+        """
+        Method to retrieve metadata from audio files.
+
+        @return
+        list[Music]: List of Music objects containing metadata
+        """
+
+        try:
+            audio = EasyID3(self.path)  # Read ID3 tags from audio file
+            if audio:
+                # Extract metadata from ID3 tags
+                self._artist = audio['artist'][0] if 'artist' in audio else None
+                self._album = audio['album'][0] if 'album' in audio else None
+                self._track_name = audio['title'][0] if 'title' in audio else None
+                self._year = audio['year'][0] if 'year' in audio else None
+            else:
+                print(f"No metadata found in the file: {self.path}")
+        except Exception as e:
+            print(f"Error processing file {self.path}: {e}")
+
+    def organize_music(self):
+        """
+        Method to organize music files into directories based on metadata.
+
+        @params
+        organize_by: str: criteria for organizing (artist, album, year)
+        """
+        if self.artist == None:
+            print("No artist metadata found.")
+            return
+
+        parent_directory = os.path.dirname(self.path)
+        target_directory = os.path.join(parent_directory, self.artist)  # Target directory based on artist
+        if not os.path.exists(target_directory):
+            os.mkdir(target_directory)
+            music_folder = Directory(target_directory, self.cache, 'Music')
+            # update attributes
+            self.parent.add_child(music_folder)
+
+        # keep track of original path to revert changes
+        revert_path = self.revert_path
+        self.move(target_directory)
+        self.revert_path = revert_path
+        print(f"Moved {self.path} to {target_directory}")
+
+

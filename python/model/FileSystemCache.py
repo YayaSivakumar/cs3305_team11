@@ -19,7 +19,7 @@ class FileSystemCache:
 
         # update reverse index
         keywords = self.extract_keywords(node)
-        print(f"Extracted Keywords: {keywords}\nFrom: {node}")
+        # print(f"Extracted Keywords: {keywords}\nFrom: {node}")
         for keyword in keywords:
             if keyword not in self.keyword_index:
                 self.keyword_index[keyword] = set()
@@ -113,6 +113,9 @@ class FileSystemCache:
 
     def values(self):
         return self.body.values()
+
+    def keys(self):
+        return self.body.keys()
 
     def __str__(self):
         ret = ""

@@ -28,21 +28,33 @@ class OptimiseWindow(QWidget):
 
         # Create a description label
         description_label = QLabel(
-            "Description: Drag and drop files to the area below or select files from the column view to scan for "
-            "duplicate files and compress large files. Click the 'Optimise Files' button to start the process.")
+            "Description: Drag and drop files to the area below or select files from the column view to organize them "
+            "into folders based on their file types.")
         description_label.setWordWrap(True)  # Allow text to wrap to the next line
         description_label.setAlignment(Qt.AlignTop)  # Align the text to the top
 
         # Initialize the model for the ColumnView
         self.model = CustomFileSystemModel()
-        self.model.setRootPath(QDir.currentPath())
+        self.model.setRootPath(self.fileSystemModel.path)
         self.model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)
 
         # Set up the ColumnView
         self.column_view = QColumnView()
         self.column_view.setModel(self.model)
         # only show paths in cache
-        self.column_view.setRootIndex(self.model.index(os.environ.get("SCAN_PATH")))
+        self.column_view.setRootIndex(self.model.index(self.fileSystemModel.path))
+
+        # Create a QVBoxLayout for the description label, organize button, and dragDropLabel
+        right_layout = QVBoxLayout()
+        right_layout.addWidget(description_label)  # Add the description label to the layout
+        right_layout.addWidget(self.dragDropLabel)
+
+        # Create a description label
+        description_label = QLabel(
+            "Description: Drag and drop files to the area below or select files from the column view to scan for "
+            "duplicate files and compress large files. Click the 'Optimise Files' button to start the process.")
+        description_label.setWordWrap(True)  # Allow text to wrap to the next line
+        description_label.setAlignment(Qt.AlignTop)  # Align the text to the top
 
         self.duplicate_files_label = QLabel(f"{self.duplicate_files}")
         self.duplicate_files_label.setWordWrap(True)
@@ -79,7 +91,10 @@ class OptimiseWindow(QWidget):
 
         # Check if there are files dropped in drag-and-drop area
         if self.dragDropLabel.droppedFiles:
-            paths_to_optimise.extend(self.dragDropLabel2.droppedFiles)
+            print(f"FILES PRESENT IN DROPBOX:\n{self.dragDropLabel.droppedFiles}")
+            paths_to_optimise = self.dragDropLabel.droppedFiles
+            paths_to_optimise = [x.rstrip('/') for x in paths_to_optimise]
+            print(f"Paths to organise:\n{paths_to_optimise}")
 
         # Check if there is a selection in the tree view
         elif self.column_view.currentIndex().isValid():
@@ -91,12 +106,7 @@ class OptimiseWindow(QWidget):
         if paths_to_optimise:
 
             # load cache
-            cache = FileSystemCache()
-            if not cache.load_from_file():
-                QMessageBox.information(self, 'No cache found',
-                                        'Please scan a folder before attempting to organize files.',
-                                        QMessageBox.Ok)
-                return
+            cache = self.fileSystemModel.cache
 
             message = f"Do you want to organize the following items?\n\n" + "\n".join(paths_to_optimise)
             reply = QMessageBox.question(self, 'Optimise Confirmation', message, QMessageBox.Yes | QMessageBox.No,
@@ -127,7 +137,8 @@ class OptimiseWindow(QWidget):
                                                 f'Duplicates found in {path}.',
                                                 QMessageBox.Ok)
                         # update label
-                        reformatted_duplicates = "\n".join(self.duplicate_files)
+                        duplicate_paths = [file.path for file in self.duplicate_files]
+                        reformatted_duplicates = "\n".join(duplicate_paths)
                         self.duplicate_files_label.setText(f"{reformatted_duplicates}")
                         self.deleteDuplicatesButton.setDisabled(False)
                     else:
@@ -141,10 +152,14 @@ class OptimiseWindow(QWidget):
 
     def deleteDuplicates(self):
         # delete functionality will be implemented here once scan functionality is implemented for FileSystemNodeModel
+
+        for file in self.duplicate_files:
+            # delete file
+            file.delete()
+
         self.duplicate_files.clear()
-        self.duplicate_files_label.setText(f"None")
+        self.duplicate_files_label.setText('[]')
         self.deleteDuplicatesButton.setDisabled(True)
-        pass
 
     def onScheduleSelected(self):
         pass

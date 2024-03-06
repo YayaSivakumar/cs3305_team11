@@ -26,8 +26,7 @@ def _deduplicate(dir_node: Directory, seen: set):
 
         # if the child has been seen before, delete it
         if hashed_value in seen and not child.is_invisible():
-            deleted.append(child.path)
-            # child.delete()
+            deleted.append(child)
 
         # add hash if child is a File Object
         elif hashed_value:

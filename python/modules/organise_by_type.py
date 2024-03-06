@@ -3,7 +3,12 @@ from python.model.FileSystemNodeModel import *
 import os
 
 
-def organise_by_type_func(dir_node: Directory) -> None:
+def organise_by_type_func(dir_node: Directory):
+
+    _organise_by_type_func(dir_node)
+
+
+def _organise_by_type_func(dir_node: Directory) -> None:
     """
     Main function for organise by filetype feature. Takes a file path and breaks every file in that directory
     and its subdirectories
@@ -18,24 +23,26 @@ def organise_by_type_func(dir_node: Directory) -> None:
 
     # iterate through children
     for file_node in dir_node.children[:]:
+        print(f'child:{file_node.path}')
 
-        if type(file_node) == File:
+        if type(file_node) == Directory:
+            continue
 
-            # get filetype
-            filetype = determine_filetype(file_node)
-            found = dir_node.find_file(filetype)
+        # get filetype
+        filetype = determine_filetype(file_node)
+        found = dir_node.find_file(filetype)
 
-            # if filetype directory not already created, create it
-            if not found:
-                # create directory
-                os.makedirs(dir_node.path + '/' + filetype)
-                new_dir = Directory(dir_node.path + '/' + filetype, dir_node.cache, filetype)
-                # update attributes
-                dir_node.add_child(new_dir)
+        # if filetype directory not already created, create it
+        if not found:
+            # create directory
+            os.makedirs(dir_node.path + '/' + filetype)
+            new_dir = Directory(dir_node.path + '/' + filetype, dir_node.cache, filetype)
+            # update attributes
+            dir_node.add_child(new_dir)
 
-            # move file to appropriate directory
-            file_node.move(dir_node.path + '/' + filetype + '/' + file_node.name)
-            num_files_moved += 1
+        # move file to appropriate directory
+        file_node.move(dir_node.path + '/' + filetype + '/' + file_node.name)
+        num_files_moved += 1
 
     print(f"Moved {num_files_moved} files")
 
@@ -60,7 +67,3 @@ def determine_filetype(file_node: File) -> str:
             return category
 
     return 'Misc'
-
-
-if __name__ == "__main__":
-    organise_by_type_func(input())
