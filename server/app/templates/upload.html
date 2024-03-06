@@ -9,10 +9,10 @@
 
 
 <div class="container mx-auto max-w-96">
-    <h1 class="text-3xl font-semibold mb-4">Upload a File <i class="px-3 fa-solid fa-file-arrow-up"></i></h1>
+    <h1 class="text-3xl font-semibold mb-2">Upload a File <i class="px-3 fa-solid fa-file-arrow-up"></i></h1>
     <form action="/upload" method="post" class="w-full max-w-md" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
-        <div class="form-control py-4 my-2">
+        <div class="form-control py-3">
             <label for="file" class="label label-text text-base font-semibold">Select File:</label>
             <input type="file" id="file" name="file" class="input input-bordered p-2.5" multiple>
 <!--            <input type="file" -->
@@ -24,20 +24,20 @@
 <!--                   data-max-file-size="3MB"-->
 <!--                   data-max-files="3">-->
         </div>
-        <div class="form-control mb-4">
+        <div class="form-control">
           {{ form.message.label(class="label label-text text-base font-semibold") }}
           {{ form.message(class="textarea textarea-bordered text-sm", rows="2") }}
         </div>
-        <div class="form-control w-full max-w-xs">
+        <div class="form-control">
             {{ form.file_name.label(class="label label-text text-base font-semibold") }}
             {{ form.file_name(class="input input-bordered rounded-md") }}
         </div>
-        <div class="form-control w-full max-w-xs">
+        <div class="form-control">
             {{ form.password.label(class="label label-text text-base font-semibold") }}
             {{ form.password(class="input input-bordered rounded-md") }}
         </div>
         <div class="form-control mb-4">
-            <div class="form-control mb-4">
+            <div class="form-control">
               {{ form.expiration_hours.label(class="label label-text text-base font-semibold") }}
               {{ form.expiration_hours(class="select select-bordered text-sm") }}
             </div>
