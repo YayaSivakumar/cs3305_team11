@@ -69,6 +69,8 @@ def upload():
             expiration_hours = form.expiration_hours.data
             upload_name = form.upload_name.data
             form.upload_name.data = ''
+            password = form.password.data
+            form.password.data = ''
             upload_unique_id = str(uuid.uuid4())
             expires_at = datetime.utcnow() + timedelta(hours=int(expiration_hours))
             # Create a new Upload instance
@@ -78,6 +80,9 @@ def upload():
                                 expires_at=expires_at,
                                 message=message)
             print('Upload object created')
+            if password:
+                upload_obj.password = password
+                print('Added password to upload_object')
             db.session.add(upload_obj)
             db.session.commit()
 
@@ -290,18 +295,30 @@ def delete_file(unique_id):
                            main_routes=main_routes)
 
 
-# TODO: update to fit upload model
 @file_routes.route('/download/<unique_id>', methods=['GET'])
 def download_file_page(unique_id):
     upload_record = Upload.query.filter_by(unique_id=unique_id).first_or_404()
     upload_user_id = upload_record.user_id
     upload_user_details = User.query.get(upload_user_id)
 
+    if request.method == 'POST':
+        password = request.form.get('password')
+        print('Trying password')
+        if upload_record.verify_password(password):
+            # Password is correct, allow the user to download the file
+            print('Password is correct')
+            return redirect(url_for('file_routes.direct_download_file', unique_id=unique_id))
+        else:
+            # Password is incorrect, display an error message
+            print('Password is correct')
+            flash('Invalid password. Please try again.', 'error')
+
     upload_details = {
         'filename': upload_record.upload_name,
         'message': upload_record.message,
         'expires_at': upload_record.expires_at,
         'unique_id': unique_id,
+        'is_password_protected': upload_record.is_password_protected(),
         'download_link': url_for('file_routes.direct_download_file',
                                  unique_id=unique_id,
                                  _external=True),
@@ -315,6 +332,7 @@ def download_file_page(unique_id):
                            main_routes=main_routes)
 
 
+# TODO: need to have password check on this?
 @file_routes.route('/download/file/<unique_id>', methods=['GET'])
 def direct_download_file(unique_id):
     """

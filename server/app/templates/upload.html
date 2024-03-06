@@ -6,33 +6,23 @@
 
 {% block content %}
 
-
-
 <div class="container mx-auto my-4 max-w-96">
     <h1 class="text-3xl font-semibold mb-4">Upload a File</h1>
     <form action="/upload" method="post" class="w-full max-w-md" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
-        <div class="form-control mb-4 p-2">
+        <div class="form-control mb-4">
             <label for="file" class="label label-text">Select File:</label>
-            <input type="file" id="file" name="file" class="input input-bordered p-2" multiple>
-<!--            <input type="file"-->
-<!--                   id="file"-->
-<!--                    class="filepond"-->
-<!--                    name="filepond"-->
-<!--                    multiple-->
-<!--                    data-allow-reorder="true"-->
-<!--                    data-max-file-size="3MB"-->
-<!--                    data-max-files="3">-->
+            <input type="file" id="file" name="file" class="input input-bordered p-2" multiple required>
         </div>
         <div class="form-control mb-4">
           {{ form.message.label(class="label label-text text-base font-medium") }}
-          {{ form.message(class="textarea textarea-bordered text-sm", rows="4") }}
+          {{ form.message(class="textarea textarea-bordered text-sm", rows="1") }}
         </div>
-        <div class="form-control w-full max-w-xs">
+        <div class="form-control">
             {{ form.upload_name.label(class="label label-text text-base font-medium") }}
             {{ form.upload_name(class="input input-bordered rounded-md") }}
         </div>
-        <div class="form-control w-full max-w-xs">
+        <div class="form-control">
             {{ form.password.label(class="label label-text text-base font-medium") }}
             {{ form.password(class="input input-bordered rounded-md") }}
         </div>
