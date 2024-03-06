@@ -1,5 +1,4 @@
 pyqt5~=5.15.10
-pypdf2~=3.0.1
 python-docx
 pyqtwebengine~=5.15.6
 pdf2doi~=1.5

@@ -39,11 +39,11 @@ def _organise_by_date(dir_node: Directory):
             # create directories if they don't already exist
             if year not in os.listdir(dir_node.path):
                 os.makedirs(dir_node.path+'/'+year)
-                dir_node.add_child(Directory(dir_node.path+'/'+year, dir_node.cache))
+                dir_node.add_child(Directory(dir_node.path+'/'+year, dir_node.cache, year))
             if month not in os.listdir(dir_node.path+'/'+year):
                 os.makedirs(dir_node.path+'/'+year+'/'+month)
                 year_node = dir_node.find_node(year)
-                year_node.add_child(Directory(dir_node.path + '/' + year + '/' + month, dir_node.cache))
+                year_node.add_child(Directory(dir_node.path + '/' + year + '/' + month, dir_node.cache, month))
 
             # move item to the correct directory
             new_file_path = os.path.join(dir_node.path+'/'+year+'/'+month + '/' + node.name)
@@ -51,15 +51,4 @@ def _organise_by_date(dir_node: Directory):
 
 
 if __name__ == "__main__":
-    # testing
-    '''
-    cache = FileSystemCache()
-    dir_obj = Directory('/Users/yachitrasivakumar/Desktop/test_by_date', cache)
-    print(dir_obj.list_contents())
-    organise_by_date(dir_obj)
-    print(dir_obj.list_contents())
-    twennytwennyfour = dir_obj.find_node('2024')
-    print(twennytwennyfour.list_contents())
-    twennytwennyfourjan = twennytwennyfour.find_node('January')
-    print(twennytwennyfourjan.list_contents())
-    '''
+    pass
