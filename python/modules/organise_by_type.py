@@ -26,7 +26,7 @@ def _organise_by_type_func(dir_node: Directory) -> None:
         print(f'child:{file_node.path}')
 
         if type(file_node) == Directory:
-            return
+            continue
 
         # get filetype
         filetype = determine_filetype(file_node)

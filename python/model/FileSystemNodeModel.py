@@ -587,10 +587,13 @@ class Music(File):
         if not os.path.exists(target_directory):
             os.mkdir(target_directory)
             music_folder = Directory(target_directory, self.cache, 'Music')
+            # update attributes
             self.parent.add_child(music_folder)
 
-        # Move the audio file to the target directory
-        shutil.move(self.path, os.path.join(target_directory, os.path.basename(self.path)))
+        # keep track of original path to revert changes
+        revert_path = self.revert_path
+        self.move(target_directory)
+        self.revert_path = revert_path
         print(f"Moved {self.path} to {target_directory}")
 
 

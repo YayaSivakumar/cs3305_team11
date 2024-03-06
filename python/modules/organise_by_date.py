@@ -30,6 +30,9 @@ def _organise_by_date(dir_node: Directory):
     # create copy of child list to avoid changing the list while iterating
     for node in dir_node.children[:]:
 
+        if isinstance(node, Directory):
+            continue
+
         if not node.is_invisible():
 
             # extract year and month from modification date
@@ -42,12 +45,16 @@ def _organise_by_date(dir_node: Directory):
                 dir_node.add_child(Directory(dir_node.path+'/'+year, dir_node.cache, year))
             if month not in os.listdir(dir_node.path+'/'+year):
                 os.makedirs(dir_node.path+'/'+year+'/'+month)
-                year_node = dir_node.find_node(year)
+                year_node = dir_node.find_node_from_cache(dir_node.path+'/'+year)
                 year_node.add_child(Directory(dir_node.path + '/' + year + '/' + month, dir_node.cache, month))
 
             # move item to the correct directory
             new_file_path = os.path.join(dir_node.path+'/'+year+'/'+month + '/' + node.name)
+
+            # keep track of original path to revert changes
+            revert_path = node.revert_path
             node.move(new_file_path)
+            node.revert_path = revert_path
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-import sys, time
+import sys
 from PyQt5.QtWidgets import QApplication
 from python.mainwindow import MainWindow
 from python.primary_windows.splash_window import SplashWindow

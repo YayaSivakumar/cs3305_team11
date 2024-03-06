@@ -36,25 +36,5 @@ def _revert_changes(dir_node: Directory):
 
 
 if __name__ == "__main__":
-    # testing
-    '''
-    cache = FileSystemCache()
-    dir_obj = Directory('/Users/yachitrasivakumar/Desktop/YEAR3/Semester2Year3/cs3305_team11/test_by_date', cache)
-
-    def print_contents(node: Directory):
-        print(node.list_contents())
-        for child in node.children:
-            if isinstance(child, Directory):
-                print_contents(child)
-
-    organise_by_date(dir_obj)
-    # check for data structure consistency
-    print('after organising by date')
-    print_contents(dir_obj)
-
-    print('after reverting changes')
-    revert_changes(dir_obj)
-    # check for data structure consistency
-    print_contents(dir_obj)
-    '''
+    pass
 
