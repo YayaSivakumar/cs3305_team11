@@ -162,14 +162,20 @@ class FileSystemNode:
             return None
 
     def search(self, search_term: str):
-        """Search for nodes including search_term in cache"""
-        if search_term in self.cache.keyword_index:
-            print("Keyword found")
-            result_list = list(self.cache.keyword_index[search_term])
+        """Search for nodes including search_term as a substring in cache"""
+        search_term = search_term.lower()  # Ensure case-insensitive comparison
+        result_list = []
+
+        for keyword, nodes in self.cache.keyword_index.items():
+            if search_term in keyword:
+                print(f"Keyword found: {keyword}")
+                result_list.extend(nodes)  # Add all nodes associated with the found keyword
+
+        if result_list:
             return result_list
-        # no matches found
-        print("Keyword not found")
-        return []
+        else:
+            print("Keyword not found")
+            return []
 
     def isinstance(self, obj_type: object):
         """Check if the node is an instance of the given type."""
@@ -220,13 +226,13 @@ class Directory(FileSystemNode):
                         # Calculate file size and update total size for the directory
                         file_size = entry.stat().st_size
                         total_size += file_size
-                        print(f"Created File: {child.path} with parent: {child.parent.path}")
                         if entry.path.endswith(".wav") or entry.path.endswith(".aac") or entry.path.endswith(".mp3"):
                             child = Music(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
                         if entry.path.endswith(".jpeg") or entry.path.endswith(".jpg") or entry.path.endswith(".HEIC"):
                             child = Image(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
                         else:
                             child = File(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
+                        print(f"Created File: {child.path} with parent: {child.parent.path}")
                         self.cache.update(child.path, child)
                     self.add_child(child)
 
