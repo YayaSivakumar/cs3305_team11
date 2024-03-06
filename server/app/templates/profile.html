@@ -7,9 +7,10 @@
 
 <p><span class="font-semibold">Name:</span> {{ current_user.name }}</p>
 <p><span class="font-semibold">Email:</span> {{ current_user.email }}</p>
+<p>{{ user_uploads[0].files[0].filename }}</p>
 
 <h2 class="text-xl pt-4 font-bold">Uploaded Files</h2>
-{% if user_files|length != 0 %}
+{% if user_uploads|length != 0 %}
     <div class="mt-6 py-2 rounded border border-r-black bg-gray-100 text-base-content"
         style="
             overflow-x: auto;
@@ -19,27 +20,35 @@
        <table class="table table-compact w-full">
            <thead>
                <tr>
-                   <th>Filename</th>
+                   <th>Upload Name</th>
                    <th>Message</th>
+                   <th>Contains</th>
                    <th>Expires At</th>
                    <th>Downloads</th>
-                   <th>Unique ID</th>
+<!--                   <th>Unique ID</th>-->
                </tr>
            </thead>
            <tbody class="font-light">
-                   {% for file in user_files %}
+                   {% for upload in current_user.uploads %}
                        <tr>
-                            <td>{{ file.filename }}</td>
-                            <td>{{ file.message }}</td>
-                            <td>{{ file.expires_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>{{ file.download_count }}</td>
-                            <td>{{ file.unique_id }}</td>
+                            <td>{{ upload.upload_name }}</td>
+                            <td>{{ upload.message }}</td>
                             <td>
-                                <a href="{{ url_for('file_routes.direct_download_file', unique_id=file.unique_id) }}"
+                               <ul>
+                                   {% for file in upload.files %}
+                                       <li>{{ file.filename }}</li>
+                                   {% endfor %}
+                               </ul>
+                           </td>
+                            <td>{{ upload.expires_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ upload.download_count }}</td>
+<!--                            <td>{{ upload.unique_id }}</td>-->
+                            <td>
+                                <a href="{{ url_for('file_routes.direct_download_file', unique_id=upload.unique_id) }}"
                                    class="btn btn-sm bordered">Download</a>
-                                <a href="{{ url_for('file_routes.update_file', unique_id=file.unique_id) }}"
+                                <a href="{{ url_for('file_routes.update_file', unique_id=upload.unique_id) }}"
                                    class="btn btn-sm btn-secondary bordered">Update</a>
-                                <a href="{{ url_for('file_routes.delete_file', unique_id=file.unique_id) }}"
+                                <a href="{{ url_for('file_routes.delete_file', unique_id=upload.unique_id) }}"
                                    class="btn btn-sm btn-error bordered">Delete</a>
                             </td>
                        </tr>

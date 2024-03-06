@@ -12,25 +12,25 @@
     <h1 class="text-3xl font-semibold mb-4">Upload a File</h1>
     <form action="/upload" method="post" class="w-full max-w-md" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
-        <div class="form-control mb-4">
+        <div class="form-control mb-4 p-2">
             <label for="file" class="label label-text">Select File:</label>
-{#            <input type="file" id="file" name="file" class="input input-bordered">#}
-            <input type="file"
-                   id="file"
-                    class="filepond"
-                    name="filepond"
-                    multiple
-                    data-allow-reorder="true"
-                    data-max-file-size="3MB"
-                    data-max-files="3">
+            <input type="file" id="file" name="file" class="input input-bordered p-2" multiple>
+<!--            <input type="file"-->
+<!--                   id="file"-->
+<!--                    class="filepond"-->
+<!--                    name="filepond"-->
+<!--                    multiple-->
+<!--                    data-allow-reorder="true"-->
+<!--                    data-max-file-size="3MB"-->
+<!--                    data-max-files="3">-->
         </div>
         <div class="form-control mb-4">
           {{ form.message.label(class="label label-text text-base font-medium") }}
           {{ form.message(class="textarea textarea-bordered text-sm", rows="4") }}
         </div>
         <div class="form-control w-full max-w-xs">
-            {{ form.file_name.label(class="label label-text text-base font-medium") }}
-            {{ form.file_name(class="input input-bordered rounded-md") }}
+            {{ form.upload_name.label(class="label label-text text-base font-medium") }}
+            {{ form.upload_name(class="input input-bordered rounded-md") }}
         </div>
         <div class="form-control w-full max-w-xs">
             {{ form.password.label(class="label label-text text-base font-medium") }}
@@ -46,23 +46,5 @@
     </form>
 </div>
 
-<script src="{{ url_for('static', filename='filepond.js') }}">
-    import * as FilePond from 'filepond';
-    {#import { parse } from 'filepond';#}
-    import 'filepond/dist/filepond.css';
-
-    FilePond.registerPlugin(
-      FilePondPluginImagePreview,
-      FilePondPluginImageExifOrientation,
-      FilePondPluginFileValidateSize,
-      FilePondPluginImageEdit
-    );
-
-// Select the file input and use
-// create() to turn it into a pond
-    FilePond.create(
-      document.querySelector('input')
-    );
-</script>
 
 {% endblock %}

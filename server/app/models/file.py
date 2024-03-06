@@ -5,17 +5,25 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class Upload(db.Model):
-    files = db.Column()
+    id = db.Column(db.Integer, primary_key=True)
+    unique_id = db.Column(db.String(100), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    upload_name = db.Column(db.String(100), nullable=False)
+    expires_at = db.Column(db.DateTime, default=datetime.utcnow)
+    files = db.relationship('File', backref='upload', lazy=True)
+    download_count = db.Column(db.Integer, default=0)
+    message = db.Column(db.String(500))
+
+    def __repr__(self):
+        return f"<Upload {self.id}>"
 
 
 class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(100), nullable=False)
     unique_id = db.Column(db.String(100), unique=True, nullable=False)
-    message = db.Column(db.String(500))
     expires_at = db.Column(db.DateTime, default=datetime.utcnow)
-    download_count = db.Column(db.Integer, default=0)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    upload_id = db.Column(db.Integer, db.ForeignKey('upload.id'))
     hashed_password = db.Column(db.String(128))
 
     @property

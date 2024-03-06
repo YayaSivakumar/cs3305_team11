@@ -3,6 +3,8 @@ from flask_login import login_required, logout_user, login_user, current_user
 
 from ..models.user import User
 from ..models.file import File
+from ..models.file import Upload
+
 from ..db import db
 
 from flask_wtf import FlaskForm
@@ -104,9 +106,10 @@ def logout():
 @user_routes.route('/profile', methods=['GET'])
 @login_required
 def profile():
-    user_files = User.query.get(current_user.id).files
+    # user_uploads = User.query.get(current_user.id).uploads
+    user_uploads = current_user.uploads
     return render_template('profile.html',
-                           user_files=user_files,
+                           user_uploads=user_uploads,
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)

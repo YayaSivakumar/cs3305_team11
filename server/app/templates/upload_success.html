@@ -14,15 +14,15 @@
                     <button onclick="copyURL()" class="btn btn-sm text-neutral">Copy URL</button>
                 </div>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Filename:</span>
-                    {{ file_info.filename }}</p>
+                    {{ upload_info.upload_name }}</p>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Sender Email:</span>
-                    {{ file_info.upload_user.email }}</p>
+                    {{ upload_info.upload_user.email }}</p>
                 <p class="text-base"><span class="font-semibold text-lg">Expiration date:</span>
-                    {{ file_info.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
-                <p class="text-base"><span class="font-semibold text-lg">Message:</span> {{ file_info.message }}</p>
-                {% if file_info.download_count %}
+                    {{ upload_info.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
+                <p class="text-base"><span class="font-semibold text-lg">Message:</span> {{ upload_info.message }}</p>
+                {% if upload_info.download_count %}
                     <p class="text-base"><span class="font-semibold text-lg">Number of downloads:</span>
-                        {{ file_info.download_count }}</p>
+                        {{ upload_info.download_count }}</p>
                 {% endif %}
             </div>
         </div>
