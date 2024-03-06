@@ -28,21 +28,28 @@ class OptimiseWindow(QWidget):
 
         # Create a description label
         description_label = QLabel(
-            "Description: Drag and drop files to the area below or select files from the column view to scan for "
-            "duplicate files and compress large files. Click the 'Optimise Files' button to start the process.")
+            "Description: Drag and drop files to the area below or select files from the column view to organize them "
+            "into folders based on their file types.")
         description_label.setWordWrap(True)  # Allow text to wrap to the next line
         description_label.setAlignment(Qt.AlignTop)  # Align the text to the top
 
         # Initialize the model for the ColumnView
         self.model = CustomFileSystemModel()
-        self.model.setRootPath(QDir.currentPath())
+        self.model.setRootPath(self.fileSystemModel.path)
         self.model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)
 
         # Set up the ColumnView
         self.column_view = QColumnView()
         self.column_view.setModel(self.model)
         # only show paths in cache
-        self.column_view.setRootIndex(self.model.index(os.environ.get("SCAN_PATH")))
+        self.column_view.setRootIndex(self.model.index(self.fileSystemModel.path))
+
+        # Create a description label
+        description_label = QLabel(
+            "Description: Drag and drop files to the area below or select files from the column view to scan for "
+            "duplicate files and compress large files. Click the 'Optimise Files' button to start the process.")
+        description_label.setWordWrap(True)  # Allow text to wrap to the next line
+        description_label.setAlignment(Qt.AlignTop)  # Align the text to the top
 
         self.duplicate_files_label = QLabel(f"{self.duplicate_files}")
         self.duplicate_files_label.setWordWrap(True)
