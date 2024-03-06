@@ -16,11 +16,13 @@ from wtforms.validators import DataRequired
 
 from python.modules.compress_dir import compress_dir
 
-from ..models.file import File
+from ..models.file import File, Upload
 from ..models.user import User
 
 from . import user_routes  # Import Blueprint instance from the main application package
 from . import main_routes  # Import Blueprint instance from the main application package
+
+import zipfile
 
 file_routes = Blueprint('file_routes', __name__)
 
@@ -31,7 +33,7 @@ class UploadForm(FlaskForm):
     File upload form
     """
     message = TextAreaField("Enter message: ")
-    file_name = StringField("Enter file name: ")
+    upload_name = StringField("Enter upload name: ")
     expiration_hours = SelectField("Enter expiration hours: ",
                                    choices=[('24', '24 Hours'), ('72', '3 Days'), ('168', '7 Days')],
                                    default=(),
@@ -44,6 +46,7 @@ class UpdateForm(FlaskForm):
     """
     File update form
     """
+    upload_name = StringField("Enter upload name: ")
     message = StringField("Enter message: ")
     expiration_hours = StringField("Enter expiration hours: ",
                                    validators=[DataRequired()])
@@ -53,6 +56,59 @@ class UpdateForm(FlaskForm):
 @file_routes.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
+    """
+    This function handles file uploads. It accepts POST requests with a file, message, expiration_hours,
+    and password fields.
+    """
+    form = UploadForm()
+    if request.method == 'POST':
+        uploaded_files = request.files.getlist('file')
+        if form.validate_on_submit():
+            message = form.message.data
+            form.message.data = ''
+            expiration_hours = form.expiration_hours.data
+            upload_name = form.upload_name.data
+            form.upload_name.data = ''
+            password = form.password.data
+            form.password.data = ''
+            upload_unique_id = str(uuid.uuid4())
+            expires_at = datetime.utcnow() + timedelta(hours=int(expiration_hours))
+            # Create a new Upload instance
+            upload_obj = Upload(user_id=current_user.id,
+                                unique_id=upload_unique_id,
+                                upload_name=upload_name,
+                                expires_at=expires_at,
+                                message=message)
+            print('Upload object created')
+            if password:
+                upload_obj.password = password
+                print('Added password to upload_object')
+            db.session.add(upload_obj)
+            db.session.commit()
+
+            for uploaded_file in uploaded_files:
+                if uploaded_file:
+                    filename = secure_filename(uploaded_file.filename)
+                    unique_id = str(uuid.uuid4())
+                    expires_at = datetime.utcnow() + timedelta(hours=int(expiration_hours))
+                    filepath = os.path.join(UPLOADS_FOLDER, unique_id)
+                    uploaded_file.save(filepath)
+
+                    # Create a new File instance and associate it with the upload
+                    file = File(filename=filename, unique_id=unique_id, expires_at=expires_at, upload_id=upload_obj.id)
+                    db.session.add(file)
+                    print('File added to session')
+
+            db.session.commit()
+            flash('Upload completed successfully.', 'success')
+            return redirect(url_for('file_routes.upload_success', unique_id=upload_obj.unique_id))
+        flash('Form validation failed.', 'error')
+    return render_template('upload.html', form=form)
+
+
+@file_routes.route('/upload_old', methods=['GET', 'POST'])
+@login_required
+def upload_old():
     """
     This function handles file uploads. It accepts POST requests with a file, message, expiration_hours,
     and password fields.
@@ -77,12 +133,14 @@ def upload():
             filepath = os.path.join(UPLOADS_FOLDER, unique_id)
             if uploaded_files:
                 if len(uploaded_files) > 1:
-                    for uploaded_file in uploaded_files:
-                        if uploaded_file:
-                            print(f"Uploaded file: {uploaded_file}, Type: {type(uploaded_file)}")
-                            files_filenames.append(filename)
-                            files.append(uploaded_file)
-                            # uploaded_file.save(filepath)
+                    print("Why is this being hit????")
+                for uploaded_file in uploaded_files:
+                    if uploaded_file:
+                        print(f"Uploaded file: {uploaded_file}, Type: {type(uploaded_file)}")
+                        filename = secure_filename(uploaded_file.filename)
+                        files_filenames.append(filename)
+                        files.append(uploaded_file)
+                        uploaded_file.save(filepath)
                     # ZIP FILES HERE
                     if not filename:
                         filename = f"{current_user.name}_file_upload{unique_id[:6]}"
@@ -178,25 +236,26 @@ def upload_dan():
 @file_routes.route('/upload_success/<unique_id>', methods=['GET'])
 @login_required
 def upload_success(unique_id):
-    file_info = File.query.filter_by(unique_id=unique_id).first_or_404()
+    upload_info = Upload.query.filter_by(unique_id=unique_id).first_or_404()
     link = url_for('file_routes.download_file_page', unique_id=unique_id, _external=True)
-    file_user_id = file_info.user_id
-    file_user_details = User.query.get(file_user_id)
-    file_info = {
-        'filename': file_info.filename,
-        'message': file_info.message,
-        'expires_at': file_info.expires_at,
+    upload_user_id = upload_info.user_id
+    user_user_details = User.query.get(upload_user_id)
+    upload_info = {
+        'upload_name': upload_info.upload_name,
+        'message': upload_info.message,
+        'expires_at': upload_info.expires_at,
         'download_link': link,
-        'upload_user': file_user_details
+        'upload_user': user_user_details
     }
     return render_template('upload_success.html',
                            link=link,
-                           file_info=file_info,
+                           upload_info=upload_info,
                            file_routes=file_routes,
                            user_routes=user_routes,
                            main_routes=main_routes)
 
 
+# TODO: update to fit upload model
 @file_routes.route('/update_file/<unique_id>', methods=['GET', 'POST'])
 @login_required
 def update_file(unique_id):
@@ -218,6 +277,7 @@ def update_file(unique_id):
                            main_routes=main_routes)
 
 
+# TODO: Update to fit upload model
 @file_routes.route('/delete_file/<unique_id>', methods=['GET', 'POST'])
 @login_required
 def delete_file(unique_id):
@@ -238,51 +298,88 @@ def delete_file(unique_id):
 
 @file_routes.route('/download/<unique_id>', methods=['GET'])
 def download_file_page(unique_id):
-    file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
-    file_user_id = file_record.user_id
-    file_user_details = User.query.get(file_user_id)
+    upload_record = Upload.query.filter_by(unique_id=unique_id).first_or_404()
+    upload_user_id = upload_record.user_id
+    upload_user_details = User.query.get(upload_user_id)
 
-    file_details = {
-        'filename': file_record.filename,
-        'message': file_record.message,
-        'expires_at': file_record.expires_at,
+    if request.method == 'POST':
+        password = request.form.get('password')
+        print('Trying password')
+        if upload_record.verify_password(password):
+            # Password is correct, allow the user to download the file
+            print('Password is correct')
+            return redirect(url_for('file_routes.direct_download_file', unique_id=unique_id))
+        else:
+            # Password is incorrect, display an error message
+            print('Password is correct')
+            flash('Invalid password. Please try again.', 'error')
+
+    upload_details = {
+        'filename': upload_record.upload_name,
+        'message': upload_record.message,
+        'expires_at': upload_record.expires_at,
         'unique_id': unique_id,
+        'is_password_protected': upload_record.is_password_protected(),
         'download_link': url_for('file_routes.direct_download_file',
                                  unique_id=unique_id,
                                  _external=True),
-        'upload_user': file_user_details
+        'upload_user': upload_user_details
     }
 
     return render_template('download.html',
-                           file=file_details,
+                           upload=upload_details,
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
 
 
+# TODO: need to have password check on this?
 @file_routes.route('/download/file/<unique_id>', methods=['GET'])
 def direct_download_file(unique_id):
-    # Fetch the file record using the unique ID from the database
-    # print("Making file record")
-    # print("Unique ID: ", unique_id)
-    file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
-    # print("File record made")
-    # Check if the file has expired
-    if datetime.utcnow() > file_record.expires_at:
-        abort(410)  # 410 Gone indicates that the resource is no longer available and will not be available again.
-    # Build the filepath using the UPLOAD_FOLDER setting and the unique file identifier
-    filepath = os.path.join(UPLOADS_FOLDER, unique_id)
+    """
+    unique_id is the upload's unique ID
 
-    # Check if the file exists in the filesystem
-    if not os.path.isfile(filepath):
-        abort(404)  # 404 Not Found if the file does not exist on the server
+    """
+    upload_record = Upload.query.filter_by(unique_id=unique_id).first_or_404()
+    print(f'Upload record: {upload_record}')
+    if datetime.utcnow() > upload_record.expires_at:
+        abort(410)
+    if upload_record.upload_name:
+        upload_name = secure_filename(upload_record.upload_name)
 
-    # Increment the download_count by 1
-    file_record.download_count += 1
-    db.session.commit()
-    flash('File downloaded successfully', 'success')
-    # Serve the file for download, using the original filename for the download
-    return send_from_directory(directory=UPLOADS_FOLDER,
-                               path=unique_id,
-                               as_attachment=True,
-                               download_name=file_record.filename)
+    else:
+        upload_name = f"{current_user.name}_file_upload_{unique_id[:6]}"
+
+    if len(upload_record.files) > 1:
+        # Create a zip archive containing all files in the upload
+        zip_filepath = os.path.join(UPLOADS_FOLDER, f"{unique_id}.zip")
+        with zipfile.ZipFile(zip_filepath, 'w') as zipf:
+            for file in upload_record.files:
+                file_path = os.path.join(UPLOADS_FOLDER, file.unique_id)
+                zipf.write(file_path, arcname=file.filename)
+
+        # Increment the download_count of the upload by 1
+        upload_record.download_count += 1
+        db.session.commit()
+
+        # Serve the zip file for download
+        return send_from_directory(directory=UPLOADS_FOLDER,
+                                   path=f"{unique_id}.zip",
+                                   as_attachment=True,
+                                   download_name=f"{upload_name}.zip")
+    else:
+        # Serve the single file for download
+        file_record = upload_record.files[0]
+        filepath = os.path.join(UPLOADS_FOLDER, file_record.unique_id)
+        if not os.path.isfile(filepath):
+            abort(404)
+
+        # Increment the download_count of the upload by 1
+        upload_record.download_count += 1
+        db.session.commit()
+
+        return send_from_directory(directory=UPLOADS_FOLDER,
+                                   path=file_record.unique_id,
+                                   as_attachment=True,
+                                   download_name=file_record.filename)
+
