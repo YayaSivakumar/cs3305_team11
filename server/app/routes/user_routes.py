@@ -63,6 +63,10 @@ def signup():
         db.session.commit()
         flash('Account created successfully', 'success')
         return redirect(url_for('user_routes.login'))
+
+    if 'PyQt' in request.headers.get('User-Agent'):
+        return render_template('signup_pyqt.html', form=form, user_routes=user_routes, file_routes=file_routes, main_routes=main_routes)
+
     return render_template('signup.html',
                            form=form,
                            user_routes=user_routes,
@@ -88,7 +92,11 @@ def login():
         else:
             flash("Incorrect credentials - Try again", 'error')
 
-    return render_template('login.html',
+    if 'PyQt' in request.headers.get('User-Agent'):
+        return render_template('login_pyqt.html', form=form, user_routes=user_routes, file_routes=file_routes, main_routes=main_routes)
+
+    else:
+        return render_template('login.html',
                            form=form,
                            user_routes=user_routes,
                            file_routes=file_routes,
