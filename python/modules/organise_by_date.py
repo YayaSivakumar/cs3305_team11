@@ -36,9 +36,9 @@ def _organise_by_date(dir_node: Directory):
         if not node.is_invisible():
 
             # extract year and month from modification date
-            print(node.path, node.creation_date())
-            year = str(node.creation_date()).split('-')[0]
-            month = month_names[str(node.creation_date()).split('-')[1]]
+            print(node.path, node.modification_date())
+            year = str(node.modification_date()).split('-')[0]
+            month = month_names[str(node.modification_date()).split('-')[1]]
 
             # create directories if they don't already exist
             if year not in os.listdir(dir_node.path):
