@@ -7,38 +7,12 @@ from ..models.file import Upload
 
 from ..db import db
 
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, EmailField
-from wtforms.validators import DataRequired, Email
+from ..forms.user_forms import SignUpForm, LoginForm
 
 from . import file_routes  # Import Blueprint instance from the main application package
 from . import main_routes  # Import Blueprint instance from the main application package
 
 user_routes = Blueprint('user_routes', __name__)
-
-
-class SignUpForm(FlaskForm):
-    """
-    Sign-up user form
-    """
-    name = StringField("Enter name:",
-                       validators=[DataRequired()])
-    email = EmailField("Enter email: ",
-                       validators=[DataRequired(), Email()])
-    password = PasswordField("Enter password: ",
-                             validators=[DataRequired()])
-    submit = SubmitField("Submit")
-
-
-class LoginForm(FlaskForm):
-    """
-    Login user form
-    """
-    email = EmailField("Enter email: ",
-                       validators=[DataRequired(), Email()])
-    password = PasswordField("Enter password: ",
-                             validators=[DataRequired()])
-    submit = SubmitField("Submit")
 
 
 @user_routes.route('/signup', methods=['GET', 'POST'])
