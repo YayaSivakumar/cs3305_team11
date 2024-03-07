@@ -26,15 +26,16 @@ class FileOrganizerScheduler:
         return self.next_organisation
 
     def stop(self):
-        self.stop_requested = True  # Set the flag to request stop
+        self.stop_requested = True  # set the flag to request stop
         if self.thread is not None:
-            self.scheduler.cancel(self.next_organisation_event)  # Cancel the next event
+            self.scheduler.cancel(self.next_organisation_event)  # cancel the next event
 
     def organize_files_weekly(self, dir_node):
-        print('organising files...')
         if self.stop_requested:
+            self.stop_requested = False
             return ''
 
+        # perform the organization
         organise(dir_node)
 
         # Calculate next week's time

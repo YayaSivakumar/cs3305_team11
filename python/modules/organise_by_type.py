@@ -23,7 +23,6 @@ def _organise_by_type_func(dir_node: Directory) -> None:
 
     # iterate through children
     for file_node in dir_node.children[:]:
-        print(f'child:{file_node.path}')
 
         if type(file_node) == Directory:
             continue
@@ -43,8 +42,6 @@ def _organise_by_type_func(dir_node: Directory) -> None:
         # move file to appropriate directory
         file_node.move(dir_node.path + '/' + filetype + '/' + file_node.name)
         num_files_moved += 1
-
-    print(f"Moved {num_files_moved} files")
 
 
 def determine_filetype(file_node: File) -> str:
