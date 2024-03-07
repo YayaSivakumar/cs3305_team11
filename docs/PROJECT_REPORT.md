@@ -112,20 +112,32 @@ The project provided many opportunities to learn new skills and techniques. The 
   
 ## Future Work  
 The project has provided a solid foundation for future work. The following are some of the areas that could be explored in future work:  
-- Greater integration with other systems  
-- Improved user interface  
-- Enhanced security features  
-- More advanced file system node structure  
+- Greater integration with other systems
+  - Integration with cloud storage services
+  - Integration with version control systems
+  - Integration with backup systems
+- Improved user interface
+  - More advanced search functionality
+  - Customisable file organisation rules
+  - Enhanced file visualisation and management
+- Enhanced security features
+  - File access logging
+- More advanced file system node structure
+  - Support for more file types
+  - Support for file metadata
+  - Support for file versioning
   
 ## Conclusion  
 K.L.A.A.S design philosophy centres on creating a seamless file management and sharing experience for desktop users. By integrating a robust client application with a lightweight web server, K.L.A.A.S achieves a balance between local file organisation and the convenience of web-based file sharing.  
 The project has been successful in achieving this goal and has provided a valuable resource for users.  
   
 ## Acknowledgements  
-The group would like to thank the module lecturer for their support and guidance throughout the project.  
+The group would like to thank the module lecturer for their support and guidance throughout the project. We would also like to thank our peers for their valuable feedback and suggestions.
+
   
 ## References  
-- PyQt5 Documentation: https://www.riverbankcomputing.com/static/Docs/PyQt5/  
-- Flask Documentation: https://flask.palletsprojects.com/en/2.0.x/  
+- PyQt5 Documentation: https://www.riverbankcomputing.com/static/Docs/PyQt5/
+- Flask Documentation: https://flask.palletsprojects.com/en/2.1.2/  
 - Python os Module Documentation: https://docs.python.org/3/library/os.html  
-- Python shutil Module Documentation: https://docs.python.org/3/library/shutil.html 
+- Python shutil Module Documentation: https://docs.python.org/3/library/shutil.html
+- Python pickle Module Documentation: https://docs.python.org/3/library/pickle.html
