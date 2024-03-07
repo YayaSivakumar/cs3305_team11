@@ -111,7 +111,9 @@ def logout():
 def profile():
     # user_uploads = User.query.get(current_user.id).uploads
     user_uploads = current_user.uploads
+    print(f"Request header {request.headers.get('User-Agent')}")
     return render_template('profile.html',
+                           is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            user_uploads=user_uploads,
                            user_routes=user_routes,
                            file_routes=file_routes,
