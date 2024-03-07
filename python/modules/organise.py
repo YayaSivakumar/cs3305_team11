@@ -1,7 +1,6 @@
+from python.model.FileSystemNodeModel import Directory
 from python.modules.organise_by_date import organise_by_date
 from python.modules.organise_by_type import organise_by_type_func
-from python.model.FileSystemNodeModel import Directory
-from python.model.Music import Music
 
 
 def organise(dir_node: Directory):

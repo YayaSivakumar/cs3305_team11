@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}File Upload App - Update File{% endblock %}
+
+{% block content %}
+<div class="container mx-auto max-w-96">
+    <h1 class="text-3xl font-semibold mb-4">Update file:  <span class="font-normal">{{ upload.filename }}</span></h1>
+    <form action="{{ url_for('file_routes.update_upload', unique_id=upload.unique_id) }}" method="post" enctype="multipart/form-data">
+        <div class="form-control mb-4">
+            {{ form.upload_name.label(class="label label-text text-base font-semibold") }}
+            {{ form.upload_name(class="input input-bordered rounded-md", value=upload.upload_name) }}
+        </div>
+        <div class="form-control mb-4">
+            {{ form.message.label(class="label label-text text-base font-semibold") }}
+            {{ form.message(class="textarea textarea-bordered text-sm", rows="1", value=upload.message) }}
+        </div>
+        <div class="form-control mb-4">
+            {{ form.expiration_hours.label(class="label label-text text-base font-semibold") }}
+            {{ form.expiration_hours(class="select select-bordered text-sm") }}
+        </div>
+        <button type="submit" class="btn btn-primary rounded-md">Update</button>
+    </form>
+</div>
+
+
+{% endblock %}

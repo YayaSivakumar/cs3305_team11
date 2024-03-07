@@ -22,7 +22,7 @@ def delete_empty_directories(dir_node: Directory):
             delete_empty_directories(child)
 
             # check if the child directory is now empty and child has not been deleted
-            if not child.children and child.cache[child.path]:
+            if not child.children and child in child.cache.values():
                 child.delete()
 
         elif child.is_invisible():

@@ -1,5 +1,8 @@
-{% extends "base.html" %}
-
+{% if is_pyqt %}
+    {% extends "base_pyqt.html" %}
+{% else %}
+    {% extends "base.html" %}
+{% endif %}
 {% block title %}Upload Success{% endblock %}
 
 {% block content %}
@@ -15,21 +18,26 @@
                 </div>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Filename:</span>
                     {{ upload_info.upload_name }}</p>
+                <p class="text-base">
+                    <span class="font-semibold text-lg">Message:</span> {{ upload_info.message }}
+                </p>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Sender Email:</span>
                     {{ upload_info.upload_user.email }}</p>
                 <p class="text-base"><span class="font-semibold text-lg">Expiration date:</span>
                     {{ upload_info.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
-                <p class="text-base"><span class="font-semibold text-lg">Message:</span> {{ upload_info.message }}</p>
                 {% if upload_info.download_count %}
                     <p class="text-base"><span class="font-semibold text-lg">Number of downloads:</span>
                         {{ upload_info.download_count }}</p>
+                {% endif %}
+
+                {% if is_pyqt %}
+                    <a href="{{ url_for('user_routes.profile') }}" class="btn btn-sm btn-primary">Back to Profile</a>
                 {% endif %}
             </div>
         </div>
     </div>
 
  <script>
-
 <!--     TODO: Fix deprecated function -->
 function copyURL() {
     var copyText = document.getElementById("fileURL");
@@ -57,5 +65,6 @@ function copyURL() {
         });
 }
 </script>
+
 
 {% endblock %}

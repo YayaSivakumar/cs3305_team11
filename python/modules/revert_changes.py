@@ -30,7 +30,6 @@ def _revert_changes(dir_node: Directory):
             _revert_changes(node)
 
         if node.path != node.revert_path:
-            print(node.name, node.path, node.revert_path)
             # move file back to original location
             node.move(node.revert_path)
 

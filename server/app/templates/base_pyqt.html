@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/output.css') }}">
+    <title>Login Page</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Disables scroll */
+            height: 100vh; /* 100% of the viewport height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif; /* Sets the font for the whole page */
+            background-color: rgb(245, 245, 245); /* Sets the background color */
+
+        }
+        /* Additional styles can go here */
+    </style>
+</head>
+
+<body>
+    <div class="container mx-auto py-4 px-4 md:px-2">
+       {% block content %}
+       {% endblock %}
+    </div>
+</body>
+</html>

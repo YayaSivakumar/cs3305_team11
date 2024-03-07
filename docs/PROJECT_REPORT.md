@@ -43,14 +43,14 @@ The data used in this project is from the following sources:
   
 ### File System Node Structure  
   
-The file system node structure comprises of two main classes that represent the file system hierarchy:  
+The file system node structure consists of two main classes that represent the file system hierarchy:  
   
 1. **Directory Node:** Represents a directory in the file system. It contains a set of child nodes, which can be either files or subdirectories. The root node is the top-level directory in the file system. Because of this structure, the head node is used to represent the entirety of the file system hierarchy. 
 2. **File Node:** Represents a file in the file system. File objects contain useful metadata such as file size, creation date, and file type. It also contains a reference to the parent directory node. The file node is a leaf node in the overall file system node structure.  
   
 ### File System Cache  
   
-The file system cache is the data structure that stores the file system node structure by using the root node. The structure is stored in a pickle (.pkl) file to maintain the state of the head FileSystemNode object in memory. It is used to improve performance by reducing the number of file system accesses and to provide a consistent view of the file system across different parts of the application. The body of the cache is implemented as a dictionary that maps file paths to file system nodes. The cache is updated whenever the file system is modified, ensuring that it remains synchronised with the underlying file system.  
+The file system cache is the data structure that stores the file system node structure by using the root node. It is used to improve performance by reducing the number of file system accesses and to provide a consistent view of the file system across different parts of the application. The body of the cache is implemented as a dictionary that maps file paths to file system nodes. The cache is updated whenever the file system is modified, ensuring that it remains synchronised with the underlying file system.  
   
 ## Flask Web Server  
   
@@ -85,36 +85,59 @@ Challenge 1: File Synchronization Across Devices.
 - Solution: 
   - The file system cache was implemented to maintain a consistent view of the file system across different parts of the application. This allowed for improved performance and ensured that the file system state was synchronised across different components.
 
-Challenge 2:
+Challenge 2: Slow Search
+- Solution:
+  - Implemented a keyword cache that is populated when the filesystem is scanned; allowing for constant time keyword searching (feature of underlying hashmap). This was then expanded to enable substring searching by linear searching through the keys of the keyword hashmap.
 
+Challenge 3: Slow Filesystem Scanning
+- Solution:
+  - The initial implementation scanned the filesystem using Python's os.listDir(), while this seemed to be functional it became prohibitively slow on directories larger than couple dozen files. Upon deeper inspection this was due to the amount of I/O operations required to then process the entries in the directory, this was confirmed by inspecting various usage metrics while the scan was executing (using the commandline utilities htop and fs_usage). We then began to research alternatives to this method and came across os.scanDir(); the key difference with scanDir is that it returns an iterator containing DirEntry objects, which already contained many of the elements we were performing additional I/O operations to get. This speedup has enabled us to work with directories of a scale not previously possible.
 ## Performance Considerations
 The performance of K.L.A.A.S is a critical consideration, given the potential impact of file system operations and web server interactions on the user experience. The following performance considerations were taken into account during the design and implementation of the system:
 
+### Filesystem Operations:
+In order to reduce the burden of filesystem operations, we took the following approach:
+- Reduce system I/O calls during scanning - as outlined above we iterated on the initial design to reduce the number of I/O operations performed during the application cycle.
+- Utilise cache structures to allow constant time access to the nodes that represent files/directories in our model. This allowed us to effectively scan the directory once at launch, and then query it without further scanning.
+### Web Server Interactions
+# TODO 
 ## Lessons Learned  
 The project provided many opportunities to learn new skills and techniques. The following are some of the lessons learned:  
   
 - **Data Structures:** The importance of choosing the right data structures for efficient file system representation and manipulation. This included the use of tree structures to represent the file system hierarchy and caching to improve performance.  
 - **Modular Design:** The importance of modular design and separation of concerns in software development. This allowed for easier testing, maintenance, and extensibility.  
 - **RESTful APIs:** The benefits of using RESTful APIs for communication between different components of a system. This allowed for a clean and consistent interface between the Desktop Client and the Flask Web Server.  
-- **File System Operations:** The intricacies of file system operations and the challenges of managing file metadata. This included handling file paths, file permissions, and file metadata.  
+- **File System Operations:** The intricacies of file system operations and the challenges of managing file metadata. This included handling file paths, file permissions, and file metadata; as well as how filesystem operations can burden an application, making a seemingly well implemented application grind to a halt.  
 - **Web Server Security:** The importance of implementing security measures in web servers to protect against unauthorised access and abuse. This included token-based authentication, HTTPS, and rate-limiting.  
   
 ## Future Work  
 The project has provided a solid foundation for future work. The following are some of the areas that could be explored in future work:  
-- Greater integration with other systems  
-- Improved user interface  
-- Enhanced security features  
-- More advanced file system node structure  
+- Greater integration with other systems
+  - Integration with cloud storage services
+  - Integration with version control systems
+  - Integration with backup systems
+- Improved user interface
+  - More advanced search functionality
+  - Customisable file organisation rules
+  - Enhanced file visualisation and management
+- Enhanced security features
+  - File access logging
+- More advanced file system node structure
+  - Support for more file types
+  - Support for file metadata
+  - Support for file versioning
   
 ## Conclusion  
 K.L.A.A.S design philosophy centres on creating a seamless file management and sharing experience for desktop users. By integrating a robust client application with a lightweight web server, K.L.A.A.S achieves a balance between local file organisation and the convenience of web-based file sharing.  
 The project has been successful in achieving this goal and has provided a valuable resource for users.  
   
 ## Acknowledgements  
-The group would like to thank the module lecturer for their support and guidance throughout the project.  
+The group would like to thank the module lecturer for their support and guidance throughout the project. We would also like to thank our peers for their valuable feedback and suggestions.
+
   
 ## References  
-- PyQt5 Documentation: https://www.riverbankcomputing.com/static/Docs/PyQt5/  
-- Flask Documentation: https://flask.palletsprojects.com/en/2.0.x/  
+- PyQt5 Documentation: https://www.riverbankcomputing.com/static/Docs/PyQt5/
+- Flask Documentation: https://flask.palletsprojects.com/en/2.1.2/  
 - Python os Module Documentation: https://docs.python.org/3/library/os.html  
-- Python shutil Module Documentation: https://docs.python.org/3/library/shutil.html 
+- Python shutil Module Documentation: https://docs.python.org/3/library/shutil.html
+- Python pickle Module Documentation: https://docs.python.org/3/library/pickle.html

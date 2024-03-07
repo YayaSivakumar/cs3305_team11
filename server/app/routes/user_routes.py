@@ -7,38 +7,12 @@ from ..models.file import Upload
 
 from ..db import db
 
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, EmailField
-from wtforms.validators import DataRequired, Email
+from ..forms.user_forms import SignUpForm, LoginForm
 
 from . import file_routes  # Import Blueprint instance from the main application package
 from . import main_routes  # Import Blueprint instance from the main application package
 
 user_routes = Blueprint('user_routes', __name__)
-
-
-class SignUpForm(FlaskForm):
-    """
-    Sign-up user form
-    """
-    name = StringField("Enter name:",
-                       validators=[DataRequired()])
-    email = EmailField("Enter email: ",
-                       validators=[DataRequired(), Email()])
-    password = PasswordField("Enter password: ",
-                             validators=[DataRequired()])
-    submit = SubmitField("Submit")
-
-
-class LoginForm(FlaskForm):
-    """
-    Login user form
-    """
-    email = EmailField("Enter email: ",
-                       validators=[DataRequired(), Email()])
-    password = PasswordField("Enter password: ",
-                             validators=[DataRequired()])
-    submit = SubmitField("Submit")
 
 
 @user_routes.route('/signup', methods=['GET', 'POST'])
@@ -64,11 +38,9 @@ def signup():
         flash('Account created successfully', 'success')
         return redirect(url_for('user_routes.login'))
 
-    if 'PyQt' in request.headers.get('User-Agent'):
-        return render_template('signup_pyqt.html', form=form, user_routes=user_routes, file_routes=file_routes, main_routes=main_routes)
-
     return render_template('signup.html',
                            form=form,
+                           is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
@@ -92,16 +64,13 @@ def login():
         else:
             flash("Incorrect credentials - Try again", 'error')
 
-    if 'PyQt' in request.headers.get('User-Agent'):
-        return render_template('login_pyqt.html', form=form, user_routes=user_routes, file_routes=file_routes, main_routes=main_routes)
-
     else:
         return render_template('login.html',
                            form=form,
+                            is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
-
 
 @user_routes.route('/logout')
 @login_required
@@ -116,7 +85,9 @@ def logout():
 def profile():
     # user_uploads = User.query.get(current_user.id).uploads
     user_uploads = current_user.uploads
+    print(f"Request header {request.headers.get('User-Agent')}")
     return render_template('profile.html',
+                           is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            user_uploads=user_uploads,
                            user_routes=user_routes,
                            file_routes=file_routes,

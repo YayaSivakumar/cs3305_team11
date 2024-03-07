@@ -36,6 +36,7 @@ def _organise_by_date(dir_node: Directory):
         if not node.is_invisible():
 
             # extract year and month from modification date
+            print(node.path, node.modification_date())
             year = str(node.modification_date()).split('-')[0]
             month = month_names[str(node.modification_date()).split('-')[1]]
 

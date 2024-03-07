@@ -1,6 +1,8 @@
-
-
-{% extends "base.html" %}
+{% if is_pyqt %}
+    {% extends "base_pyqt.html" %}
+{% else %}
+    {% extends "base.html" %}
+{% endif %}
 
 {% block title %}File Upload App - Upload{% endblock %}
 
@@ -18,7 +20,7 @@
         </div>
         <div class="form-control">
           {{ form.message.label(class="label label-text text-base font-semibold") }}
-          {{ form.message(class="textarea textarea-bordered text-sm", rows="2") }}
+          {{ form.message(class="textarea textarea-bordered text-sm", rows="1") }}
         </div>
         <div class="form-control">
             {{ form.upload_name.label(class="label label-text text-base font-medium") }}
