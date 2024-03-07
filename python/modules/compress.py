@@ -7,27 +7,14 @@ from python.model.FileSystemNodeModel import File, Directory
 def compress(file_node: object):
     """Compression based on type of file."""
 
-    if file_node.path.endswith('.mp3') or file_node.path.endswith('.wav') or file_node.path.endswith('.aac'):
-        # reduce the bitrate of the audio
-        output_path = _compress_audio(file_node)
-        # compress the reduced quality audio
-        output_path = _compress_single_file_gzip(output_path)
-    elif file_node.path.endswith('.mp4') or file_node.path.endswith('.mov') or file_node.path.endswith('.avi'):
-        # reduce the bitrate of the video + audio
-        output_path = _compress_video(file_node)
-        # compress the reduced quality video
-        output_path = _compress_single_file_gzip(output_path)
-    elif os.path.isdir(file_node.path):
-        # compress the entire directory using tar with gzip compression
+    if os.path.isdir(file_node.path):
         output_path = _compress_directory_tar_gzip(file_node)
     else:
-        # compress the file using gzip
         output_path = _compress_single_file_gzip(file_node)
-
     return output_path
 
 
-def _compress_audio(file_node: File, bitrate="128k"):
+def _reduce_audio_quality(file_node: File, bitrate="128k"):
     """
     Compress an audio file using ffmpeg by reducing the audio bitrate.
 
@@ -47,7 +34,7 @@ def _compress_audio(file_node: File, bitrate="128k"):
     return output_path
 
 
-def _compress_video(file_node: File, video_bitrate: str='1000k', audio_bitrate: str='128k'):
+def _reduce_video_quality(file_node: File, video_bitrate: str='1000k', audio_bitrate: str='128k'):
     """
     Compresses a video file using FFmpeg by reducing video and audio bitrates.
 

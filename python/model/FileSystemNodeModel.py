@@ -215,7 +215,7 @@ class Directory(FileSystemNode):
                 print(f"Found entry: {entry.path}")
                 if entry.is_dir():
                     # Skip hidden directories
-                    if entry.name.startswith('.') or entry.name.startswith('$'):
+                    if '.' in entry.name or entry.name.startswith('$'):
                         continue
                     child = Directory(os.path.normpath(entry.path), self.cache, name=entry.name, parent=self)
                 else:

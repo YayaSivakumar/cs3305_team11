@@ -8,6 +8,7 @@ def deduplicate(dir_node: Directory):
     # set to store hashed values of files
     seen = set()
 
+    # recursively delete duplicate files
     duplicate_files = _deduplicate(dir_node, seen)
 
     return duplicate_files
@@ -15,9 +16,11 @@ def deduplicate(dir_node: Directory):
 
 def _deduplicate(dir_node: Directory, seen: set):
     deleted = []
+
     # work on a copy of children to safely modify the list during iteration
     for child in dir_node.children[:]:
 
+        # get the hashed value of the child
         hashed_value = child.get_hashed_value()
 
         # if the child is a directory, recursively process it
