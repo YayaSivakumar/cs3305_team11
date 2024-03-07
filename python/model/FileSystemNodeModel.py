@@ -253,6 +253,7 @@ class Directory(FileSystemNode):
         # define callback function to add children from threads
         def add_child(child):
             self.children.append(child)
+            child.parent = self
 
         try:
             with os.scandir(self.path) as entries:
@@ -625,7 +626,7 @@ class Music(File):
         target_directory = os.path.join(parent_directory, self.artist)  # Target directory based on artist
         if not os.path.exists(target_directory):
             os.mkdir(target_directory)
-            music_folder = Directory(target_directory, self.cache, 'Music')
+            music_folder = Directory(target_directory, self.cache, 'Music', self.parent)
             # update attributes
             self.parent.add_child(music_folder)
 
