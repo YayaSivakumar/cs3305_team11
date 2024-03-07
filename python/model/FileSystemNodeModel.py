@@ -22,24 +22,14 @@ class FileSystemNode:
     """Represents a file or directory in the file system."""
 
     def __init__(self, path: str, cache: FileSystemCache, parent, size = None):
-        self.path = path
-        self.name = None
+        self.path = os.path.normpath(path)
+        self.name = os.path.basename(os.path.normpath(path))
         self.revert_path = path
         self.cache_timestamp = None
         self.cache = cache
         self.parent = parent if parent else None
         self.children = []
         self.size = size
-
-    def find_node(self, name: str):
-        """Recursively find a node by name."""
-        if self.name == name:
-            return self
-        for child in self.children:
-            found = child.find_node(name)
-            if found:
-                return found
-        return None
 
     def find_node_from_cache(self, name: str) -> FileSystemNode:
         try:
@@ -95,6 +85,7 @@ class FileSystemNode:
         return self.name.startswith('.')
 
     def move(self, dst: str):
+        dst = os.path.normpath(dst)  # Normalize the destination path
         try:
             # Try using shutil.move first
             shutil.move(self.path, dst)
@@ -110,16 +101,18 @@ class FileSystemNode:
                 print(f"Manual copy and delete failed: {e}")
 
     def _move_update_metadata(self, new_path):
-        # update paths
+        normalized_new_path = os.path.normpath(new_path)  # Normalize the new path
         self.revert_path = self.path
-        self.path = new_path
+        self.path = normalized_new_path
         # update data structure
         self.parent.remove_child(self)
-        self.parent = self.cache[os.path.dirname(new_path)]
+        parent_dir = os.path.dirname(normalized_new_path)
+        self.parent = self.cache[parent_dir]
         self.parent.add_child(self)
         # update cache
         self.cache.remove(self.revert_path)
-        self.cache.update(new_path, self)
+        self.cache.update(normalized_new_path, self)
+
 
     def to_json(self):
         return {
@@ -188,7 +181,7 @@ class FileSystemNode:
 
 class File(FileSystemNode):
     def __init__(self, path: str, cache: FileSystemCache, name, parent, size=None):
-        super().__init__(path, cache, parent, size)
+        super().__init__(os.path.normpath(path), cache, parent, size)
         self.name = name  # give file a name
 
     def __str__(self) -> str:
@@ -204,7 +197,7 @@ class Directory(FileSystemNode):
     """Represents a directory in the file system."""
 
     def __init__(self, path: str, cacheObj: FileSystemCache, name, parent):
-        super().__init__(path, cacheObj, parent, size=None)
+        super().__init__(os.path.normpath(path), cacheObj, parent, size=None)
         self.name = name
         self._populate()  # Populate the directory with its children
         cacheObj.save_to_file()
@@ -213,39 +206,27 @@ class Directory(FileSystemNode):
         """Populate the directory with its children and calculate directory size."""
         total_size = 0
         print(f"Populating directory {self.path}\nParent: {self.parent}")
-        try:
-            with os.scandir(self.path) as entries:
-                for entry in entries:
-                    print(f"Found entry: {entry.path}")
-                    if entry.is_dir():
-                        # Skip python version directories and hidden folders
-                        if '.' in entry.name or entry.name.startswith('$'):
-                            continue
-                        child = Directory(entry.path, self.cache, name=entry.name, parent=self)
-                        print(f"Created Directory: {child.path} with parent: {child.parent.path}")
-                    else:
-                        # Calculate file size and update total size for the directory
-                        file_size = entry.stat().st_size
-                        total_size += file_size
-                        if entry.path.endswith(".wav") or entry.path.endswith(".aac") or entry.path.endswith(".mp3"):
-                            child = Music(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
-                        elif entry.path.endswith(".jpeg") or entry.path.endswith(".jpg") or entry.path.endswith(".HEIC"):
-                            # child = Image(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
-                            #TODO Fix image usage, currently causing FileNotFound Error due to subprocessing of CLI util
-                            child = File(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
-                        else:
-                            child = File(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
-                        print(f"Created File: {child.path} with parent: {child.parent.path}")
-                        self.cache.update(child.path, child)
-                    self.add_child(child)
-
-            # After iterating through all entries, set the directory's size
-            self.size = total_size
-            print(f"inserting directory: {self.path} to cache")
+        self.path = os.path.normpath(self.path)
+        # Add the directory itself to the cache first
+        if self.path not in self.cache.body.keys():
             self.cache.update(self.path, self)
-
-        except FileNotFoundError:
-            print(f"Directory not found: {self.path}")
+        with os.scandir(self.path) as entries:
+            for entry in entries:
+                print(f"Found entry: {entry.path}")
+                if entry.is_dir():
+                    # Skip hidden directories
+                    if entry.name.startswith('.') or entry.name.startswith('$'):
+                        continue
+                    child = Directory(os.path.normpath(entry.path), self.cache, name=entry.name, parent=self)
+                else:
+                    file_size = entry.stat().st_size
+                    total_size += file_size
+                    child = File(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
+                self.add_child(child)
+                print(f"Created {type(child).__name__}: {child.path} with parent: {child.parent.path}")
+                self.cache.update(child.path, child)
+        self.size = total_size
+        print(f"Inserted directory: {self.path} to cache")
 
     def _multithread_populate(self):
         thread_pool = QThreadPool.globalInstance()

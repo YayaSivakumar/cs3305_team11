@@ -14,6 +14,7 @@ class FileSystemCache:
 
     def update(self, path: str, node: FileSystemNode):
         """Update the cache with the given file or directory node."""
+        path = os.path.normpath(path)
         self.body[path] = node
         node.cache_timestamp = datetime.now()
 

@@ -1,9 +1,10 @@
-import os
+import os, webbrowser
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from collections import defaultdict
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton
 from PyQt5.QtWidgets import QLabel, QListWidget, QMessageBox
+from python.model.FileSystemNodeModel import File, Directory
 
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 import plotly.graph_objects as go
@@ -56,6 +57,11 @@ class VisualiseWindow(QWidget):
         self.folder_contents = QListWidget()
         self.folder_contents.setFont(QFont('Arial', 12))
 
+        # Button to open the chart in a browser
+        self.open_browser_button = QPushButton("Open in Browser", self)
+        self.open_browser_button.clicked.connect(self.open_in_browser)
+        self.layout.addWidget(self.open_browser_button)
+
         # Styling
         self.folder_contents.setStyleSheet("""
             QListWidget {
@@ -72,7 +78,13 @@ class VisualiseWindow(QWidget):
             }
         """)
         # Set the layout for the widget
-        # self.setLayout(layout)
+        self.setLayout(self.layout)
+
+    def open_in_browser(self):
+        # Path to the debug HTML file
+        html_file_path = os.path.abspath("debug_plotly_chart.html")
+        # Open the HTML file in the default web browser
+        webbrowser.open('file://' + html_file_path)
 
     @property
     def window_index(self):
@@ -89,12 +101,11 @@ class VisualiseWindow(QWidget):
     def updateVisualization(self):
         # Here, we assume that your fileSystemModel object has a method that returns
         # the folder path. You will need to replace 'getFolderPath' with the actual method name.
-        folder_path = self.fileSystemModel.path
+        folder_path = os.path.normpath(self.fileSystemModel.path)
 
         # Now, use 'folder_path' to calculate the directory structure and visualize it
         labels, parents, values = self.calculate_directory_structure(folder_path)
         self.visualize_sizes(labels, parents, values)
-
 
     def visualise_folder(self, folder_path):
         labels, parents, values = self.calculate_directory_structure(folder_path)
@@ -115,9 +126,49 @@ class VisualiseWindow(QWidget):
                     continue
         return file_sizes
 
+    # def updateVisualization(self):
+    #     # Now, use 'folder_path' from the fileSystemModel to calculate the directory structure and visualize it
+    #     if hasattr(self.fileSystemModel, 'path'):
+    #         folder_path = self.fileSystemModel.path
+    #         labels, parents, values = self.calculate_directory_structure(folder_path)
+    #         self.visualize_sizes(labels, parents, values)
+    #     else:
+    #         print("FileSystemModel does not have 'path' attribute.")
+
+    # Updated method to accept folder_path
+    def update_directory_sizes(self, node):
+        if isinstance(node, File):
+            return node.size
+        total_size = 0
+        for child in node.children:
+            total_size += self.update_directory_sizes(child)
+        node.size = total_size
+        return node.size
+
+    def calculate_directory_structure(self, folder_path):
+        folder_path = os.path.normpath(folder_path)
+        root_node = self.fileSystemModel.cache[folder_path]
+        self.update_directory_sizes(root_node)
+
+        labels = [folder_path]
+        parents = ['']
+        values = [root_node.size]
+
+        for node in self.fileSystemModel.cache.values():
+            node_path = os.path.normpath(node.path)
+            if node_path == folder_path:
+                continue  # Skip the root node since it's already added
+
+            parent_path = os.path.normpath(node.parent.path if node.parent else folder_path)
+            labels.append(node_path)
+            parents.append(parent_path)
+            values.append(node.size)
+
+        return labels, parents, values
+
     def visualize_sizes(self, labels, parents, values):
         if not labels:
-            QMessageBox.information(self, 'No Data', 'No files to visualise in the selected directory.', QMessageBox.Ok)
+            QMessageBox.information(self, 'No Data', 'No files to visualize in the selected directory.', QMessageBox.Ok)
             return
 
         fig = go.Figure(go.Sunburst(
@@ -131,34 +182,6 @@ class VisualiseWindow(QWidget):
         self.plotly_widget.setFigure(fig)  # Update the figure in the PlotlyWidget
         self.plotly_widget.show()  # Make sure the widget is shown
 
-    def updateVisualization(self):
-        # Now, use 'folder_path' from the fileSystemModel to calculate the directory structure and visualize it
-        if hasattr(self.fileSystemModel, 'path'):
-            folder_path = self.fileSystemModel.path
-            labels, parents, values = self.calculate_directory_structure(folder_path)
-            self.visualize_sizes(labels, parents, values)
-        else:
-            print("FileSystemModel does not have 'path' attribute.")
-
-    # Updated method to accept folder_path
-    def calculate_directory_structure(self, folder_path):
-        labels = ['Root']
-        parents = ['']
-        values = [0]
-
-        # Here, traverse your FileSystemNodeModel to get the structure
-        # This part needs to be implemented based on how FileSystemNodeModel works
-        # The following is just an illustrative placeholder
-        for node in self.fileSystemModel.cache.values():
-            labels.append(node.name)
-            parents.append(node.parent.name if node.parent else 'Root')
-            values.append(node.size)
-
-        # Recalculate the root size based on children
-        root_size = sum(values[1:])
-        values[0] = root_size
-
-        return labels, parents, values
 
 class FolderVisualizer(QWidget):
     def __init__(self):
