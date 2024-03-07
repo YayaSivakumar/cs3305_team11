@@ -2,17 +2,6 @@ import os
 import shutil
 from python.model.FileSystemNodeModel import FileSystemNode
 
-def get_size(self):
-    """Returns the size of a directory or file."""
-    total_size = 0
-    for dirpath, dirnames, filenames in os.walk(self.path):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-            # skip if it is symbolic link
-            if not os.path.islink(fp):
-                total_size += os.path.getsize(fp)
-    return total_size
-
 
 def analyze_storage(self):
     """Analyzes storage usage starting from the given path."""
