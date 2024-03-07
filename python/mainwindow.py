@@ -145,7 +145,7 @@ class MainWindow(QMainWindow):
         print("URL changed to:", url.toString())  # Add this line for debugging
         if "http://127.0.0.1:5000/profile" in url.toString():
             self.loggedIn = True
-            self.show_window(self.file_sharing_window.window_index)
+            # self.show_window(self.file_sharing_window.window_index)
 
     def apply_system_theme(self, dark_mode):
         if dark_mode:

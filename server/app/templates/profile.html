@@ -1,4 +1,8 @@
-{% extends "base.html" %}
+{% if is_pyqt %}
+    {% extends "base_pyqt.html" %}
+{% else %}
+    {% extends "base.html" %}
+{% endif %}
 
 {% block title %}File Upload App - Profile{% endblock %}
 
