@@ -218,8 +218,8 @@ class Directory(FileSystemNode):
                 for entry in entries:
                     print(f"Found entry: {entry.path}")
                     if entry.is_dir():
-                        # Skip hidden directories or any specific directories you don't want to include
-                        if entry.name.startswith('.') or entry.name.startswith('$'):
+                        # Skip python version directories and hidden folders
+                        if '.' in entry.name or entry.name.startswith('$'):
                             continue
                         child = Directory(entry.path, self.cache, name=entry.name, parent=self)
                         print(f"Created Directory: {child.path} with parent: {child.parent.path}")
