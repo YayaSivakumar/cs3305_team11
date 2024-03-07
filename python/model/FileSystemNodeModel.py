@@ -632,7 +632,7 @@ class Music(File):
 
         # keep track of original path to revert changes
         revert_path = self.revert_path
-        self.move(target_directory)
+        self.move(target_directory+'/'+self.name)
         self.revert_path = revert_path
         print(f"Moved {self.path} to {target_directory}")
 
