@@ -26,4 +26,6 @@ def sort_music(dir_node: Directory):
     if dir_node.path + '/Music' in dir_node.cache.keys():
         music_folder_node = dir_node.cache[dir_node.path + '/Music']
         for file in music_folder_node.children[:]:
+            if type(file) == Directory:
+                continue
             file.organize_music()
