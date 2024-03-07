@@ -48,7 +48,9 @@ class UpdateForm(FlaskForm):
     """
     upload_name = StringField("Enter upload name: ")
     message = StringField("Enter message: ")
-    expiration_hours = StringField("Enter expiration hours: ",
+    expiration_hours = SelectField("Enter expiration hours: ",
+                                   choices=[('24', '24 Hours'), ('72', '3 Days'), ('168', '7 Days')],
+                                   default=(),
                                    validators=[DataRequired()])
     submit = SubmitField("Submit")
 
@@ -271,42 +273,47 @@ def upload_success(unique_id):
 
 
 # TODO: update to fit upload model
-@file_routes.route('/update_file/<unique_id>', methods=['GET', 'POST'])
+@file_routes.route('/update_upload/<unique_id>', methods=['GET', 'POST'])
 @login_required
-def update_file(unique_id):
-    file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
+def update_upload(unique_id):
+    upload_record = Upload.query.filter_by(unique_id=unique_id).first_or_404()
+    form = UpdateForm()
     if request.method == 'POST':
-        message = request.form.get('message', '')
-        expiration_hours = int(request.form.get('expiration_hours', 24))
+        message = form.message.data
+        form.message.data = ''
+        upload_name = form.upload_name.data
+        form.upload_name.data = ''
+        expiration_hours = form.expiration_hours.data
 
-        file_record.message = message
-        file_record.expires_at = datetime.utcnow() + timedelta(hours=expiration_hours)
+        upload_record.upload_name = upload_name
+        upload_record.message = message
+        upload_record.expires_at = datetime.utcnow() + timedelta(hours=int(expiration_hours))
         db.session.commit()
 
         flash("File updated successfully", 'success')
         return redirect(url_for('user_routes.profile'))
-    return render_template('update_file.html',
-                           file=file_record,
+    return render_template('update_upload.html',
+                           upload=upload_record,
+                           form=form,
                            is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
 
 
-# TODO: Update to fit upload model
-@file_routes.route('/delete_file/<unique_id>', methods=['GET', 'POST'])
+@file_routes.route('/delete_upload/<unique_id>', methods=['GET', 'POST'])
 @login_required
-def delete_file(unique_id):
-    file_record = File.query.filter_by(unique_id=unique_id).first_or_404()
-    print(f"File: {file_record.filename}")
+def delete_upload(unique_id):
+    upload_record = Upload.query.filter_by(unique_id=unique_id).first_or_404()
+    print(f"Upload: {upload_record.upload_name}")
     if request.method == 'POST':
-        db.session.delete(file_record)
+        db.session.delete(upload_record)
         db.session.commit()
 
-        flash("File deleted successfully", 'success')
+        flash("Upload deleted successfully", 'success')
         return redirect(url_for('main_routes.home'))
-    return render_template('delete_file.html',
-                           file=file_record,
+    return render_template('delete_upload.html',
+                           file=upload_record,
                            is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            user_routes=user_routes,
                            file_routes=file_routes,
@@ -353,7 +360,6 @@ def download_file_page(unique_id):
                            main_routes=main_routes)
 
 
-# TODO: need to have password check on this?
 def direct_download_file(upload_record):
     """
     unique_id is the upload's unique ID

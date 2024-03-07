@@ -18,11 +18,13 @@
                 </div>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Filename:</span>
                     {{ upload_info.upload_name }}</p>
+                <p class="text-base">
+                    <span class="font-semibold text-lg">Message:</span> {{ upload_info.message }}
+                </p>
                 <p class="text-base font-light"><span class="font-semibold text-lg">Sender Email:</span>
                     {{ upload_info.upload_user.email }}</p>
                 <p class="text-base"><span class="font-semibold text-lg">Expiration date:</span>
                     {{ upload_info.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
-                <p class="text-base"><span class="font-semibold text-lg">Message:</span> {{ upload_info.message }}</p>
                 {% if upload_info.download_count %}
                     <p class="text-base"><span class="font-semibold text-lg">Number of downloads:</span>
                         {{ upload_info.download_count }}</p>
@@ -32,7 +34,6 @@
     </div>
 
  <script>
-
 <!--     TODO: Fix deprecated function -->
 function copyURL() {
     var copyText = document.getElementById("fileURL");
@@ -60,5 +61,6 @@ function copyURL() {
         });
 }
 </script>
+
 
 {% endblock %}

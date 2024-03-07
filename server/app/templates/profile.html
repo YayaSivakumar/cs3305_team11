@@ -53,9 +53,9 @@
                                 >
                                     Copy <i class="fa-regular fa-copy"></i>
                                 </button>
-                                <a href="{{ url_for('file_routes.update_file', unique_id=upload.unique_id) }}"
+                                <a href="{{ url_for('file_routes.update_upload', unique_id=upload.unique_id) }}"
                                    class="btn btn-sm btn-secondary bordered">Update</a>
-                                <a href="{{ url_for('file_routes.delete_file', unique_id=upload.unique_id) }}"
+                                <a href="{{ url_for('file_routes.delete_upload', unique_id=upload.unique_id) }}"
                                    class="btn btn-sm btn-error bordered">Delete</a>
                             </td>
                        </tr>
