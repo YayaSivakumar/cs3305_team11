@@ -111,7 +111,11 @@ def upload():
             flash('Upload completed successfully.', 'success')
             return redirect(url_for('file_routes.upload_success', unique_id=upload_obj.unique_id))
         flash('Form validation failed.', 'error')
-    return render_template('upload.html', form=form)
+    return render_template('upload.html',
+                           form=form,
+                           user_routes=user_routes,
+                           file_routes=file_routes,
+                           main_routes=main_routes)
 
 
 @file_routes.route('/upload_old', methods=['GET', 'POST'])
