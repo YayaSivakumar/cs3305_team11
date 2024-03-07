@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 import shutil
 import hashlib
+import pyheif
 
 from PyQt5.QtCore import QRunnable, QThreadPool
 
@@ -218,7 +219,7 @@ class Directory(FileSystemNode):
                     print(f"Found entry: {entry.path}")
                     if entry.is_dir():
                         # Skip hidden directories or any specific directories you don't want to include
-                        if entry.name.startswith('.'):
+                        if entry.name.startswith('.') or entry.name.startswith('$'):
                             continue
                         child = Directory(entry.path, self.cache, name=entry.name, parent=self)
                         print(f"Created Directory: {child.path} with parent: {child.parent.path}")
@@ -228,8 +229,10 @@ class Directory(FileSystemNode):
                         total_size += file_size
                         if entry.path.endswith(".wav") or entry.path.endswith(".aac") or entry.path.endswith(".mp3"):
                             child = Music(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
-                        if entry.path.endswith(".jpeg") or entry.path.endswith(".jpg") or entry.path.endswith(".HEIC"):
-                            child = Image(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
+                        elif entry.path.endswith(".jpeg") or entry.path.endswith(".jpg") or entry.path.endswith(".HEIC"):
+                            # child = Image(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
+                            #TODO Fix image usage, currently causing FileNotFound Error due to subprocessing of CLI util
+                            child = File(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
                         else:
                             child = File(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
                         print(f"Created File: {child.path} with parent: {child.parent.path}")
@@ -238,6 +241,7 @@ class Directory(FileSystemNode):
 
             # After iterating through all entries, set the directory's size
             self.size = total_size
+            print(f"inserting directory: {self.path} to cache")
             self.cache.update(self.path, self)
 
         except FileNotFoundError:
@@ -368,10 +372,38 @@ class Image(File):
         """
         Populate the image metadata.
         """
-        if self.extension() == '.HEIC':
-            self.heic_to_pillow_format()
+        # If the image is HEIC, convert using pyheif
+        if self.extension().lower() == '.heic':
+            heif_file = pyheif.read(self.path)
+            image = PIL.Image.frombytes(
+                heif_file.mode,
+                heif_file.size,
+                heif_file.data,
+                "raw",
+                heif_file.mode,
+                heif_file.stride,
+            )
+            # Optionally, convert to JPEG or another format here
+            # e.g., image.save(self.path.replace('.HEIC', '.jpeg'), "JPEG")
+            self._extract_metadata_from_pil_image(image)
+        else:
+            image = PIL.Image.open(self.path)
+            self._extract_metadata_from_pil_image(image)
 
-        self._populate_jpeg_metadata()
+    def _extract_metadata_from_pil_image(self, image):
+        # Extract metadata from the PIL Image object
+        exif_data = {}
+        if hasattr(image, '_getexif'):
+            exif_info = image._getexif()
+            if exif_info is not None:
+                for tag, value in exif_info.items():
+                    decoded = TAGS.get(tag, tag)
+                    exif_data[decoded] = value
+
+        self.width = exif_data.get('ExifImageWidth', image.width)
+        self.height = exif_data.get('ExifImageHeight', image.height)
+        self.coords = self.convert_gps_data(exif_data['GPSInfo']) if 'GPSInfo' in exif_data else None
+        self.location = self.get_location_by_country() if self.coords else None
 
     def _populate_jpeg_metadata(self):
         try:

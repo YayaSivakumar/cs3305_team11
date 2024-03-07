@@ -1,0 +1,7 @@
+Please install the following system dependencies before installing the Python packages:
+
+# For macOS:
+brew install libheif
+
+# For Ubuntu/Debian:
+sudo apt-get install libheif-dev

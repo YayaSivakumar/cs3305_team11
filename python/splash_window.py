@@ -26,9 +26,9 @@ class SplashWindow(QWidget):
         # Dropdown (Combo Box) for folder selection
         self.folderSelection = QComboBox(self)
         user_paths = {
-            "Downloads": os.path.expanduser('~')+'/Downloads',
-            "Desktop": os.path.expanduser('~')+'/Desktop',
-            "Documents": os.path.expanduser('~')+'/Documents',
+            "Downloads": os.path.expanduser('~')+'/Downloads/',
+            "Desktop": os.path.expanduser('~')+'/Desktop/',
+            "Documents": os.path.expanduser('~')+'/Documents/',
             "Home Folder": os.path.expanduser('~')
         }
         print(user_paths)

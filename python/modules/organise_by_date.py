@@ -24,8 +24,8 @@ def _organise_by_date(dir_node: Directory):
     filepath: str: path to create directories at
     required: list[str]: list of the required folders
     """
-    month_names = {'01':'January', '02':'February', '03':'March', '04':'April', '05':'May', '06':'June',\
-                   '07':'July', '08':'August', '09':'September', '10':'October', '11':'November', '12':'December'}
+    month_names = {'01': 'January', '02': 'February', '03': 'March', '04': 'April', '05': 'May', '06': 'June',
+                   '07': 'July', '08': 'August', '09': 'September', '10': 'October', '11': 'November', '12': 'December'}
 
     # create copy of child list to avoid changing the list while iterating
     for node in dir_node.children[:]:
@@ -41,15 +41,16 @@ def _organise_by_date(dir_node: Directory):
 
             # create directories if they don't already exist
             if year not in os.listdir(dir_node.path):
-                os.makedirs(dir_node.path+'/'+year)
-                dir_node.add_child(Directory(dir_node.path+'/'+year, dir_node.cache, year))
-            if month not in os.listdir(dir_node.path+'/'+year):
-                os.makedirs(dir_node.path+'/'+year+'/'+month)
-                year_node = dir_node.find_node_from_cache(dir_node.path+'/'+year)
-                year_node.add_child(Directory(dir_node.path + '/' + year + '/' + month, dir_node.cache, month))
+                os.makedirs(dir_node.path + '/' + year)
+                dir_node.add_child(Directory(dir_node.path + '/' + year, dir_node.cache, year, dir_node))
+            if month not in os.listdir(dir_node.path + '/' + year):
+                os.makedirs(dir_node.path + '/' + year + '/' + month)
+                year_node = dir_node.find_node_from_cache(dir_node.path + '/' + year)
+                year_node.add_child(
+                    Directory(dir_node.path + '/' + year + '/' + month, dir_node.cache, month, dir_node))
 
             # move item to the correct directory
-            new_file_path = os.path.join(dir_node.path+'/'+year+'/'+month + '/' + node.name)
+            new_file_path = os.path.join(dir_node.path + '/' + year + '/' + month + '/' + node.name)
 
             # keep track of original path to revert changes
             revert_path = node.revert_path
