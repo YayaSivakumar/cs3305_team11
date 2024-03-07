@@ -19,15 +19,18 @@
                 <p class="text-base font-light"><span class="font-semibold text-lg">Link Expires:</span>
                     {{ upload.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
 <!--                TODO: do we want this password protection functionality to work?      -->
-                {% if upload.is_password_protected %}
-                    <p>This file is password protected. Please enter the password to download.</p>
-                    <form class="" action="{{ url_for('file_routes.download_file_page', unique_id=upload.unique_id) }}" method="post">
-                        <input type="password" name="password" placeholder="Enter password" required>
-                        <button class="btn btn-sm text-neutral" type="submit">Download</button>
-                    </form>
+                <form action="{{ url_for('file_routes.download_file_page', unique_id=upload.unique_id) }}" method="post">
+                    {% if upload.is_password_protected %}
+                        <p class="text-base font-light">This file is password protected. Please enter the password to download.</p>
+                        <div class="form-control w-full max-w-xs">
+                            {{ form.password.label(class="label label-text") }}
+                            {{ form.password(class="input input-bordered rounded-md") }}
+                        </div>
+                        {{ form.submit(class="mt-4 inline-block bg-primary text-base-100 py-2 px-4 rounded hover:bg-primary-focus") }}
                     {% else %}
-                    <button
-                {% endif %}
+                        {{ form.submit(class="mt-4 inline-block bg-primary text-base-100 py-2 px-4 rounded hover:bg-primary-focus") }}
+                    {% endif %}
+                </form>
             </div>
         </div>
     </div>

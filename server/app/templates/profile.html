@@ -42,8 +42,6 @@
                             <td>{{ upload.download_count }}</td>
 <!--                            <td>{{ upload.unique_id }}</td>-->
                             <td>
-                                <a href="{{ url_for('file_routes.direct_download_file', unique_id=upload.unique_id) }}"
-                                   class="btn btn-sm bordered">Download</a>
                                 <button
                                    class="btn btn-sm bordered"
                                    data-link="{{ url_for('file_routes.direct_download_file', unique_id=file.unique_id, _external=True) }}"

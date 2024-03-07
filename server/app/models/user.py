@@ -10,7 +10,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(24))
     email = db.Column(db.String(44), unique=True)
-    password_hashed = db.Column(db.String(128))
+    hashed_password = db.Column(db.String(128))
     uploads = db.relationship('Upload', backref=db.backref('user', lazy='joined'))
 
     def __repr__(self):
@@ -23,11 +23,10 @@ class User(UserMixin, db.Model):
     @password.setter
     def password(self, password):
         # self.password_hashed = generate_password_hash(password)
-        self.password_hashed = hashpw(password.encode('utf-8'), gensalt())
+        self.hashed_password = hashpw(password.encode('utf-8'), gensalt())
 
     def verify_password(self, password):
-        # return check_password_hash(self.password_hashed, password)
-        return checkpw(password.encode('utf-8'), self.password_hashed)
+        return checkpw(password.encode('utf-8'), self.hashed_password)
 
 
 

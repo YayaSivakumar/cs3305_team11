@@ -53,6 +53,14 @@ class UpdateForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
+class DownloadForm(FlaskForm):
+    """
+    File download form
+    """
+    password = PasswordField("Enter password: ")
+    submit = SubmitField("Download")
+
+
 @file_routes.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
@@ -296,23 +304,27 @@ def delete_file(unique_id):
                            main_routes=main_routes)
 
 
-@file_routes.route('/download/<unique_id>', methods=['GET'])
+@file_routes.route('/download/<unique_id>', methods=['GET', 'POST'])
 def download_file_page(unique_id):
     upload_record = Upload.query.filter_by(unique_id=unique_id).first_or_404()
     upload_user_id = upload_record.user_id
     upload_user_details = User.query.get(upload_user_id)
-
+    form = DownloadForm()
     if request.method == 'POST':
-        password = request.form.get('password')
-        print('Trying password')
-        if upload_record.verify_password(password):
-            # Password is correct, allow the user to download the file
-            print('Password is correct')
-            return redirect(url_for('file_routes.direct_download_file', unique_id=unique_id))
+        if upload_record.is_password_protected():
+            password = form.password.data
+            form.password.data = ''
+            print('Trying password')
+            if upload_record.verify_password(password):
+                # Password is correct, allow the user to download the file
+                print('Password is correct')
+                return direct_download_file(upload_record)
+            else:
+                # Password is incorrect, display an error message
+                print('Password is correct')
+                flash('Invalid password. Please try again.', 'error')
         else:
-            # Password is incorrect, display an error message
-            print('Password is correct')
-            flash('Invalid password. Please try again.', 'error')
+            return direct_download_file(upload_record)
 
     upload_details = {
         'filename': upload_record.upload_name,
@@ -320,13 +332,11 @@ def download_file_page(unique_id):
         'expires_at': upload_record.expires_at,
         'unique_id': unique_id,
         'is_password_protected': upload_record.is_password_protected(),
-        'download_link': url_for('file_routes.direct_download_file',
-                                 unique_id=unique_id,
-                                 _external=True),
         'upload_user': upload_user_details
     }
 
     return render_template('download.html',
+                           form=form,
                            upload=upload_details,
                            user_routes=user_routes,
                            file_routes=file_routes,
@@ -334,13 +344,11 @@ def download_file_page(unique_id):
 
 
 # TODO: need to have password check on this?
-@file_routes.route('/download/file/<unique_id>', methods=['GET'])
-def direct_download_file(unique_id):
+def direct_download_file(upload_record):
     """
     unique_id is the upload's unique ID
 
     """
-    upload_record = Upload.query.filter_by(unique_id=unique_id).first_or_404()
     print(f'Upload record: {upload_record}')
     if datetime.utcnow() > upload_record.expires_at:
         abort(410)
@@ -348,11 +356,11 @@ def direct_download_file(unique_id):
         upload_name = secure_filename(upload_record.upload_name)
 
     else:
-        upload_name = f"{current_user.name}_file_upload_{unique_id[:6]}"
+        upload_name = f"{current_user.name}_file_upload_{upload_record.unique_id[:6]}"
 
     if len(upload_record.files) > 1:
         # Create a zip archive containing all files in the upload
-        zip_filepath = os.path.join(UPLOADS_FOLDER, f"{unique_id}.zip")
+        zip_filepath = os.path.join(UPLOADS_FOLDER, f"{upload_record.unique_id}.zip")
         with zipfile.ZipFile(zip_filepath, 'w') as zipf:
             for file in upload_record.files:
                 file_path = os.path.join(UPLOADS_FOLDER, file.unique_id)
@@ -364,7 +372,7 @@ def direct_download_file(unique_id):
 
         # Serve the zip file for download
         return send_from_directory(directory=UPLOADS_FOLDER,
-                                   path=f"{unique_id}.zip",
+                                   path=f"{upload_record.unique_id}.zip",
                                    as_attachment=True,
                                    download_name=f"{upload_name}.zip")
     else:

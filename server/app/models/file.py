@@ -20,7 +20,6 @@ class Upload(db.Model):
         return f"<Upload {self.id}>"
 
     @property
-    @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
 
@@ -31,7 +30,7 @@ class Upload(db.Model):
 
     def verify_password(self, password):
         # return check_password_hash(self.password_hashed, password)
-        return checkpw(password.encode('utf-8'), self.password_hashed)
+        return checkpw(password.encode('utf-8'), self.hashed_password)
 
     def is_password_protected(self):
         return self.hashed_password is not None
