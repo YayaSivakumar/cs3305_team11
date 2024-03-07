@@ -1,4 +1,8 @@
-{% extends "base.html" %}
+{% if is_pyqt %}
+    {% extends "base_pyqt.html" %}
+{% else %}
+    {% extends "base.html" %}
+{% endif %}
 
 {% block title %}File Upload App - Profile{% endblock %}
 
@@ -44,7 +48,7 @@
                             <td>
                                 <button
                                    class="btn btn-sm bordered"
-                                   data-link="{{ url_for('file_routes.direct_download_file', unique_id=file.unique_id, _external=True) }}"
+                                   data-link="{{ url_for('file_routes.download_file_page', unique_id=upload.unique_id, _external=True) }}"
                                    onclick="copyLinkToClipboard(this)"
                                 >
                                     Copy <i class="fa-regular fa-copy"></i>

@@ -64,11 +64,9 @@ def signup():
         flash('Account created successfully', 'success')
         return redirect(url_for('user_routes.login'))
 
-    if 'PyQt' in request.headers.get('User-Agent'):
-        return render_template('signup_pyqt.html', form=form, user_routes=user_routes, file_routes=file_routes, main_routes=main_routes)
-
     return render_template('signup.html',
                            form=form,
+                           is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
@@ -92,16 +90,13 @@ def login():
         else:
             flash("Incorrect credentials - Try again", 'error')
 
-    if 'PyQt' in request.headers.get('User-Agent'):
-        return render_template('login_pyqt.html', form=form, user_routes=user_routes, file_routes=file_routes, main_routes=main_routes)
-
     else:
         return render_template('login.html',
                            form=form,
+                            is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
-
 
 @user_routes.route('/logout')
 @login_required
@@ -116,7 +111,9 @@ def logout():
 def profile():
     # user_uploads = User.query.get(current_user.id).uploads
     user_uploads = current_user.uploads
+    print(f"Request header {request.headers.get('User-Agent')}")
     return render_template('profile.html',
+                           is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            user_uploads=user_uploads,
                            user_routes=user_routes,
                            file_routes=file_routes,

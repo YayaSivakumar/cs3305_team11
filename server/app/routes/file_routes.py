@@ -112,6 +112,7 @@ def upload():
             return redirect(url_for('file_routes.upload_success', unique_id=upload_obj.unique_id))
         flash('Form validation failed.', 'error')
     return render_template('upload.html',
+                           is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            form=form,
                            user_routes=user_routes,
                            file_routes=file_routes,
@@ -191,6 +192,7 @@ def upload_old():
         # If it's not a POST request, just render the template without context
         return render_template('upload.html',
                                form=form,
+                               is_pyqt='PyQt' in request.headers.get('User-Agent'),
                                user_routes=user_routes,
                                file_routes=file_routes,
                                main_routes=main_routes)
@@ -261,6 +263,7 @@ def upload_success(unique_id):
     }
     return render_template('upload_success.html',
                            link=link,
+                           is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            upload_info=upload_info,
                            file_routes=file_routes,
                            user_routes=user_routes,
@@ -284,6 +287,7 @@ def update_file(unique_id):
         return redirect(url_for('user_routes.profile'))
     return render_template('update_file.html',
                            file=file_record,
+                           is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
@@ -303,6 +307,7 @@ def delete_file(unique_id):
         return redirect(url_for('main_routes.home'))
     return render_template('delete_file.html',
                            file=file_record,
+                           is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes)
@@ -341,6 +346,7 @@ def download_file_page(unique_id):
 
     return render_template('download.html',
                            form=form,
+                           is_pyqt='PyQt' in request.headers.get('User-Agent'),
                            upload=upload_details,
                            user_routes=user_routes,
                            file_routes=file_routes,
