@@ -104,8 +104,8 @@ class VisualiseWindow(QWidget):
         folder_path = os.path.normpath(self.fileSystemModel.path)
 
         # Now, use 'folder_path' to calculate the directory structure and visualize it
-        labels, parents, values = self.calculate_directory_structure(folder_path)
-        self.visualize_sizes(labels, parents, values)
+        labels, parents, values, names = self.calculate_reduced_directory_structure(folder_path)
+        self.visualize_sizes(labels, parents, values,names)
 
     def visualise_folder(self, folder_path):
         labels, parents, values = self.calculate_directory_structure(folder_path)
@@ -153,6 +153,7 @@ class VisualiseWindow(QWidget):
         labels = [folder_path]
         parents = ['']
         values = [root_node.size]
+        names = [root_node.name]
 
         for node in self.fileSystemModel.cache.values():
             node_path = os.path.normpath(node.path)
@@ -163,19 +164,60 @@ class VisualiseWindow(QWidget):
             labels.append(node_path)
             parents.append(parent_path)
             values.append(node.size)
+            names.append(node.name)
 
-        return labels, parents, values
+        return labels, parents, values, names
 
-    def visualize_sizes(self, labels, parents, values):
+    def calculate_reduced_directory_structure(self, folder_path, n=5000):
+        folder_path = os.path.normpath(folder_path)
+        root_node = self.fileSystemModel.cache[folder_path]
+        self.update_directory_sizes(root_node)
+
+        labels = [folder_path]  # Root label
+        parents = ['']  # Root has no parent
+        values = [0]  # Root size - will be calc later
+        names = [root_node.name]  # Root name
+
+        def add_top_n_children(node, parent_label, n):
+            # Sort children by size, descending
+            sorted_children = sorted(node.children, key=lambda x: x.size, reverse=True)
+            top_n_children = sorted_children[:n]
+            other_children = sorted_children[n:]
+
+            # Add top n children
+            for child in top_n_children:
+                child_label = os.path.normpath(child.path)
+                labels.append(child_label)
+                parents.append(parent_label)
+                values.append(child.size)
+                names.append(child.name)
+                if isinstance(child, Directory):
+                    add_top_n_children(child, child_label, n)
+
+            # Sum the sizes of 'other' children and add them as a single entry
+            if other_children:
+                other_size = sum(child.size for child in other_children)
+                if other_size > 0:  # Add 'Other' entry only if its size is non-zero
+                    labels.append(f'{parent_label}/Other')
+                    parents.append(parent_label)
+                    values.append(other_size)
+                    names.append('Other')
+
+        add_top_n_children(root_node, folder_path, n)
+        values[0] = values[1:]
+        return labels, parents, values, names
+
+    def visualize_sizes(self, labels, parents, values, names=''):
         if not labels:
             QMessageBox.information(self, 'No Data', 'No files to visualize in the selected directory.', QMessageBox.Ok)
             return
 
         fig = go.Figure(go.Sunburst(
-            labels=labels,
+            labels=names,
             parents=parents,
             values=values,
             branchvalues="total",
+            ids=labels,
         ))
         fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
 
