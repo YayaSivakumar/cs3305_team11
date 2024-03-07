@@ -2,31 +2,49 @@ import sched
 import time
 from datetime import timedelta
 from python.model.FileSystemNodeModel import *
+from python.modules.organise import organise
+import threading
 
 
 class FileOrganizerScheduler:
     def __init__(self):
         self.scheduler = sched.scheduler(time.time, time.sleep)
+        self.thread = None
+        self.stop_requested = False
+        self.next_organisation = ''
+        self.next_organisation_event = None
 
-    def organize_files_weekly(self, path):
-        # Schedule the organization task to run weekly
-        now = datetime.now()
-        next_week = now + timedelta(weeks=1)
-        delta = next_week - now
-        seconds_until_next_week = delta.total_seconds()
-        self.scheduler.enter(seconds_until_next_week, 1, self.organize_files_weekly, (path,))
-        print(f"Next organization scheduled for: {next_week}")
+    def start(self, dir_node):
+        if self.thread is None or not self.thread.is_alive():
+            # Schedule the first task immediately and start the scheduler in a background thread
+            self.scheduler.enter(0, 1, self.organize_files_weekly, argument=(dir_node,))
+            self.thread = threading.Thread(target=self.scheduler.run)
+            self.thread.start()
+
         # Start the scheduler
         self.scheduler.run()
+        return self.next_organisation
+
+    def stop(self):
+        self.stop_requested = True  # Set the flag to request stop
+        if self.thread is not None:
+            self.scheduler.cancel(self.next_organisation_event)  # Cancel the next event
+
+    def organize_files_weekly(self, dir_node):
+        print('organising files...')
+        if self.stop_requested:
+            return ''
+
+        organise(dir_node)
+
+        # Calculate next week's time
+        next_week = datetime.now() + timedelta(weeks=1)
+        seconds_until_next_week = (next_week - datetime.now()).total_seconds()
+        self.next_organisation = next_week.strftime('%Y-%m-%d %H:%M:%S')
+
+        # Schedule the next organization
+        self.next_organisation_event = self.scheduler.enter(seconds_until_next_week, 1, self.organize_files_weekly, argument=(dir_node,))
 
 
 if __name__ == "__main__":
-    # scheduler = FileOrganizerScheduler()
-    # # Specify the file path to be organized
-    # file_path_schedule = "/home/evelynchelsea/test music"
-    # # dir_node = organise.dir_node
-    # # Call the organise function
-    # cache = FileSystemCache()
-    # dir_node = Directory("/home/evelynchelsea/test music", cache, 'test_music', None)
-    # organise(dir_node)
     pass
