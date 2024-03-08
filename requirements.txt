@@ -21,4 +21,3 @@ flask~=3.0.2
 werkzeug~=3.0.1
 pandas~=2.2.0
 mutagen~=1.47.0
-pdf2doi~=1.5
