@@ -139,23 +139,21 @@ def update_upload(unique_id):
     form = UpdateForm()
     #
     if request.method == 'POST':
-        if form.validate_on_submit():
-            # Get the form data
-            message = form.message.data
-            form.message.data = ''
-            upload_name = form.upload_name.data
-            form.upload_name.data = ''
-            expiration_hours = form.expiration_hours.data
-            # Update the upload information in the database
-            upload_record.upload_name = upload_name
-            upload_record.message = message
-            upload_record.expires_at = datetime.utcnow() + timedelta(hours=int(expiration_hours))
-            # Commit the session to the database
-            db.session.commit()
+        # Get the form data
+        message = form.message.data
+        form.message.data = ''
+        upload_name = form.upload_name.data
+        form.upload_name.data = ''
+        expiration_hours = form.expiration_hours.data
+        # Update the upload information in the database
+        upload_record.upload_name = upload_name
+        upload_record.message = message
+        upload_record.expires_at = datetime.utcnow() + timedelta(hours=int(expiration_hours))
+        # Commit the session to the database
+        db.session.commit()
 
-            flash("File updated successfully", 'success')
-            return redirect(url_for('user_routes.profile'))
-        flash("Form validation failed", 'error')
+        flash("File updated successfully", 'success')
+        return redirect(url_for('user_routes.profile'))
 
     return render_template('update_upload.html',
                            upload=upload_record,
