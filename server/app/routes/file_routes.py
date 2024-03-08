@@ -90,6 +90,7 @@ def upload():
                            file_routes=file_routes,
                            main_routes=main_routes)
 
+
 @file_routes.route('/upload_success/<unique_id>', methods=['GET'])
 @login_required
 def upload_success(unique_id):
@@ -213,24 +214,21 @@ def download_file_page(unique_id):
     form = DownloadForm()
 
     if request.method == 'POST':
-        # Check if the form is valid
-        if form.validate_on_submit():
-            # If the upload is password protected, check if the password is correct
-            if upload_record.is_password_protected():
-                # Get the password from the form
-                password = form.password.data
-                form.password.data = ''
-                # Verify the password
-                if upload_record.verify_password(password):
-                    # Password is correct, allow the user to download the file
-                    return direct_download_file(upload_record)
-                else:
-                    # Password is incorrect, display an error message
-                    flash('Invalid password. Please try again.', 'error')
-            else:
-                # If the upload is not password protected, allow the user to download the file
+        # If the upload is password protected, check if the password is correct
+        if upload_record.is_password_protected():
+            # Get the password from the form
+            password = form.password.data
+            form.password.data = ''
+            # Verify the password
+            if upload_record.verify_password(password):
+                # Password is correct, allow the user to download the file
                 return direct_download_file(upload_record)
-        flash('Form validation failed', 'error')
+            else:
+                # Password is incorrect, display an error message
+                flash('Invalid password. Please try again.', 'error')
+        else:
+            # If the upload is not password protected, allow the user to download the file
+            return direct_download_file(upload_record)
     upload_details = {
         'filename': upload_record.upload_name,
         'message': upload_record.message,
