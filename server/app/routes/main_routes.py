@@ -3,11 +3,15 @@ from flask import Blueprint, render_template, request, flash, jsonify
 from . import user_routes  # Import Blueprint instance from the main application package
 from . import file_routes  # Import Blueprint instance from the main application package
 
+# Define a Blueprint for the main routes
 main_routes = Blueprint('main_routes', __name__)
 
 
 @main_routes.route('/')
 def home():
+    """
+    Render the home page
+    """
     return render_template('index.html',
                            file_routes=file_routes,
                            user_routes=user_routes,
@@ -16,6 +20,9 @@ def home():
 
 @main_routes.route('/about')
 def about():
+    """
+    Render the about page
+    """
     return render_template('about.html',
                            file_routes=file_routes,
                            user_routes=user_routes,
@@ -24,6 +31,9 @@ def about():
 
 @main_routes.route('/trigger_flash', methods=['POST'])
 def trigger_flash():
+    """
+    Trigger a flash message
+    """
     data = request.get_json()
     print(f'DATA: {data}')
     flash(data['message'], data['category'])

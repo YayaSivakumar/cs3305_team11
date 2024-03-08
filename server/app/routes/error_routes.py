@@ -11,7 +11,10 @@ errors_routes = Blueprint('errors_route', __name__, template_folder='templates')
 # Define custom error handlers
 @errors_routes.app_errorhandler(404)
 def page_not_found(error):
-    return render_template('errors/404.html',
+    """
+    Custom error handler for 404 errors
+    """
+    return render_template('404.html',
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes), 404
@@ -19,7 +22,10 @@ def page_not_found(error):
 
 @errors_routes.app_errorhandler(500)
 def internal_server_error(error):
-    return render_template('errors/500.html',
+    """
+        Custom error handler for 500 errors
+    """
+    return render_template('500.html',
                            user_routes=user_routes,
                            file_routes=file_routes,
                            main_routes=main_routes), 500
