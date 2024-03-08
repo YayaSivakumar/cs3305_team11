@@ -5,10 +5,8 @@ from python.ui.drag_drop import *
 from python.ui.custom_file_system_model import *
 
 from python.model.FileSystemNodeModel import *
-from python.model.FileSystemCache import FileSystemCache
 from python.modules.compress import compress
 from python.modules.deduplicate import deduplicate
-# from python.modules.scheduler import scheduler
 
 
 class OptimiseWindow(QWidget):
@@ -128,9 +126,7 @@ class OptimiseWindow(QWidget):
                     self.duplicate_files = deduplicate(node)
 
                     # compress large files
-                    # for file in path:
-                    #     if file.size > 1000000:
-                    #           self.compressed_files.append(compress(node))
+                    self.checkCompressFiles(node)
 
                     if self.duplicate_files:
                         QMessageBox.information(self, 'Success',
@@ -161,8 +157,13 @@ class OptimiseWindow(QWidget):
         self.duplicate_files_label.setText('[]')
         self.deleteDuplicatesButton.setDisabled(True)
 
-    def onScheduleSelected(self):
-        pass
+    def checkCompressFiles(self, dir_node):
+        for node in dir_node.children[:]:
+            if node.size > 4000000000:
+                # compress file
+                compress(node)
+                # delete original file
+                node.delete()
 
     @property
     def window_index(self):
