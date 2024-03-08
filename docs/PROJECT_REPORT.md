@@ -92,6 +92,10 @@ Challenge 2: Slow Search
 Challenge 3: Slow Filesystem Scanning
 - Solution:
   - The initial implementation scanned the filesystem using Python's os.listDir(), while this seemed to be functional it became prohibitively slow on directories larger than couple dozen files. Upon deeper inspection this was due to the amount of I/O operations required to then process the entries in the directory, this was confirmed by inspecting various usage metrics while the scan was executing (using the commandline utilities htop and fs_usage). We then began to research alternatives to this method and came across os.scanDir(); the key difference with scanDir is that it returns an iterator containing DirEntry objects, which already contained many of the elements we were performing additional I/O operations to get. This speedup has enabled us to work with directories of a scale not previously possible.
+
+Challenge 4: Different Filepath Formats
+- Solution:
+  - To combat the issue of different ways of storing filepaths (e.g. with or without a trailing '/') we utilised Python's os.path.normPath() to normalise paths throughout the application, allowing us to use them as unique identifiers for file nodes in various structures.
 ## Performance Considerations
 The performance of K.L.A.A.S is a critical consideration, given the potential impact of file system operations and web server interactions on the user experience. The following performance considerations were taken into account during the design and implementation of the system:
 

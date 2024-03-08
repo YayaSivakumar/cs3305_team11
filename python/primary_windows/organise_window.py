@@ -1,12 +1,14 @@
-from PyQt5.QtCore import Qt, QDir
+from PyQt5.QtCore import Qt, QDir, QThread, pyqtSignal
 from PyQt5.QtWidgets import QCheckBox, QDirModel, QColumnView, QHBoxLayout, QPushButton, QMessageBox, QVBoxLayout, \
     QVBoxLayout, QLabel, QTreeView, QWidget
 from python.modules.organise import organise
+from python.modules.schedule import FileOrganizerScheduler
 from python.modules.revert_changes import revert_changes
 from python.ui.drag_drop import *
 from python.ui.custom_file_system_model import *
 from python.model.FileSystemNodeModel import File, Directory
-
+import threading
+import sched, time
 
 class OrganiseWindow(QWidget):
     def __init__(self, window_index: int, fileSystemModel):
@@ -14,6 +16,12 @@ class OrganiseWindow(QWidget):
         self.fileSystemModel = fileSystemModel
         self.organised = []
         self.window_index = window_index
+
+        self.schedulerObj = None
+        self.next_organisation = ''
+        self.scheduleOn = -1
+        self.stoppingThread = None
+
         # Create main layout
         layout = QHBoxLayout(self)
 
@@ -58,8 +66,13 @@ class OrganiseWindow(QWidget):
         right_layout.addWidget(self.revertButton)
         self.revertButton.setDisabled(True)
 
+        # Add a checkbox to trigger file organization scheduler
+        self.scheduleButton = QPushButton("Schedule Folder Weekly")
+        self.scheduleButton.clicked.connect(self.scheduleWeekly)
+        right_layout.addWidget(self.scheduleButton, alignment=Qt.AlignBottom)
+
         # Ensure that the organize button stays at the bottom
-        right_layout.addStretch()
+        # right_layout.addStretch()
 
         # Add the column view and the VBox to the main layout
         layout.addWidget(self.column_view)
@@ -153,6 +166,50 @@ class OrganiseWindow(QWidget):
             QMessageBox.information(self, 'No files to revert',
                                     'Please organise a folder using the tree view or drag and drop files before attempting revert.',
                                     QMessageBox.Ok)
+
+    def scheduleWeekly(self):
+        self.scheduleOn = -1 * self.scheduleOn
+        print(self.scheduleOn)
+
+        if self.scheduleOn > 0:
+            if self.stoppingThread:
+                self.stoppingThread.join()
+                self.stoppingThread = None
+            self.scheduleButton.setText("Unschedule Folder Weekly")
+
+            paths_to_organize = []
+            allSelected = self.allCheckbox.isChecked()
+
+            # Check if there are files dropped in drag-and-drop area
+            if self.dragDropLabel.droppedFiles:
+                print(f"FILES PRESENT IN DROPBOX:\n{self.dragDropLabel.droppedFiles}")
+                paths_to_organize = self.dragDropLabel.droppedFiles
+                paths_to_organize = [x.rstrip('/') for x in paths_to_organize]
+                print(f"Paths to organise:\n{paths_to_organize}")
+
+            # Check if there is a selection in the tree view
+            elif self.column_view.currentIndex().isValid():
+                tree_view_path = self.model.filePath(self.column_view.currentIndex())
+                if tree_view_path:
+                    paths_to_organize.append(tree_view_path)
+            elif allSelected:
+                paths_to_organize = [self.fileSystemModel.path]
+
+            # If there are paths to organize, either from drag-and-drop or tree view
+            if paths_to_organize:
+                cache = self.fileSystemModel.cache
+                for path in paths_to_organize:
+                    node = cache[path]
+                    self.schedulerObj = FileOrganizerScheduler()
+                    self.next_organisation = self.schedulerObj.start(node)
+            else:
+                QMessageBox.information(self, 'No Selection',
+                                        'Please select a file or folder from the tree view or drag and drop files.',
+                                        QMessageBox.Ok)
+        else:
+            self.scheduleButton.setText("Schedule Folder Weekly")
+            self.schedulerObj.stop()
+            self.next_organisation = ''
 
     @property
     def window_index(self):

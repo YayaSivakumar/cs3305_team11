@@ -1,7 +1,6 @@
 # script name: helper_funcs.py
 from __future__ import annotations
 from python.model.FileSystemNodeModel import Directory
-from python.model.FileSystemCache import FileSystemCache
 
 
 def delete_empty_directories(dir_node: Directory):
@@ -25,9 +24,9 @@ def delete_empty_directories(dir_node: Directory):
             if not child.children and child in child.cache.values():
                 child.delete()
 
+        # delete desktop.ini files
         elif child.is_invisible():
             child.delete()
-
 
 
 if __name__ == "__main__":
