@@ -2,7 +2,6 @@ from __future__ import annotations
 import os
 import shutil
 import hashlib
-import pyheif
 from datetime import datetime
 
 # music imports
@@ -362,23 +361,23 @@ class Image(File):
         Populate the image metadata.
         """
         try:
-            # If the image is HEIC, convert using pyheif
-            if self.extension().lower() == '.heic':
-                heif_file = pyheif.read(self.path)
-                image = PIL.Image.frombytes(
-                    heif_file.mode,
-                    heif_file.size,
-                    heif_file.data,
-                    "raw",
-                    heif_file.mode,
-                    heif_file.stride,
-                )
-                # Optionally, convert to JPEG or another format here
-                # e.g., image.save(self.path.replace('.HEIC', '.jpeg'), "JPEG")
-                self._extract_metadata_from_pil_image(image)
-            else:
-                image = PIL.Image.open(self.path)
-                self._extract_metadata_from_pil_image(image)
+            # # If the image is HEIC, convert using pyheif
+            # if self.extension().lower() == '.heic':
+            #     heif_file = pyheif.read(self.path)
+            #     image = PIL.Image.frombytes(
+            #         heif_file.mode,
+            #         heif_file.size,
+            #         heif_file.data,
+            #         "raw",
+            #         heif_file.mode,
+            #         heif_file.stride,
+            #     )
+            #     # Optionally, convert to JPEG or another format here
+            #     # e.g., image.save(self.path.replace('.HEIC', '.jpeg'), "JPEG")
+            #     self._extract_metadata_from_pil_image(image)
+            # else:
+            image = PIL.Image.open(self.path)
+            self._extract_metadata_from_pil_image(image)
         except:
             print(f"Failed to extract metadata from {self.path}")
 
@@ -432,18 +431,18 @@ class Image(File):
         except Exception as e:
             print(f"Failed to extract metadata from {self.path}. Error: {e}")
 
-    def heic_to_pillow_format(self):
-        """
-        Creates jpeg version of HEIC file in order to extract metadata using pillow library
-
-        params:
-        - heic_path: Path to the HEIC file.
-        """
-        try:
-            subprocess.run(['heif-convert', self.path, self.path.split('.')[0]+'.jpeg'], check=True)
-            self.path = self.path.split('.')[0]+'.jpeg'
-        except subprocess.CalledProcessError as e:
-            print(f"Failed to convert {self.path} to JPEG. Error: {e}")
+    # def heic_to_pillow_format(self):
+    #     """
+    #     Creates jpeg version of HEIC file in order to extract metadata using pillow library
+    #
+    #     params:
+    #     - heic_path: Path to the HEIC file.
+    #     """
+    #     try:
+    #         subprocess.run(['heif-convert', self.path, self.path.split('.')[0]+'.jpeg'], check=True)
+    #         self.path = self.path.split('.')[0]+'.jpeg'
+    #     except subprocess.CalledProcessError as e:
+    #         print(f"Failed to convert {self.path} to JPEG. Error: {e}")
 
     def get_location_by_country(self):
         """
