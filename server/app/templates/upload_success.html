@@ -16,20 +16,18 @@
                 <div class="card-actions">
                     <button onclick="copyURL()" class="btn btn-sm text-neutral">Copy URL</button>
                 </div>
-                <p class="text-base font-light"><span class="font-semibold text-lg">Filename:</span>
-                    {{ upload_info.upload_name }}</p>
-                <p class="text-base">
-                    <span class="font-semibold text-lg">Message:</span> {{ upload_info.message }}
-                </p>
+                {% if upload_info.upload_name %}
+                    <p class="text-base font-light"><span class="font-semibold text-lg">Upload Name:</span>
+                        {{ upload_info.upload_name }}</p>
+                {% endif %}
+                {% if upload_info.message %}
+                    <p class="text-base">
+                        <span class="font-semibold text-lg">Message:</span> {{ upload_info.message }}</p>
+                {% endif %}
                 <p class="text-base font-light"><span class="font-semibold text-lg">Sender Email:</span>
                     {{ upload_info.upload_user.email }}</p>
                 <p class="text-base"><span class="font-semibold text-lg">Expiration date:</span>
                     {{ upload_info.expires_at.strftime('%A, %d %B %Y %H:%M') }}</p>
-                {% if upload_info.download_count %}
-                    <p class="text-base"><span class="font-semibold text-lg">Number of downloads:</span>
-                        {{ upload_info.download_count }}</p>
-                {% endif %}
-
                 {% if is_pyqt %}
                     <a href="{{ url_for('user_routes.profile') }}" class="btn btn-sm btn-primary">Back to Profile</a>
                 {% endif %}
