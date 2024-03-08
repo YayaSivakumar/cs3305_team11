@@ -10,7 +10,7 @@ from ..db import db
 from ..config import UPLOADS_FOLDER
 from flask_login import current_user
 
-from ..models.file import File, Upload
+from ..models.file_upload import File, Upload
 from ..models.user import User
 
 from . import user_routes  # Import Blueprint instance from the main application package

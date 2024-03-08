@@ -6,6 +6,9 @@ from bcrypt import hashpw, gensalt, checkpw
 
 
 class Upload(db.Model):
+    """
+    Model for the uploads table
+    """
     id = db.Column(db.Integer, primary_key=True)
     unique_id = db.Column(db.String(100), unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -25,18 +28,30 @@ class Upload(db.Model):
 
     @password.setter
     def password(self, password):
+        """
+        Set the password to a hashed password
+        """
         # self.password_hashed = generate_password_hash(password)
         self.hashed_password = hashpw(password.encode('utf-8'), gensalt())
 
     def verify_password(self, password):
+        """
+        Verify the password
+        """
         # return check_password_hash(self.password_hashed, password)
         return checkpw(password.encode('utf-8'), self.hashed_password)
 
     def is_password_protected(self):
+        """
+        Check if the upload is password protected, as is not mandatory
+        """
         return self.hashed_password is not None
 
 
 class File(db.Model):
+    """
+    Model for the files table
+    """
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(100), nullable=False)
     unique_id = db.Column(db.String(100), unique=True, nullable=False)
