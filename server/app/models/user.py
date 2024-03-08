@@ -7,6 +7,9 @@ from bcrypt import hashpw, gensalt, checkpw
 
 
 class User(UserMixin, db.Model):
+    """
+    User model for storing user related details
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(24))
     email = db.Column(db.String(44), unique=True)
@@ -22,10 +25,15 @@ class User(UserMixin, db.Model):
 
     @password.setter
     def password(self, password):
-        # self.password_hashed = generate_password_hash(password)
+        """
+        Set password to a hashed password
+        """
         self.hashed_password = hashpw(password.encode('utf-8'), gensalt())
 
     def verify_password(self, password):
+        """
+        Check if hashed password matches actual password
+        """
         return checkpw(password.encode('utf-8'), self.hashed_password)
 
 
