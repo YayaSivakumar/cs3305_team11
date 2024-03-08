@@ -1,5 +1,6 @@
 # script_name: compress.py
 import subprocess
+import shutil
 import os
 from python.model.FileSystemNodeModel import File, Directory
 
@@ -8,7 +9,7 @@ def compress(file_node: object):
     """Compression based on type of file."""
 
     if os.path.isdir(file_node.path):
-        output_path = _compress_directory_tar_gzip(file_node)
+        output_path = _compress_directory_zip(file_node)
     else:
         output_path = _compress_single_file_gzip(file_node)
     return output_path
@@ -69,7 +70,7 @@ def _compress_single_file_gzip(file_node: File):
     return file_node.path + '.gz'
 
 
-def _compress_directory_tar_gzip(dir_node: Directory):
+def _compress_directory_zip(dir_node: Directory):
     """
     Compresses an entire directory using tar with gzip compression.
 
@@ -77,9 +78,10 @@ def _compress_directory_tar_gzip(dir_node: Directory):
     - input_directory: Path to the directory to be compressed.
     - output_filename: Name of the output file (compressed archive).
     """
-    command = ['tar', '-czf', os.path.dirname(dir_node.path) + '/archive.tar.gz', dir_node.path]
-    subprocess.run(command)
-    return os.path.dirname(dir_node.path) + '/archive.tar.gz'
+    output_filename = os.path.dirname(dir_node.path) + '/' + os.path.basename(dir_node.path)
+    # Create a zip archive of the directory
+    shutil.make_archive(output_filename, 'zip', dir_node.path)
+    return output_filename + '.zip'
 
 
 if __name__ == "__main__":

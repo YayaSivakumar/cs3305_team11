@@ -4,6 +4,12 @@ from python.modules.organise_by_type import organise_by_type_func
 
 
 def organise(dir_node: Directory):
+    """
+    Function to organise files based on type and then further sort them
+
+    @params
+    dir_node: Directory: directory node to be sorted
+    """
 
     # sort initial files by type
     organise_by_type_func(dir_node)
@@ -16,15 +22,31 @@ def organise(dir_node: Directory):
 
 
 def sort_images(dir_node: Directory):
+    """
+    Function to sort images by date
+
+    @params
+    dir_node: Directory: directory node to be sorted
+    """
     if dir_node.path + '/Photos' in dir_node.cache.keys():
         image_folder_node = dir_node.cache[dir_node.path + '/Photos']
         organise_by_date(image_folder_node)
 
 
 def sort_music(dir_node: Directory):
+    """
+    Function to sort music files by artist
+
+    @params
+    dir_node: Directory: directory node to be sorted
+    """
     if dir_node.path + '/Music' in dir_node.cache.keys():
         music_folder_node = dir_node.cache[dir_node.path + '/Music']
         for file in music_folder_node.children[:]:
-            if type(file) == Directory:
+            print(file.path, file.extension)
+            if file.extension() not in ['.mp3', '.wav', '.aac']:
+                print(f"Skipping {file.path}")
                 continue
-            file.organize_music()
+            else:
+                print(f"Organising   {file.path}")
+                file.organize_music()

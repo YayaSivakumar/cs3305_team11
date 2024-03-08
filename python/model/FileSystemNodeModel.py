@@ -1,11 +1,9 @@
 from __future__ import annotations
 import os
-from datetime import datetime
 import shutil
 import hashlib
 import pyheif
-
-from PyQt5.QtCore import QRunnable, QThreadPool
+from datetime import datetime
 
 # music imports
 from mutagen.easyid3 import EasyID3  # Importing EasyID3 from mutagen for reading ID3 tags
@@ -16,6 +14,8 @@ import pandas as pd
 import subprocess
 import PIL.Image
 from PIL.ExifTags import TAGS
+
+from PyQt5.QtCore import QRunnable, QThreadPool
 
 
 class FileSystemNode:
@@ -197,7 +197,7 @@ class Directory(FileSystemNode):
     """Represents a directory in the file system."""
 
     def __init__(self, path: str, cacheObj: FileSystemCache, name, parent):
-        super().__init__(os.path.normpath(path), cacheObj, parent, size=None)
+        super().__init__(os.path.normpath(path), cacheObj, parent, size=0)
         self.name = name
         self._populate()  # Populate the directory with its children
         cacheObj.save_to_file()
@@ -212,16 +212,23 @@ class Directory(FileSystemNode):
             self.cache.update(self.path, self)
         with os.scandir(self.path) as entries:
             for entry in entries:
-                print(f"Found entry: {entry.path}")
                 if entry.is_dir():
                     # Skip hidden directories
                     if '.' in entry.name or entry.name.startswith('$'):
                         continue
                     child = Directory(os.path.normpath(entry.path), self.cache, name=entry.name, parent=self)
                 else:
-                    file_size = entry.stat().st_size
+                    try:
+                        file_size = entry.stat().st_size
+                    except:
+                        file_size = 0
+                    if entry.name.endswith('.mp3') or entry.name.endswith('.wav') or entry.name.endswith('.aac'):
+                        child = Music(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
+                    elif entry.name.endswith('.jpeg') or entry.name.endswith('.jpg'):
+                        child = Image(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
+                    else:
+                        child = File(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
                     total_size += file_size
-                    child = File(entry.path, self.cache, name=entry.name, parent=self, size=file_size)
                 self.add_child(child)
                 print(f"Created {type(child).__name__}: {child.path} with parent: {child.parent.path}")
                 self.cache.update(child.path, child)
@@ -354,40 +361,58 @@ class Image(File):
         """
         Populate the image metadata.
         """
-        # If the image is HEIC, convert using pyheif
-        if self.extension().lower() == '.heic':
-            heif_file = pyheif.read(self.path)
-            image = PIL.Image.frombytes(
-                heif_file.mode,
-                heif_file.size,
-                heif_file.data,
-                "raw",
-                heif_file.mode,
-                heif_file.stride,
-            )
-            # Optionally, convert to JPEG or another format here
-            # e.g., image.save(self.path.replace('.HEIC', '.jpeg'), "JPEG")
-            self._extract_metadata_from_pil_image(image)
-        else:
-            image = PIL.Image.open(self.path)
-            self._extract_metadata_from_pil_image(image)
+        try:
+            # If the image is HEIC, convert using pyheif
+            if self.extension().lower() == '.heic':
+                heif_file = pyheif.read(self.path)
+                image = PIL.Image.frombytes(
+                    heif_file.mode,
+                    heif_file.size,
+                    heif_file.data,
+                    "raw",
+                    heif_file.mode,
+                    heif_file.stride,
+                )
+                # Optionally, convert to JPEG or another format here
+                # e.g., image.save(self.path.replace('.HEIC', '.jpeg'), "JPEG")
+                self._extract_metadata_from_pil_image(image)
+            else:
+                image = PIL.Image.open(self.path)
+                self._extract_metadata_from_pil_image(image)
+        except:
+            print(f"Failed to extract metadata from {self.path}")
 
     def _extract_metadata_from_pil_image(self, image):
-        # Extract metadata from the PIL Image object
-        exif_data = {}
-        if hasattr(image, '_getexif'):
-            exif_info = image._getexif()
-            if exif_info is not None:
-                for tag, value in exif_info.items():
-                    decoded = TAGS.get(tag, tag)
-                    exif_data[decoded] = value
+        """
+        Extracts metadata from a PIL Image object.
 
-        self.width = exif_data.get('ExifImageWidth', image.width)
-        self.height = exif_data.get('ExifImageHeight', image.height)
-        self.coords = self.convert_gps_data(exif_data['GPSInfo']) if 'GPSInfo' in exif_data else None
-        self.location = self.get_location_by_country() if self.coords else None
+        Parameters:
+        - image: A PIL Image object.
+        """
+        try:
+            # Extract metadata from the PIL Image object
+            exif_data = {}
+            if hasattr(image, '_getexif'):
+                exif_info = image._getexif()
+                if exif_info is not None:
+                    for tag, value in exif_info.items():
+                        decoded = TAGS.get(tag, tag)
+                        exif_data[decoded] = value
+
+            self.width = exif_data.get('ExifImageWidth', image.width)
+            self.height = exif_data.get('ExifImageHeight', image.height)
+            self.coords = self.convert_gps_data(exif_data['GPSInfo']) if 'GPSInfo' in exif_data else None
+            self.location = self.get_location_by_country() if self.coords else None
+        except:
+            print(f"Failed to extract metadata from {self.path}")
 
     def _populate_jpeg_metadata(self):
+        """
+        Populate the image metadata for JPEG files.
+
+        Parameters:
+        - path: The path to the image file.
+        """
         try:
             image = PIL.Image.open(self.path)
 
