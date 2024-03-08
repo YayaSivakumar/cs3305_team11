@@ -9,11 +9,14 @@ from python.primary_windows.visualise_window import VisualiseWindow
 from python.primary_windows.file_sharing_window import FileUploader
 from python.primary_windows.search_window import SearchWindow
 import styles.system_theme
-import styles.sidebar
-from requests import Session
+import styles.sidebar   # Import the sidebar style module
+from requests import Session    # Import the requests module
 
-
+# Import the FileSystemNodeModel class from the model modules
 class MainWindow(QMainWindow):
+    """
+    Main window for the application. This is the window that the user sees after the splash window.
+    """
     def __init__(self, fileSystemModel):
         super().__init__()
         self.fileSystemModel = fileSystemModel
@@ -124,9 +127,15 @@ class MainWindow(QMainWindow):
         self.sidebar.setStyleSheet(styles.sidebar.main_style())
 
     def show_window(self, window_index: int):
+        """
+        Show the window at the given index in the stacked widget.
+        """
         self.stacked_widget.setCurrentIndex(window_index)
 
     def showWebView(self, url):
+        """
+        Show a web view with the given URL.
+        """
         # Check if the last widget is already a QWebEngineView to avoid duplicates
         if isinstance(self.stacked_widget.currentWidget(), QWebEngineView):
             # Update the URL of the existing web view
@@ -139,6 +148,9 @@ class MainWindow(QMainWindow):
             self.stacked_widget.setCurrentWidget(webView)
 
     def setupWebView(self, webView):
+        """
+        Connect the URL changed signal of the QWebEngineView to a slot.
+        """
         webView.urlChanged.connect(self.onWebViewUrlChanged)
 
     def onWebViewUrlChanged(self, url):
@@ -152,6 +164,9 @@ class MainWindow(QMainWindow):
             self.setStyleSheet(styles.system_theme.light_style())
 
     def createMenuBar(self):
+        """
+        Create the menu bar for the main window.
+        """
         menuBar = self.menuBar()
 
         # File menu
@@ -214,15 +229,16 @@ class MainWindow(QMainWindow):
             self.showLoginWebView()
 
     def isUserLoggedIn(self):
-        # Placeholder for checking if the user is logged in
-        # Implement your actual login check here
-        return False
-
-    def isUserLoggedIn(self):
+        """
+        Check if the user is logged in.
+        """
         return self.loggedIn
 
     def showLoginWebView(self):
-        loginUrl = "https://cs3305-dannycagney.eu.pythonanywhere.com/login?view=pyqt"  # URL of your HTML login page
+        """
+        Show a web view with the login page.
+        """
+        loginUrl = "http://127.0.0.1:5000/login?view=pyqt"  # URL of your HTML login page
 
         # Find an existing QWebEngineView or create a new one
         webView = None

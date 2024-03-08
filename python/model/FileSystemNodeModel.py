@@ -552,7 +552,7 @@ class Music(File):
         self._track_name = None  # Initialize track name attribute
         self._album = None # Initialize album attribute
         self._year = None  # Initialize year attribute
-        self.get_music_data()
+        self.get_music_data()  # Call the method to retrieve metadata
 
     def __repr__(self):
         """Representation of a Music object"""
@@ -624,22 +624,20 @@ class Music(File):
         @params
         organize_by: str: criteria for organizing (artist, album, year)
         """
-        if self.artist == None:
+        if self.artist == None:  # Check if artist metadata is available
             print("No artist metadata found.")
             return
 
-        parent_directory = os.path.dirname(self.path)
+        parent_directory = os.path.dirname(self.path)  # Get the parent directory of the music file
         target_directory = os.path.join(parent_directory, self.artist)  # Target directory based on artist
-        if not os.path.exists(target_directory):
-            os.mkdir(target_directory)
-            music_folder = Directory(target_directory, self.cache, 'Music', self.parent)
-            # update attributes
-            self.parent.add_child(music_folder)
+        if not os.path.exists(target_directory):  # If target directory doesn't exist, create it
+            os.mkdir(target_directory)  # Create the target directory
+            music_folder = Directory(target_directory, self.cache, 'Music', self.parent)  # Create a directory object
+            self.parent.add_child(music_folder)  # Add the directory to the parent
 
-        # keep track of original path to revert changes
+        # Keep track of original path to revert changes
         revert_path = self.revert_path
-        self.move(target_directory+'/'+self.name)
-        self.revert_path = revert_path
-        print(f"Moved {self.path} to {target_directory}")
+        self.move(target_directory+'/'+self.name)  # Move the music file to the target directory
+        self.revert_path = revert_path  # Restore the original path
 
 

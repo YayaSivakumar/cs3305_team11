@@ -1,6 +1,6 @@
 import webbrowser
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QFileDialog, QLineEdit, QComboBox, \
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QComboBox, \
     QHBoxLayout, QSizePolicy
 from PyQt5.QtWidgets import QProgressBar
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
@@ -11,25 +11,24 @@ from PyQt5.QtWidgets import QFileDialog
 import os
 
 class FileItemWidget(QWidget):
-    '''Custom widget to display a file item with an icon, filename, and remove button.'''
-    # Define a signal to notify removal of a file
+    """Custom widget to display a file item with an icon, filename, and remove button."""
     removed = pyqtSignal(str)
 
     def __init__(self, icon_path, filename, filepath, parent=None):
-        '''Initialize the widget with the icon, filename, and filepath. Also, connect the remove button to the on_remove_clicked method.'''
+        """Initialize the widget with the icon, filename, and filepath. Also, connect the remove button to the on_remove_clicked method."""
         super().__init__(parent)
         self.filepath = filepath
         layout = QHBoxLayout(self)
 
         # Create and set file icon
-        iconLabel = QLabel()
+        icon_label = QLabel()
         pixmap = QPixmap(icon_path)  # Use the getIconPath function to get the icon path
         print(f"icon_path: {icon_path}")
         if pixmap.isNull():
             print(f"Failed to load icon from path: {icon_path}")
         else:
-            iconLabel.setPixmap(pixmap.scaled(30, 30, Qt.KeepAspectRatio))  # Adjust size as needed
-        layout.addWidget(iconLabel)
+            icon_label.setPixmap(pixmap.scaled(30, 30, Qt.KeepAspectRatio))  # Adjust size as needed
+        layout.addWidget(icon_label)
 
         filename_label = QLabel(filename, self)
         filename_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -90,8 +89,8 @@ class UploadThread(QThread):
             self.error.emit(e)
 
 class FileUploader(QWidget):
-    '''Custom QWidget to handle file uploads and sharing. Emits a signal when the upload is finished.
-    The signal passes the URL of the uploaded file.'''
+    """Custom QWidget to handle file uploads and sharing. Emits a signal when the upload is finished.
+    The signal passes the URL of the uploaded file."""
     uploadFinished = pyqtSignal(str)  # Signal to indicate upload is finished and pass URL
 
     def __init__(self, window_index, fileSystemModel):
@@ -106,6 +105,7 @@ class FileUploader(QWidget):
         self.initUI()
 
     def initUI(self):
+        """Initialize the UI for the file uploader."""
         self.setWindowTitle('File Uploader')
 
         # Initialize the layout first
@@ -116,7 +116,7 @@ class FileUploader(QWidget):
         self.layout.addWidget(self.label)
 
         self.uploadButton = QPushButton('Select File')
-        self.uploadButton.clicked.connect(self.openFileDialog)
+        self.uploadButton.clicked.connect(self.open_file_dialog)
         self.layout.addWidget(self.uploadButton)
 
         self.messageInput = QLineEdit()
@@ -135,7 +135,7 @@ class FileUploader(QWidget):
         self.layout.addLayout(self.filesLayout)
 
         self.uploadShareButton = QPushButton('Upload And Share Now')
-        self.uploadShareButton.clicked.connect(self.uploadAndShare)
+        self.uploadShareButton.clicked.connect(self.upload_and_share)
         self.layout.addWidget(self.uploadShareButton)
 
         # Initialize and add the progress bar to the layout
@@ -144,42 +144,46 @@ class FileUploader(QWidget):
         self.layout.addWidget(self.progressBar)
 
         self.copyButton = QPushButton('Copy Link for sharing')
-        self.copyButton.clicked.connect(self.copyLinkToClipboard)
+        self.copyButton.clicked.connect(self.copy_link_to_clipboard)
         self.layout.addWidget(self.copyButton)
         self.copyButton.setEnabled(False)  # Initially disable the Copy to Clipboard button
 
         # Finally, set the layout for the widget
         self.setLayout(self.layout)
 
-    def clearLayout(self, layout):
+    @staticmethod
+    def clear_layout(layout):
+        """Clear the layout by removing all child widgets."""
         while layout.count():
             child = layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
 
-    def displaySelectedFiles(self):
-        '''Display the selected files in the layout.
-        Also, connect the removeFile method to the removed signal of each FileItemWidget.'''
+    def display_selected_files(self):
+        """Display the selected files in the layout.
+        Also, connect the removeFile method to the removed signal of each FileItemWidget."""
         # Clear existing file displays
-        self.clearLayout(self.filesLayout)
+        self.clear_layout(self.filesLayout)
 
         for file_path in self.filePaths:
             # Determine the icon based on the file extension or if it's a folder
-            icon_path = self.getIconPath(file_path)
+            icon_path = self.get_icon_path(file_path)
             print(f"icon_path: {icon_path}")
             # Create a FileItemWidget for each file
             file_item_widget = FileItemWidget(icon_path, os.path.basename(file_path), file_path)
-            file_item_widget.removed.connect(self.removeFile)
+            file_item_widget.removed.connect(self.remove_file(file_path))
             self.filesLayout.addWidget(file_item_widget)
 
-    def removeFile(self, file_path):
+    def remove_file(self, file_path):
+        """Remove the file from the internal list and update the display."""
         # Remove the file from the internal list and update the display
         if file_path in self.filePaths:
             self.filePaths.remove(file_path)
-            self.displaySelectedFiles()
+            self.display_selected_files()
             self.selectedFileLabel.setText(f'Selected Files: {len(self.filePaths)} files')
 
-    def openFileDialog(self):
+    def open_file_dialog(self):
+        """Open a file dialog to select a file or folder. Also, update the selected file label."""
         # Provide options to the user to either select files or a directory
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
@@ -196,23 +200,24 @@ class FileUploader(QWidget):
                 self.folderPath = selected[0]
                 self.filePaths = self.get_files_from_folder(self.folderPath)
                 self.selectedFileLabel.setText(f'Selected Folder: {self.folderPath}')
-                self.displaySelectedFiles()
+                self.display_selected_files()
             else:
                 self.filePaths = selected  # A list of selected file paths
                 self.selectedFileLabel.setText(f'Selected Files: {len(self.filePaths)} files')
-                self.displaySelectedFiles()
+                self.display_selected_files()
 
         if self.folderPath:
             self.filePaths = self.get_files_from_folder(self.folderPath)
-            self.displaySelectedFiles()
+            self.display_selected_files()
             self.selectedFileLabel.setText(f'Selected Folder: {self.folderPath}')
 
         elif self.filePaths:
-            self.displaySelectedFiles()
+            self.display_selected_files()
             self.selectedFileLabel.setText(f'Selected Files: {len(self.filePaths)} files')
 
 
     def get_files_from_folder(self, folder_path):
+        """Return a list of file paths from the selected folder."""
         file_paths = []
         for root, directories, files in os.walk(folder_path):
             for filename in files:
@@ -220,8 +225,8 @@ class FileUploader(QWidget):
                 file_paths.append(filepath)
         return file_paths
 
-    def uploadAndShare(self):
-        '''Upload the file(s) and share them. Also, emit the uploadFinished signal.'''
+    def upload_and_share(self):
+        """Upload the file(s) and share them. Also, emit the uploadFinished signal."""
         self.progressBar.setValue(0)  # Reset progress bar
         if self.filePaths:  # This now handles both files and folders
             url = 'http://127.0.0.1:5000/upload_dan'  # URL of the Flask app's upload endpoint
@@ -230,16 +235,16 @@ class FileUploader(QWidget):
             persistence_hours = {'24 hours': 24, '3-Days': 72, '7-Days': 168}.get(persistence, 24)
 
             self.uploadThread = UploadThread(url, self.filePaths, message=message, persistence_hours=persistence_hours)
-            self.uploadThread.finished.connect(self.onUploadFinished)
-            self.uploadThread.error.connect(self.onUploadError)
+            self.uploadThread.finished.connect(self.on_upload_finished)
+            self.uploadThread.error.connect(self.on_upload_finished(self.shareable_link))
             self.uploadThread.progress.connect(lambda value: self.progressBar.setValue(value))
             self.uploadThread.total_progress.connect(lambda value: self.progressBar.setValue(value))
             self.uploadThread.start()
         else:
             self.selectedFileLabel.setText('No file or folder selected.')
 
-    def onUploadFinished(self, response_data):
-        '''Handle the upload finished and extract the URL. Also, emit the uploadFinished signal.'''
+    def on_upload_finished(self, response_data):
+        """Handle the upload finished and extract the URL. Also, emit the uploadFinished signal."""
         # Handle the upload finished and extract the URL
         self.shareable_link = response_data['link']
         print(f"shareable_link: {self.shareable_link}")
@@ -254,7 +259,7 @@ class FileUploader(QWidget):
         self.progressBar.setValue(0)  # Reset or hide progress bar
 
 
-    def onUploadError(self, exception):
+    def on_upload_error(self, exception):
         # Handle any errors that occurred during the upload
         self.selectedFileLabel.setText(f'Error: {str(exception)}')
 
@@ -264,7 +269,7 @@ class FileUploader(QWidget):
         webbrowser.open_new(url)
 
     # Ensure the copyLinkToClipboard method checks if shareable_link is set
-    def copyLinkToClipboard(self):
+    def copy_link_to_clipboard(self):
         if self.shareable_link:
             clipboard = QApplication.clipboard()
             clipboard.setText(self.shareable_link)
@@ -273,14 +278,14 @@ class FileUploader(QWidget):
             self.selectedFileLabel.setText('No shareable link available to copy.')
         self.openUploadPage()
 
-    def resetForm(self):
+    def reset_form(self):
         self.filePath = ''  # Clear the selected file path
         self.messageInput.clear()  # Clear the message input field
         self.persistenceComboBox.setCurrentIndex(0)  # Reset to the first option
         self.selectedFileLabel.setText('')  # Clear the selected file label
         self.copyButton.setEnabled(False)  # Disable the Copy to Clipboard button
 
-    def updateProgressBarStyle(self, value):
+    def update_progress_bar_style(self, value):
         colour = "#32CD32"  # Green
         # Calculate the gradient transition based on current progress value
         progress_percentage = value / 100
@@ -299,10 +304,11 @@ class FileUploader(QWidget):
             }}
         """)
 
-    def getIconPath(self, file_path):
-        '''Return the icon path based on the file extension.
+    @staticmethod
+    def get_icon_path(file_path):
+        """Return the icon path based on the file extension.
         If the file is a directory or has no extension, return the folder icon path.
-        If the file has an extension, return the icon path based on the extension.'''
+        If the file has an extension, return the icon path based on the extension."""
         print(f"file_path: {file_path}")
         if os.path.isdir(file_path) or '.' not in file_path:
             return 'ui/images/icons/folder_icon.png'
@@ -316,10 +322,10 @@ class FileUploader(QWidget):
 
     @property
     def window_index(self):
-        '''Return the window index.'''
+        """Return the window index."""
         return self._window_index
 
     @window_index.setter
     def window_index(self, value):
-        '''Set the window index.'''
+        """Set the window index."""
         self._window_index = value
